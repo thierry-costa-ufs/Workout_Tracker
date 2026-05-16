@@ -1,35 +1,100 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+import { WorkoutProvider } from "@/hooks/useWorkouts";
+import { Feather } from "@expo/vector-icons";
+import { Tabs } from "expo-router";
+import React from "react";
+import { Platform, StatusBar } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+export default function RootLayout() {
+  // Injeta dinamicamente a área segura calculada pelo hardware do aparelho
+  const insets = useSafeAreaInsets();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+    <WorkoutProvider>
+      {/* Sincronizado perfeitamente com o fundo OLED absoluto do ecossistema */}
+      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: "#E5E5EA",
+          tabBarInactiveTintColor: "#545456",
+          tabBarShowLabel: true,
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: "900",
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            marginTop: 4,
+            // Removemos o cálculo estático de margem que causava desalinhamento
+            marginBottom: Platform.OS === "ios" ? 0 : 4,
+          },
+          tabBarStyle: {
+            backgroundColor: "#1A1A1E",
+            borderTopWidth: 1,
+            borderTopColor: "#26262B",
+            paddingTop: 8,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 6,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
         }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+      >
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: "INÍCIO",
+            tabBarIcon: ({ color, focused }) => (
+              <Feather
+                name="home"
+                size={focused ? 19 : 18}
+                color={focused ? "#E5E5EA" : color}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="session"
+          options={{
+            title: "SESSÃO",
+            tabBarIcon: ({ color, focused }) => (
+              <Feather
+                name="zap"
+                size={focused ? 19 : 18}
+                color={focused ? "#E5E5EA" : color}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="timer"
+          options={{
+            title: "INTERVALO",
+            tabBarIcon: ({ color, focused }) => (
+              <Feather
+                name="clock"
+                size={focused ? 19 : 18}
+                color={focused ? "#E5E5EA" : color}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="planning"
+          options={{
+            title: "ROTINA",
+            tabBarIcon: ({ color, focused }) => (
+              <Feather
+                name="clipboard"
+                size={focused ? 19 : 18}
+                color={focused ? "#E5E5EA" : color}
+              />
+            ),
+          }}
+        />
+      </Tabs>
+    </WorkoutProvider>
   );
 }
