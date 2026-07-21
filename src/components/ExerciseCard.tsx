@@ -1,102 +1,68 @@
-import { PlannedExercise } from "@/types/workout";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SetSegment } from "./SetSegment";
 
 interface ExerciseCardProps {
-  exercise: PlannedExercise;
+  exercise: {
+    id: string;
+    name: string;
+    muscleGroup?: string;
+    sets?: number;
+  };
   progressSets: boolean[];
   onPress: () => void;
   onLongPress: () => void;
 }
 
-export const ExerciseCard = React.memo(
-  function ExerciseCard({
-    exercise,
-    progressSets = [],
-    onPress,
-    onLongPress,
-  }: ExerciseCardProps) {
-    const completedCount = progressSets.filter(Boolean).length;
-    const isFullyCompleted = completedCount === exercise.sets;
+export const ExerciseCard = React.memo(function ExerciseCard({
+  exercise,
+  progressSets,
+  onPress,
+  onLongPress,
+}: ExerciseCardProps) {
+  return (
+    <TouchableOpacity onPress={onPress} onLongPress={onLongPress} style={styles.card}>
+      <View style={styles.headerRow}>
+        <Text style={styles.name}>{exercise.name}</Text>
+        <Text style={styles.meta}>{exercise.muscleGroup || ""}</Text>
+      </View>
 
-    return (
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onPress}
-        onLongPress={onLongPress}
-        style={[styles.card, isFullyCompleted && styles.cardFinished]}
-      >
-        <View style={styles.header}>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{exercise.name}</Text>
-            <Text style={styles.subText}>
-              {exercise.muscleGroup.toUpperCase()} •{" "}
-              {exercise.equipment.toUpperCase()}
-            </Text>
-          </View>
-          <Text style={styles.counter}>
-            {completedCount}/{exercise.sets}
-          </Text>
-        </View>
-
-        <View style={styles.grid}>
-          {progressSets.map((isCompleted, index) => (
-            <SetSegment key={index} isCompleted={isCompleted} />
-          ))}
-        </View>
-      </TouchableOpacity>
-    );
-  },
-
-  (prevProps, nextProps) => {
-    return (
-      prevProps.exercise.id === nextProps.exercise.id &&
-      prevProps.progressSets?.length === nextProps.progressSets?.length &&
-      prevProps.progressSets?.every(
-        (val, i) => val === nextProps.progressSets?.[i],
-      )
-    );
-  },
-);
+      <View style={styles.setsRow}>
+        {progressSets.map((isCompleted, index) => (
+          <SetSegment key={`${exercise.id}-${index}`} isCompleted={isCompleted} />
+        ))}
+      </View>
+    </TouchableOpacity>
+  );
+});
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: "#1C1C1E",
+    backgroundColor: "#1C1C1F",
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#2C2C2E",
+    padding: 14,
+    marginBottom: 10,
   },
-  cardFinished: {
-    borderColor: "#E5E5EA",
-    backgroundColor: "#151518",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 14,
-  },
-  name: {
-    color: "#FFF",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  subText: {
-    color: "#8E8E93",
-    fontSize: 12,
-    marginTop: 4,
-  },
-  counter: {
-    color: "#E5E5EA",
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  grid: {
+  headerRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 8,
+  },
+  name: {
+    color: "#E5E5EA",
+    fontSize: 14,
+    fontWeight: "700",
+    flex: 1,
+  },
+  meta: {
+    color: "#8E8E93",
+    fontSize: 11,
+    fontWeight: "600",
+  },
+  setsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
   },
 });
