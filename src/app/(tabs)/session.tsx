@@ -1,5 +1,6 @@
-import { useWorkouts } from "@/context/WorkoutContext";
+import { useWorkouts } from "../../context/WorkoutContext";
 import { WorkoutSessionView } from "@/features/workout-session";
+import { DAY_LABELS, getWorkoutDayKeyForToday } from "@/lib/workout";
 import { PlannedExercise, WorkoutData } from "@/types/workout";
 import React, { useMemo } from "react";
 import {
@@ -37,13 +38,7 @@ export default function SessionScreen() {
     );
   }
 
-  const getFormattedCurrentDay = (): keyof WorkoutData => {
-    const days = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"] as const;
-    const dayIndex = new Date().getDay();
-    return days[dayIndex] as keyof WorkoutData;
-  };
-
-  const currentDayKey = getFormattedCurrentDay();
+  const currentDayKey = getWorkoutDayKeyForToday();
 
   const todayExercises = useMemo(() => {
     const rawExercises = activeTemplate.data[currentDayKey] || [];
@@ -52,19 +47,10 @@ export default function SessionScreen() {
       name: ex.name,
       muscleGroup: ex.muscleGroup,
       sets: ex.sets,
-      equipment: (ex as any).equipment || "LIVRE",
+      equipment: ex.equipment,
+      mechanic: ex.mechanic,
     })) as PlannedExercise[];
-  }, [activeId, currentDayKey]);
-
-  const dayLabels: Record<string, string> = {
-    dom: "DOMINGO",
-    seg: "SEGUNDA-FEIRA",
-    ter: "TERÇA-FEIRA",
-    qua: "QUARTA-FEIRA",
-    qui: "QUINTA-FEIRA",
-    sex: "SEXTA-FEIRA",
-    sab: "SÁBADO",
-  };
+  }, [activeTemplate, currentDayKey]);
 
   return (
     <SafeAreaProvider>
@@ -79,13 +65,18 @@ export default function SessionScreen() {
               {activeTemplate.name.toUpperCase()}
             </Text>
             {/* O DIA DA SEMANA AGORA ENTRA EXATAMENTE ABAIXO DO NOME DO TREINO */}
-            <Text style={styles.daySubtitle}>{dayLabels[currentDayKey]}</Text>
+            <Text style={styles.daySubtitle}>
+              {DAY_LABELS[currentDayKey]}
+            </Text>
           </View>
         </View>
 
         {/* CONTEÚDO PRINCIPAL DA SESSÃO */}
         <View style={styles.contentBody}>
-          <WorkoutSessionView exercises={todayExercises} dayName="" />
+          <WorkoutSessionView
+        exercises={todayExercises}
+        dayName={DAY_LABELS[currentDayKey]}
+      />
         </View>
       </SafeAreaView>
     </SafeAreaProvider>

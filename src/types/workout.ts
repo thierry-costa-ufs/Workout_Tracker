@@ -1,27 +1,25 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ReactNode } from "react";
 
 export type WorkoutDayKey =
-  | "domingo"
-  | "segunda-feira"
-  | "terça-feira"
-  | "quarta-feira"
-  | "quinta-feira"
-  | "sexta-feira"
-  | "sábado";
+  | "dom"
+  | "seg"
+  | "ter"
+  | "qua"
+  | "qui"
+  | "sex"
+  | "sab";
 
-export interface Exercise {
+export interface PlannedExercise {
   id: string;
   name: string;
   muscleGroup: string;
+  mechanic?: string;
+  equipment: string;
   sets: number;
-  reps: string;
-  weight?: number;
+  defaultSets?: number;
 }
 
-export type WorkoutData = {
-  [key in WorkoutDayKey]?: Exercise[];
-};
+export type WorkoutData = Record<WorkoutDayKey, PlannedExercise[]>;
 
 export interface WorkoutTemplate {
   id: string;
@@ -64,12 +62,4 @@ export interface TimerPreset {
   label: string;
   duration: number; // Duração estrita em segundos
   icon: IoniconsGlyphName;
-}
-
-export interface PlannedExercise {
-  name: ReactNode;
-  muscleGroup: any;
-  equipment: any;
-  id: string;
-  sets: number;
 }

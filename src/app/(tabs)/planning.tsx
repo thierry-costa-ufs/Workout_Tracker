@@ -15,70 +15,19 @@ import {
   View,
 } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-
-export const DAYS_OF_WEEK = [
-  { id: "dom" as const, label: "Domingo" },
-  { id: "seg" as const, label: "Segunda" },
-  { id: "ter" as const, label: "Terça" },
-  { id: "qua" as const, label: "Quarta" },
-  { id: "qui" as const, label: "Quinta" },
-  { id: "sex" as const, label: "Sexta" },
-  { id: "sab" as const, label: "Sábado" },
-];
+import {
+  createEmptyWorkoutData,
+  DAYS_OF_WEEK,
+  MUSCLE_FILTERS,
+  MuscleFilterType,
+} from "@/lib/workout";
+import {
+  PersonalRecord,
+  PlannedExercise,
+  WorkoutData,
+} from "@/types/workout";
 
 export type DayIdType = (typeof DAYS_OF_WEEK)[number]["id"];
-
-export interface PlannedExercise {
-  id: string;
-  name: string;
-  muscleGroup: string;
-  mechanic: "Composto" | "Isolado" | string;
-  equipment: string;
-  sets: number;
-  defaultSets?: number;
-}
-
-export interface WorkoutData {
-  dom: PlannedExercise[];
-  seg: PlannedExercise[];
-  ter: PlannedExercise[];
-  qua: PlannedExercise[];
-  qui: PlannedExercise[];
-  sex: PlannedExercise[];
-  sab: PlannedExercise[];
-}
-
-export interface PersonalRecord {
-  exerciseId: string;
-  weight: number;
-  reps?: number;
-  date?: string;
-}
-
-type MuscleFilterType =
-  | "Todos"
-  | "Peito"
-  | "Costas"
-  | "Ombro"
-  | "Quadríceps"
-  | "Posterior"
-  | "Bíceps"
-  | "Tríceps"
-  | "Panturrilha"
-  | "Abdômen";
-
-const MUSCLE_FILTERS: MuscleFilterType[] = [
-  "Todos",
-  "Peito",
-  "Costas",
-  "Ombro",
-  "Quadríceps",
-  "Posterior",
-  "Bíceps",
-  "Tríceps",
-  "Panturrilha",
-  "Abdômen",
-];
 
 export default function TabTwoScreen() {
   const {
@@ -90,15 +39,9 @@ export default function TabTwoScreen() {
     getExercisePR,
   } = useWorkouts();
 
-  const [draftWorkout, setDraftWorkout] = useState<WorkoutData>({
-    dom: [],
-    seg: [],
-    ter: [],
-    qua: [],
-    qui: [],
-    sex: [],
-    sab: [],
-  });
+  const [draftWorkout, setDraftWorkout] = useState<WorkoutData>(
+    createEmptyWorkoutData(),
+  );
 
   const [planningName, setPlanningName] = useState("");
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
@@ -112,22 +55,14 @@ export default function TabTwoScreen() {
 
   useEffect(() => {
     if (activeId && currentActivePlan?.data) {
-      setDraftWorkout(currentActivePlan.data as unknown as WorkoutData);
+      setDraftWorkout(currentActivePlan.data);
       setPlanningName(currentActivePlan.name);
     }
   }, [activeId, templates]);
 
   const handleNewPlan = () => {
     selectActiveTemplate("");
-    setDraftWorkout({
-      dom: [],
-      seg: [],
-      ter: [],
-      qua: [],
-      qui: [],
-      sex: [],
-      sab: [],
-    });
+    setDraftWorkout(createEmptyWorkoutData());
     setPlanningName("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
@@ -138,11 +73,7 @@ export default function TabTwoScreen() {
       return;
     }
 
-    await saveTemplate(
-      planningName,
-      draftWorkout as any,
-      activeId || undefined,
-    );
+    await saveTemplate(planningName, draftWorkout, activeId || undefined);
 
     setIsSaveModalVisible(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
