@@ -1,36 +1,51 @@
-# 🏋️‍♂️ Workout Tracker - Mobile
+# 🏋️‍♂️ Workout Tracker Mobile
 
-Um aplicativo minimalista e funcional para acompanhamento de séries de musculação em tempo real, desenvolvido com React Native e Expo.
+A React Native + Expo app for planning workouts, running training sessions, and tracking personal records in a minimal dark-mode interface.
 
-## ✨ Funcionalidades Atuais
-- **Contador Independente:** Cada exercício possui seu próprio controle de séries.
-- **Interface Dark Mode:** Design otimizado para ambientes de academia.
-- **Indicadores de Status:** Feedback visual (Vermelho, Laranja, Verde) baseado no progresso.
-- **Lógica de Segurança:** Travas que impedem séries negativas ou acima do limite estipulado.
-- **Feedback de Conclusão:** Texto riscado e botões desabilitados ao finalizar o exercício.
+## ✨ Current capabilities
+- Build and save workout templates by day of the week
+- Select an active routine for the current training flow
+- Review and edit exercise sets directly from the planning screen
+- Run a session view for the day’s planned exercises
+- Track personal records for exercises and loads
+- Use a dedicated timer screen for recovery and interval work
 
-## 🛠️ Tecnologias Utilizadas
+## 🧱 Project structure
+- src/app: Expo Router entry and tab layout
+- src/context: workout state and persistence with AsyncStorage
+- src/features/workout-dashboard: home/dashboard experience
+- src/features/workout-planning: routine planning flow
+- src/features/workout-records: personal records management
+- src/features/workout-session: session tracking UI
+- src/features/workout-timer: interval/timer screen
+- src/shared: shared UI and theme tokens
+
+## 🛠️ Tech stack
 - React Native
-- Expo (Router & SDK)
+- Expo Router
 - TypeScript
+- AsyncStorage
+- Expo Haptics
 - React Native Safe Area Context
 
-## 🚀 Como rodar o projeto
-
-1. Instale as dependências:
+## ▶️ Running the app
+1. Install dependencies:
    ```bash
    npm install
-
-2. Inicie o servidor do Expo:
+   ```
+2. Start Expo:
    ```bash
    npx expo start
-   
-3. Escaneie o QR Code com o app Expo Go (Android/iOS) ou use um emulador.
+   ```
+3. Open the app in Expo Go or an emulator.
 
-## 📈 Próximos Passos
+## ✅ Verification
+The project has been verified with:
+- npm run lint
+- npx tsc --noEmit
 
-    [ ] Refatorar Item para um componente separado.
-
-    [ ] Implementar persistência local com AsyncStorage.
-
-    [ ] Criar fluxo de criação/edição de treinos.
+## 🔜 Possible next steps
+- Refine the workout editing experience and validation
+- Add richer session analytics and progress history
+- Improve persistence reliability and data migration paths
+- Expand the planning flow with more advanced templates and presets

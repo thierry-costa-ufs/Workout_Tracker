@@ -1,4 +1,4 @@
-import type { PlannedExercise, WorkoutData, WorkoutDayKey } from "@/types/workout";
+import type { WorkoutData, WorkoutDayKey } from "@/types/workout";
 
 export const DAYS_OF_WEEK = [
   { id: "dom" as const, label: "Domingo" },
