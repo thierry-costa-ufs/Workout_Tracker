@@ -1,6 +1,5 @@
 import { Feather } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import React from "react";
 import { Platform, StatusBar } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -67,7 +66,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="timer"
           options={{
-            title: "INTERVALO",
+            title: "PAUSA",
             tabBarIcon: ({ color, focused }) => (
               <Feather
                 name="clock"
@@ -81,10 +80,24 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="planning"
           options={{
-            title: "ROTINA",
+            title: "PLANO",
             tabBarIcon: ({ color, focused }) => (
               <Feather
                 name="clipboard"
+                size={focused ? 19 : 18}
+                color={focused ? "#E5E5EA" : color}
+              />
+            ),
+          }}
+        />
+
+        <Tabs.Screen
+          name="record"
+          options={{
+            title: "MARCO",
+            tabBarIcon: ({ color, focused }) => (
+              <Feather
+                name="target"
                 size={focused ? 19 : 18}
                 color={focused ? "#E5E5EA" : color}
               />

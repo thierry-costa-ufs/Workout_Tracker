@@ -1,9 +1,10 @@
 import { useWorkouts } from "@/context/WorkoutContext";
 import { DAY_LABELS, getWorkoutDayKeyForToday } from "@/lib/workout";
 import { appTheme } from "@/shared/constants/theme";
+import { sharedScreenStyles } from "@/shared/styles/screenStyles";
 import { AppScreen } from "@/shared/ui/AppScreen";
 import { PlannedExercise } from "@/types/workout";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { WorkoutSessionView } from "../views/WorkoutSessionView";
 
@@ -30,7 +31,7 @@ export default function SessionScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
+      <View style={sharedScreenStyles.emptyStateContainer}>
         <ActivityIndicator size="large" color={appTheme.colors.textPrimary} />
       </View>
     );
@@ -38,9 +39,11 @@ export default function SessionScreen() {
 
   if (!activeTemplate) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.warningText}>NENHUMA ROTINA ATIVA SELECIONADA.</Text>
-        <Text style={styles.subWarningText}>
+      <View style={sharedScreenStyles.emptyStateContainer}>
+        <Text style={sharedScreenStyles.emptyStateTitle}>
+          NENHUMA ROTINA ATIVA SELECIONADA.
+        </Text>
+        <Text style={sharedScreenStyles.emptyStateText}>
           Vá até a aba de Planejamento e monte/ative uma divisão de treino.
         </Text>
       </View>
@@ -48,58 +51,28 @@ export default function SessionScreen() {
   }
 
   return (
-    <AppScreen style={styles.container} backgroundColor={appTheme.colors.surface}>
-      <View style={styles.header}>
-        <View style={styles.titleBlock}>
-          <Text style={styles.brandSubtitle}>SESSÃO DE TREINO</Text>
-          <Text style={styles.brandTitle}>{activeTemplate.name.toUpperCase()}</Text>
+    <AppScreen
+      style={sharedScreenStyles.container}
+      backgroundColor={appTheme.colors.surface}
+    >
+      <View style={sharedScreenStyles.pageHeader}>
+        <View style={sharedScreenStyles.pageTitleBlock}>
+          <Text style={sharedScreenStyles.pageSubtitle}>SESSÃO DE TREINO</Text>
+          <Text style={sharedScreenStyles.pageTitle}>
+            {activeTemplate.name.toUpperCase()}
+          </Text>
           <Text style={styles.daySubtitle}>{DAY_LABELS[currentDayKey]}</Text>
         </View>
       </View>
 
       <View style={styles.contentBody}>
-        <WorkoutSessionView
-          exercises={todayExercises}
-          dayName={DAY_LABELS[currentDayKey]}
-        />
+        <WorkoutSessionView exercises={todayExercises} />
       </View>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: appTheme.colors.surface,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
-    paddingHorizontal: 24,
-    paddingTop: 24,
-    paddingBottom: 16,
-    backgroundColor: appTheme.colors.surface,
-    borderBottomWidth: 1,
-    borderColor: appTheme.colors.border,
-  },
-  titleBlock: {
-    flex: 1,
-  },
-  brandSubtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 9,
-    fontWeight: "800",
-    letterSpacing: 1.5,
-    marginBottom: 4,
-  },
-  brandTitle: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 26,
-    fontWeight: "900",
-    letterSpacing: -1,
-    marginBottom: 6,
-  },
   daySubtitle: {
     color: appTheme.colors.textPrimary,
     fontSize: 14,
@@ -109,26 +82,5 @@ const styles = StyleSheet.create({
   contentBody: {
     flex: 1,
     backgroundColor: appTheme.colors.background,
-  },
-  centerContainer: {
-    flex: 1,
-    backgroundColor: appTheme.colors.background,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  warningText: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 14,
-    fontWeight: "800",
-    letterSpacing: 0.5,
-    textAlign: "center",
-    marginBottom: 8,
-  },
-  subWarningText: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: "center",
   },
 });

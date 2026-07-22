@@ -60,6 +60,6 @@ export type IoniconsGlyphName = keyof typeof Ionicons.glyphMap;
 export interface TimerPreset {
   id: string;
   label: string;
-  duration: number; // Duração estrita em segundos
+  duration: number;
   icon: IoniconsGlyphName;
 }

@@ -1,19 +1,14 @@
 import { ExerciseCard } from "@/components/ExerciseCard";
 import { TelemetryDisplay } from "@/components/TelemetryDisplay";
 import { PlannedExercise } from "@/types/workout";
-import React from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSessionEngine } from "../hooks/useSessionEngine";
 
 interface WorkoutSessionViewProps {
   exercises: PlannedExercise[];
-  dayName: string;
 }
 
-export function WorkoutSessionView({
-  exercises,
-  dayName,
-}: WorkoutSessionViewProps) {
+export function WorkoutSessionView({ exercises }: WorkoutSessionViewProps) {
   const { progress, handleCheckNextSet, handleLongPressResetExercise, stats } =
     useSessionEngine({ exercises });
 
@@ -29,8 +24,6 @@ export function WorkoutSessionView({
 
   return (
     <View style={styles.container}>
-      <Text style={styles.dayTitle}>{dayName.toUpperCase()}</Text>
-
       <TelemetryDisplay
         completed={stats.completedSets}
         total={stats.totalSets}
@@ -58,15 +51,6 @@ export function WorkoutSessionView({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#121214",
-  },
-  dayTitle: {
-    color: "#FFF",
-    fontSize: 14,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 10,
-    paddingHorizontal: 4,
   },
   list: {
     paddingBottom: 40,

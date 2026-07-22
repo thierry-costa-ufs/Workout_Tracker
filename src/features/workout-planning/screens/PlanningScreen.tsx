@@ -1,10 +1,18 @@
 import { EXERCISES_LIST } from "@/constants/exercises";
 import { useWorkouts } from "@/context/WorkoutContext";
+import {
+  createEmptyWorkoutData,
+  DAYS_OF_WEEK,
+  MUSCLE_FILTERS,
+  MuscleFilterType,
+} from "@/lib/workout";
 import { appTheme } from "@/shared/constants/theme";
+import { sharedScreenStyles } from "@/shared/styles/screenStyles";
 import { AppScreen } from "@/shared/ui/AppScreen";
+import { PlannedExercise, WorkoutData } from "@/types/workout";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   FlatList,
@@ -16,36 +24,116 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  createEmptyWorkoutData,
-  DAYS_OF_WEEK,
-  MUSCLE_FILTERS,
-  MuscleFilterType,
-} from "@/lib/workout";
-import { PlannedExercise, WorkoutData } from "@/types/workout";
 import { ExercisePickerCard } from "../components/ExercisePickerCard";
 
 export type DayIdType = (typeof DAYS_OF_WEEK)[number]["id"];
 
-export default function PlanningScreen() {
-  const { templates, activeId, saveTemplate, selectActiveTemplate, deleteTemplate, getExercisePR } = useWorkouts();
+// Componente para renderizar cada rotina com confirmação inline de exclusão
+interface PlanListItemProps {
+  item: { id: string; name: string };
+  isSelected: boolean;
+  onSelect: () => void;
+  onDelete: () => Promise<void>;
+}
 
-  const [draftWorkout, setDraftWorkout] = useState<WorkoutData>(createEmptyWorkoutData());
+function PlanListItem({
+  item,
+  isSelected,
+  onSelect,
+  onDelete,
+}: PlanListItemProps) {
+  const [isConfirming, setIsConfirming] = useState(false);
+
+  return (
+    <View
+      style={[styles.planItemCard, isSelected && styles.planItemCardActive]}
+    >
+      <TouchableOpacity
+        style={{ flex: 1, paddingVertical: 14 }}
+        onPress={onSelect}
+      >
+        <Text
+          style={[styles.planItemName, isSelected && styles.planItemNameActive]}
+          numberOfLines={1}
+        >
+          {item.name.toUpperCase()}
+        </Text>
+      </TouchableOpacity>
+
+      {isConfirming ? (
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+          <TouchableOpacity
+            style={styles.confirmDeleteBadge}
+            onPress={async () => {
+              await onDelete();
+              setIsConfirming(false);
+            }}
+          >
+            <Text style={styles.confirmDeleteText}>EXCLUIR</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{ padding: 6 }}
+            onPress={() => setIsConfirming(false)}
+          >
+            <Ionicons name="close" size={18} color="#A2A2A7" />
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={{ padding: 10 }}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setIsConfirming(true);
+          }}
+        >
+          <Ionicons
+            name="trash-outline"
+            size={18}
+            color={appTheme.colors.danger}
+          />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+export default function PlanningScreen() {
+  const {
+    templates,
+    activeId,
+    saveTemplate,
+    selectActiveTemplate,
+    deleteTemplate,
+    getExercisePR,
+  } = useWorkouts();
+
+  const [draftWorkout, setDraftWorkout] = useState<WorkoutData>(
+    createEmptyWorkoutData(),
+  );
   const [planningName, setPlanningName] = useState("");
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
   const [isPlansModalVisible, setIsPlansModalVisible] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDay, setSelectedDay] = useState<DayIdType>(DAYS_OF_WEEK[1].id);
-  const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<MuscleFilterType>("Todos");
+  const [selectedMuscleFilter, setSelectedMuscleFilter] =
+    useState<MuscleFilterType>("Todos");
 
-  const currentActivePlan = templates.find((template) => template.id === activeId);
+  const currentActivePlan = templates.find(
+    (template) => template.id === activeId,
+  );
 
+  // Sincroniza e reseta o estado da tela quando o plano ativo muda ou é excluído
   useEffect(() => {
     if (activeId && currentActivePlan?.data) {
       setDraftWorkout(currentActivePlan.data);
       setPlanningName(currentActivePlan.name);
+    } else if (!activeId || !currentActivePlan) {
+      setDraftWorkout(createEmptyWorkoutData());
+      setPlanningName("");
     }
-  }, [activeId, currentActivePlan?.data, currentActivePlan?.name, templates]);
+  }, [activeId, currentActivePlan]);
 
   const handleNewPlan = () => {
     selectActiveTemplate("");
@@ -67,7 +155,9 @@ export default function PlanningScreen() {
 
   const handleAddExercise = (item: (typeof EXERCISES_LIST)[0]) => {
     const currentDayList = draftWorkout[selectedDay] || [];
-    const existingIndex = currentDayList.findIndex((exercise) => exercise.id === item.id);
+    const existingIndex = currentDayList.findIndex(
+      (exercise) => exercise.id === item.id,
+    );
 
     if (existingIndex > -1) {
       handleUpdateSets(existingIndex, currentDayList[existingIndex].sets + 1);
@@ -94,7 +184,9 @@ export default function PlanningScreen() {
 
     setDraftWorkout((prev) => {
       const currentDayList = prev[selectedDay] || [];
-      const updatedList = currentDayList.map((exercise, exerciseIndex) => (exerciseIndex === index ? { ...exercise, sets: newSets } : exercise));
+      const updatedList = currentDayList.map((exercise, exerciseIndex) =>
+        exerciseIndex === index ? { ...exercise, sets: newSets } : exercise,
+      );
 
       return {
         ...prev,
@@ -104,14 +196,29 @@ export default function PlanningScreen() {
   };
 
   return (
-    <AppScreen style={styles.mainContainer} backgroundColor={appTheme.colors.background}>
+    <AppScreen
+      style={styles.mainContainer}
+      backgroundColor={appTheme.colors.background}
+    >
       <View style={styles.topHeader}>
-        <View style={{ flex: 1, marginRight: 8 }}>
-          <Text style={styles.headerTitle} numberOfLines={1}>MONTAGEM DE ROTINA</Text>
+        <View style={[sharedScreenStyles.pageTitleBlock, { marginRight: 8 }]}>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            MONTAGEM DE ROTINA
+          </Text>
           {currentActivePlan ? (
-            <Text style={styles.activePlanBadge} numberOfLines={1}>{currentActivePlan.name}</Text>
+            <Text style={styles.activePlanBadge} numberOfLines={1}>
+              {currentActivePlan.name}
+            </Text>
           ) : (
-            <Text style={[styles.activePlanBadge, { color: appTheme.colors.textPrimary }]} numberOfLines={1}>Novo Planejamento Ativo</Text>
+            <Text
+              style={[
+                styles.activePlanBadge,
+                { color: appTheme.colors.textPrimary },
+              ]}
+              numberOfLines={1}
+            >
+              Novo Planejamento Ativo
+            </Text>
           )}
         </View>
 
@@ -121,7 +228,10 @@ export default function PlanningScreen() {
             <Text style={styles.presetButtonText}>Limpar</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.presetButton} onPress={() => setIsPlansModalVisible(true)}>
+          <TouchableOpacity
+            style={styles.presetButton}
+            onPress={() => setIsPlansModalVisible(true)}
+          >
             <Ionicons name="folder-open-outline" size={14} color="#FFF" />
             <Text style={styles.presetButtonText}>Planos</Text>
           </TouchableOpacity>
@@ -135,46 +245,87 @@ export default function PlanningScreen() {
           data={DAYS_OF_WEEK}
           contentContainerStyle={{ paddingHorizontal: 16 }}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => setSelectedDay(item.id)} style={[styles.dayChip, item.id === selectedDay && styles.activeDayChip]}>
-              <Text style={[styles.dayChipText, item.id === selectedDay && styles.activeDayChipText]}>{item.label.substring(0, 3)}</Text>
+            <TouchableOpacity
+              onPress={() => setSelectedDay(item.id)}
+              style={[
+                styles.dayChip,
+                item.id === selectedDay && styles.activeDayChip,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.dayChipText,
+                  item.id === selectedDay && styles.activeDayChipText,
+                ]}
+              >
+                {item.label.substring(0, 3)}
+              </Text>
             </TouchableOpacity>
           )}
           keyExtractor={(item) => item.id}
         />
       </View>
 
-      <ScrollView contentContainerStyle={styles.contentBody} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.contentBody}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.sectionHeader}>
           <Text style={styles.selectedText}>{selectedDay.toUpperCase()}</Text>
-          <Text style={styles.exerciseCount}>{draftWorkout[selectedDay]?.length || 0} EXERCÍCIOS</Text>
+          <Text style={styles.exerciseCount}>
+            {draftWorkout[selectedDay]?.length || 0} EXERCÍCIOS
+          </Text>
         </View>
 
         <View style={styles.workoutList}>
-          {!draftWorkout[selectedDay] || draftWorkout[selectedDay].length === 0 ? (
+          {!draftWorkout[selectedDay] ||
+          draftWorkout[selectedDay].length === 0 ? (
             <View style={styles.emptyState}>
               <Ionicons name="flash-off-outline" size={32} color="#333" />
-              <Text style={styles.emptyStateText}>Dia de descanso ou vazio.</Text>
+              <Text style={styles.emptyStateText}>
+                Dia de descanso ou vazio.
+              </Text>
             </View>
           ) : (
             draftWorkout[selectedDay].map((exercise, index) => {
               const mainListPR = getExercisePR(exercise.id);
               return (
-                <View key={`${exercise.id}-${index}`} style={styles.exerciseCard}>
+                <View
+                  key={`${exercise.id}-${index}`}
+                  style={styles.exerciseCard}
+                >
                   <View style={styles.cardInfo}>
                     <Text style={styles.cardExerciseName}>{exercise.name}</Text>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                      <Text style={styles.cardMuscleGroupMainList}>{exercise.muscleGroup}</Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 8,
+                      }}
+                    >
+                      <Text style={styles.cardMuscleGroupMainList}>
+                        {exercise.muscleGroup}
+                      </Text>
                       {mainListPR && (
                         <View style={styles.mainListPrBadge}>
-                          <Ionicons name="trophy" size={9} color={appTheme.colors.accent} />
-                          <Text style={styles.mainListPrText}>{String(mainListPR.weight)} kg</Text>
+                          <Ionicons
+                            name="trophy"
+                            size={9}
+                            color={appTheme.colors.accent}
+                          />
+                          <Text style={styles.mainListPrText}>
+                            {String(mainListPR.weight)} kg
+                          </Text>
                         </View>
                       )}
                     </View>
                   </View>
 
                   <View style={styles.stepperContainer}>
-                    <TouchableOpacity style={styles.stepperButton} onPress={() => handleUpdateSets(index, exercise.sets - 1)}>
+                    <TouchableOpacity
+                      style={styles.stepperButton}
+                      onPress={() => handleUpdateSets(index, exercise.sets - 1)}
+                    >
                       <Ionicons name="remove" size={14} color="#A2A2A7" />
                     </TouchableOpacity>
 
@@ -183,20 +334,32 @@ export default function PlanningScreen() {
                       <Text style={styles.stepperLabel}>Séries</Text>
                     </View>
 
-                    <TouchableOpacity style={styles.stepperButton} onPress={() => handleUpdateSets(index, exercise.sets + 1)}>
+                    <TouchableOpacity
+                      style={styles.stepperButton}
+                      onPress={() => handleUpdateSets(index, exercise.sets + 1)}
+                    >
                       <Ionicons name="add" size={14} color="#FFF" />
                     </TouchableOpacity>
                   </View>
 
-                  <TouchableOpacity style={styles.deleteCardButton} onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    const newDayList = draftWorkout[selectedDay].filter((_, currentIndex) => currentIndex !== index);
-                    setDraftWorkout((prev) => ({
-                      ...prev,
-                      [selectedDay]: newDayList,
-                    }));
-                  }}>
-                    <Ionicons name="trash-outline" size={18} color={appTheme.colors.danger} />
+                  <TouchableOpacity
+                    style={styles.deleteCardButton}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                      const newDayList = draftWorkout[selectedDay].filter(
+                        (_, currentIndex) => currentIndex !== index,
+                      );
+                      setDraftWorkout((prev) => ({
+                        ...prev,
+                        [selectedDay]: newDayList,
+                      }));
+                    }}
+                  >
+                    <Ionicons
+                      name="trash-outline"
+                      size={18}
+                      color={appTheme.colors.danger}
+                    />
                   </TouchableOpacity>
                 </View>
               );
@@ -206,72 +369,85 @@ export default function PlanningScreen() {
       </ScrollView>
 
       <View style={styles.footerActions}>
-        <TouchableOpacity style={styles.fabAdd} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.fabAdd}
+          onPress={() => setModalVisible(true)}
+        >
           <Ionicons name="add" size={24} color="#000" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveMainButton} onPress={() => setIsSaveModalVisible(true)}>
+        <TouchableOpacity
+          style={styles.saveMainButton}
+          onPress={() => setIsSaveModalVisible(true)}
+        >
           <Text style={styles.saveMainButtonText}>CONCLUIR PLANEJAMENTO</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Modal de Planos Salvos */}
       <Modal transparent visible={isPlansModalVisible} animationType="fade">
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>ROTINAS SALVAS</Text>
-              <TouchableOpacity onPress={() => setIsPlansModalVisible(false)} style={styles.closeModalHeaderBtn}>
+              <TouchableOpacity
+                onPress={() => setIsPlansModalVisible(false)}
+                style={styles.closeModalHeaderBtn}
+              >
                 <Ionicons name="close" size={20} color="#FFF" />
               </TouchableOpacity>
             </View>
 
             {templates.length === 0 ? (
-              <Text style={styles.emptyPlansText}>Nenhum modelo estruturado.</Text>
+              <Text style={styles.emptyPlansText}>
+                Nenhum modelo estruturado.
+              </Text>
             ) : (
               <FlatList
                 data={templates}
+                extraData={[templates, activeId]}
                 keyExtractor={(item) => item.id}
-                style={{ width: "100%", maxHeight: 250 }}
-                renderItem={({ item }) => {
-                  const isSelected = item.id === activeId;
-                  return (
-                    <View style={[styles.planItemCard, isSelected && styles.planItemCardActive]}>
-                      <TouchableOpacity style={{ flex: 1, paddingVertical: 14 }} onPress={() => {
-                        selectActiveTemplate(item.id);
-                        setIsPlansModalVisible(false);
-                      }}>
-                        <Text style={[styles.planItemName, isSelected && styles.planItemNameActive]}>{item.name.toUpperCase()}</Text>
-                      </TouchableOpacity>
-
-                      <TouchableOpacity style={{ padding: 8 }} onPress={() => {
-                        Alert.alert("Apagar", `Excluir permanentemente "${item.name}"?`, [
-                          { text: "Cancelar", style: "cancel" },
-                          { text: "Excluir", style: "destructive", onPress: () => deleteTemplate(item.id) },
-                        ]);
-                      }}>
-                        <Ionicons name="trash-outline" size={16} color={appTheme.colors.danger} />
-                      </TouchableOpacity>
-                    </View>
-                  );
-                }}
+                style={{ width: "100%", maxHeight: 280 }}
+                renderItem={({ item }) => (
+                  <PlanListItem
+                    item={item}
+                    isSelected={item.id === activeId}
+                    onSelect={() => {
+                      selectActiveTemplate(item.id);
+                      setIsPlansModalVisible(false);
+                    }}
+                    onDelete={async () => {
+                      await deleteTemplate(item.id);
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success,
+                      );
+                    }}
+                  />
+                )}
               />
             )}
           </View>
         </View>
       </Modal>
 
+      {/* Modal de Seleção de Exercícios */}
       <Modal transparent visible={modalVisible} animationType="slide">
         <View style={styles.centeredView}>
           <View style={[styles.modalView, styles.modalViewExpanded]}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>BIBLIOTECA</Text>
-                <Text style={styles.modalSubtitle}>Injete cargas na sua divisão</Text>
+                <Text style={styles.modalSubtitle}>
+                  Injete cargas na sua divisão
+                </Text>
               </View>
-              <TouchableOpacity style={styles.closeModalButton} onPress={() => {
-                setModalVisible(false);
-                setSelectedMuscleFilter("Todos");
-              }}>
+              <TouchableOpacity
+                style={styles.closeModalButton}
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedMuscleFilter("Todos");
+                }}
+              >
                 <Ionicons name="close" size={20} color="#000" />
               </TouchableOpacity>
             </View>
@@ -281,8 +457,22 @@ export default function PlanningScreen() {
                 {MUSCLE_FILTERS.map((muscle) => {
                   const isSelected = selectedMuscleFilter === muscle;
                   return (
-                    <TouchableOpacity key={muscle} onPress={() => setSelectedMuscleFilter(muscle)} style={[styles.filterChip, isSelected && styles.filterChipActive]}>
-                      <Text style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>{muscle}</Text>
+                    <TouchableOpacity
+                      key={muscle}
+                      onPress={() => setSelectedMuscleFilter(muscle)}
+                      style={[
+                        styles.filterChip,
+                        isSelected && styles.filterChipActive,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          isSelected && styles.filterChipTextActive,
+                        ]}
+                      >
+                        {muscle}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
@@ -290,22 +480,42 @@ export default function PlanningScreen() {
             </View>
 
             <FlatList
-              data={EXERCISES_LIST.filter((exercise) => selectedMuscleFilter === "Todos" || exercise.muscleGroup === selectedMuscleFilter)}
+              data={EXERCISES_LIST.filter(
+                (exercise) =>
+                  selectedMuscleFilter === "Todos" ||
+                  exercise.muscleGroup === selectedMuscleFilter,
+              )}
               keyExtractor={(item) => item.id}
               showsVerticalScrollIndicator={false}
               style={{ width: "100%" }}
-              renderItem={({ item }) => <ExercisePickerCard item={item} pr={getExercisePR(item.id)} onAdd={() => handleAddExercise(item)} />}
+              renderItem={({ item }) => (
+                <ExercisePickerCard
+                  item={item}
+                  pr={getExercisePR(item.id)}
+                  onAdd={() => handleAddExercise(item)}
+                />
+              )}
             />
           </View>
         </View>
       </Modal>
 
+      {/* Modal de Salvar Planejamento */}
       <Modal transparent visible={isSaveModalVisible} animationType="fade">
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>IDENTIFIQUE O PLANO</Text>
-            <TextInput style={styles.input} placeholder="Ex: PUSH/PULL/LEGS EVOLUTION" placeholderTextColor="#444" value={planningName} onChangeText={setPlanningName} />
-            <TouchableOpacity style={styles.confirmSaveButton} onPress={handleSavePlanning}>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: PUSH/PULL/LEGS EVOLUTION"
+              placeholderTextColor="#444"
+              value={planningName}
+              onChangeText={setPlanningName}
+            />
+            <TouchableOpacity
+              style={styles.confirmSaveButton}
+              onPress={handleSavePlanning}
+            >
               <Text style={styles.confirmSaveText}>ATIVAR AGORA</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => setIsSaveModalVisible(false)}>
@@ -320,60 +530,302 @@ export default function PlanningScreen() {
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: appTheme.colors.background },
-  topHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 16, paddingVertical: 16, backgroundColor: appTheme.colors.background },
-  headerTitle: { color: "#FFF", fontSize: 16, fontWeight: "900", letterSpacing: 1 },
-  activePlanBadge: { color: appTheme.colors.textSecondary, fontSize: 11, fontWeight: "600", marginTop: 2 },
+  topHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: appTheme.colors.background,
+  },
+  headerTitle: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  activePlanBadge: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "600",
+    marginTop: 2,
+  },
   headerActions: { flexDirection: "row", gap: 6 },
-  presetButton: { flexDirection: "row", alignItems: "center", backgroundColor: appTheme.colors.surfaceElevated, paddingVertical: 6, paddingHorizontal: 10, borderRadius: 6, gap: 4 },
+  presetButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: appTheme.colors.surfaceElevated,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    gap: 4,
+  },
   presetButtonText: { color: "#FFF", fontWeight: "700", fontSize: 11 },
-  dayNavContainer: { paddingVertical: 10, backgroundColor: appTheme.colors.background },
-  dayChip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 8, backgroundColor: appTheme.colors.surfaceElevated, marginRight: 8, minWidth: 50, alignItems: "center" },
+  dayNavContainer: {
+    paddingVertical: 10,
+    backgroundColor: appTheme.colors.background,
+  },
+  dayChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    marginRight: 8,
+    minWidth: 50,
+    alignItems: "center",
+  },
   activeDayChip: { backgroundColor: "#FFF" },
-  dayChipText: { color: appTheme.colors.textSecondary, fontWeight: "700", fontSize: 12, textTransform: "uppercase" },
+  dayChipText: {
+    color: appTheme.colors.textSecondary,
+    fontWeight: "700",
+    fontSize: 12,
+    textTransform: "uppercase",
+  },
   activeDayChipText: { color: "#000" },
   contentBody: { paddingHorizontal: 16, paddingBottom: 130 },
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 15, marginBottom: 16 },
-  selectedText: { color: "#FFF", fontSize: 22, fontWeight: "900", letterSpacing: 0.5 },
-  exerciseCount: { color: appTheme.colors.textPrimary, fontSize: 11, fontWeight: "700", letterSpacing: 0.5 },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 15,
+    marginBottom: 16,
+  },
+  selectedText: {
+    color: "#FFF",
+    fontSize: 22,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
+  exerciseCount: {
+    color: appTheme.colors.textPrimary,
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
   workoutList: { width: "100%" },
-  exerciseCard: { backgroundColor: appTheme.colors.surfaceElevated, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 14, marginBottom: 10, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: appTheme.colors.borderStrong },
+  exerciseCard: {
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
   cardInfo: { flex: 1, justifyContent: "center" },
-  cardExerciseName: { color: "#FFF", fontSize: 14, fontWeight: "700", marginBottom: 3 },
-  cardMuscleGroupMainList: { color: appTheme.colors.textSecondary, fontSize: 10, fontWeight: "600", letterSpacing: 0.5, textTransform: "uppercase" },
+  cardExerciseName: {
+    color: "#FFF",
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 3,
+  },
+  cardMuscleGroupMainList: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
   deleteCardButton: { paddingLeft: 14, justifyContent: "center" },
-  stepperContainer: { flexDirection: "row", alignItems: "center", backgroundColor: "#121212", borderRadius: 8, padding: 2, borderWidth: 1, borderColor: appTheme.colors.borderStrong },
-  stepperButton: { backgroundColor: appTheme.colors.surfaceElevated, width: 30, height: 30, borderRadius: 6, justifyContent: "center", alignItems: "center" },
+  stepperContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#121212",
+    borderRadius: 8,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  stepperButton: {
+    backgroundColor: appTheme.colors.surfaceElevated,
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   stepperValueContainer: { width: 44, alignItems: "center" },
   stepperValue: { color: "#FFF", fontSize: 14, fontWeight: "800" },
-  stepperLabel: { color: "#636366", fontSize: 8, fontWeight: "700", textTransform: "uppercase", marginTop: -2 },
+  stepperLabel: {
+    color: "#636366",
+    fontSize: 8,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    marginTop: -2,
+  },
   emptyState: { alignItems: "center", marginTop: 60, gap: 10 },
   emptyStateText: { color: "#444", fontSize: 13, fontWeight: "600" },
-  footerActions: { position: "absolute", bottom: 24, left: 16, right: 16, flexDirection: "row", alignItems: "center", gap: 12 },
-  fabAdd: { backgroundColor: "#FFF", width: 54, height: 54, borderRadius: 12, justifyContent: "center", alignItems: "center" },
-  saveMainButton: { flex: 1, backgroundColor: appTheme.colors.textPrimary, height: 54, borderRadius: 12, justifyContent: "center", alignItems: "center" },
-  saveMainButtonText: { color: "#000", fontSize: 13, fontWeight: "900", letterSpacing: 1 },
-  centeredView: { flex: 1, justifyContent: "flex-end", backgroundColor: "rgba(0,0,0,0.85)" },
-  modalView: { width: "100%", backgroundColor: appTheme.colors.surfaceElevated, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, borderWidth: 1, borderColor: appTheme.colors.borderStrong },
-  modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: 20 },
-  modalTitle: { color: "#FFF", fontSize: 16, fontWeight: "900", letterSpacing: 0.5 },
+  footerActions: {
+    position: "absolute",
+    bottom: 24,
+    left: 16,
+    right: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  fabAdd: {
+    backgroundColor: "#FFF",
+    width: 54,
+    height: 54,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  saveMainButton: {
+    flex: 1,
+    backgroundColor: appTheme.colors.textPrimary,
+    height: 54,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  saveMainButtonText: {
+    color: "#000",
+    fontSize: 13,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.85)",
+  },
+  modalView: {
+    width: "100%",
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 20,
+  },
+  modalTitle: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
   closeModalHeaderBtn: { padding: 4 },
-  input: { width: "100%", backgroundColor: "#121212", color: "#FFF", padding: 16, borderRadius: 8, fontSize: 14, fontWeight: "600", marginBottom: 16, borderWidth: 1, borderColor: appTheme.colors.borderStrong },
-  confirmSaveButton: { backgroundColor: "#FFF", width: "100%", padding: 16, borderRadius: 8, alignItems: "center", marginBottom: 12 },
-  confirmSaveText: { color: "#000", fontSize: 13, fontWeight: "900", letterSpacing: 0.5 },
-  cancelText: { color: appTheme.colors.textSecondary, fontWeight: "700", fontSize: 12, textAlign: "center", letterSpacing: 0.5 },
-  emptyPlansText: { color: "#444", paddingVertical: 20, fontSize: 13, fontWeight: "600" },
-  planItemCard: { width: "100%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: "#121212", paddingHorizontal: 14, borderRadius: 8, marginBottom: 8, borderWidth: 1, borderColor: appTheme.colors.borderStrong },
+  input: {
+    width: "100%",
+    backgroundColor: "#121212",
+    color: "#FFF",
+    padding: 16,
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  confirmSaveButton: {
+    backgroundColor: "#FFF",
+    width: "100%",
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  confirmSaveText: {
+    color: "#000",
+    fontSize: 13,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
+  cancelText: {
+    color: appTheme.colors.textSecondary,
+    fontWeight: "700",
+    fontSize: 12,
+    textAlign: "center",
+    letterSpacing: 0.5,
+  },
+  emptyPlansText: {
+    color: "#444",
+    paddingVertical: 20,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  planItemCard: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "#121212",
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
   planItemCardActive: { borderColor: appTheme.colors.textPrimary },
-  planItemName: { color: "#A2A2A7", fontSize: 12, fontWeight: "700", letterSpacing: 0.5 },
+  planItemName: {
+    color: "#A2A2A7",
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
   planItemNameActive: { color: appTheme.colors.textPrimary },
+  confirmDeleteBadge: {
+    backgroundColor: appTheme.colors.danger,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  confirmDeleteText: {
+    color: "#FFF",
+    fontSize: 11,
+    fontWeight: "800",
+  },
   modalViewExpanded: { height: "85%" },
-  modalSubtitle: { color: appTheme.colors.textSecondary, fontSize: 11, fontWeight: "500", marginTop: 2 },
+  modalSubtitle: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "500",
+    marginTop: 2,
+  },
   closeModalButton: { backgroundColor: "#FFF", padding: 6, borderRadius: 8 },
   filterContainer: { flexDirection: "row", marginBottom: 16, height: 34 },
-  filterChip: { backgroundColor: "#121212", paddingHorizontal: 12, borderRadius: 6, marginRight: 6, borderWidth: 1, borderColor: appTheme.colors.borderStrong, justifyContent: "center" },
-  filterChipActive: { backgroundColor: appTheme.colors.textPrimary, borderColor: appTheme.colors.textPrimary },
-  filterChipText: { color: appTheme.colors.textSecondary, fontSize: 11, fontWeight: "700" },
+  filterChip: {
+    backgroundColor: "#121212",
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginRight: 6,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    justifyContent: "center",
+  },
+  filterChipActive: {
+    backgroundColor: appTheme.colors.textPrimary,
+    borderColor: appTheme.colors.textPrimary,
+  },
+  filterChipText: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "700",
+  },
   filterChipTextActive: { color: "#000" },
-  mainListPrBadge: { flexDirection: "row", alignItems: "center", backgroundColor: "rgba(255, 159, 10, 0.1)", paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, gap: 4 },
-  mainListPrText: { color: appTheme.colors.accent, fontSize: 9, fontWeight: "700" },
+  mainListPrBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 159, 10, 0.1)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    gap: 4,
+  },
+  mainListPrText: {
+    color: appTheme.colors.accent,
+    fontSize: 9,
+    fontWeight: "700",
+  },
 });
