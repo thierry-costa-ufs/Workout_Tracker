@@ -28,6 +28,80 @@ import { ExercisePickerCard } from "../components/ExercisePickerCard";
 
 export type DayIdType = (typeof DAYS_OF_WEEK)[number]["id"];
 
+// ---------------------------------------------------------------------------
+// Blocks are reusable groups of exercises (e.g. "A", "B", "C", or renamed to
+// "PUSH", "PULL"...) that get assigned to one or more days of the week. This
+// is what lets an ABC split repeat across a 5/6-day week without rebuilding
+// the same day twice. Blocks live only in this screen's local state — when
+// the plan is saved, they're flattened into the existing per-day WorkoutData
+// shape, so nothing about useWorkouts()/saveTemplate() needs to change.
+// ---------------------------------------------------------------------------
+
+interface WorkoutBlock {
+  id: string;
+  label: string;
+  exercises: PlannedExercise[];
+}
+
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const DISTRIBUTE_PRESETS = [3, 4, 5, 6, 7];
+
+function createId() {
+  return `blk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function createBlock(label: string): WorkoutBlock {
+  return { id: createId(), label, exercises: [] };
+}
+
+function getNextLabel(blocks: WorkoutBlock[]) {
+  const usedLabels = new Set(blocks.map((b) => b.label.toUpperCase()));
+  const nextLetter = LETTERS.find((letter) => !usedLabels.has(letter));
+  return nextLetter ?? `BLOCO ${blocks.length + 1}`;
+}
+
+function serializeExercises(list: PlannedExercise[] = []) {
+  return list.map((e) => `${e.id}:${e.sets}`).join("|");
+}
+
+// Reconstructs blocks + day assignments from a saved WorkoutData object.
+// Days with identical exercise lists collapse into the same block; days
+// with a unique list become their own block, labeled in day order.
+function reconstructFromWorkoutData(data: WorkoutData) {
+  const blocks: WorkoutBlock[] = [];
+  const daySplit: Record<string, string | null> = {};
+  const signatureToBlockId = new Map<string, string>();
+  let letterIndex = 0;
+
+  DAYS_OF_WEEK.forEach((day) => {
+    const list = data[day.id] || [];
+    if (list.length === 0) {
+      daySplit[day.id] = null;
+      return;
+    }
+
+    const signature = serializeExercises(list);
+    let blockId = signatureToBlockId.get(signature);
+
+    if (!blockId) {
+      const label = LETTERS[letterIndex] ?? `BLOCO ${letterIndex + 1}`;
+      letterIndex += 1;
+      const newBlock: WorkoutBlock = { id: createId(), label, exercises: list };
+      blocks.push(newBlock);
+      blockId = newBlock.id;
+      signatureToBlockId.set(signature, blockId);
+    }
+
+    daySplit[day.id] = blockId;
+  });
+
+  if (blocks.length === 0) {
+    blocks.push(createBlock("A"));
+  }
+
+  return { blocks, daySplit };
+}
+
 // Componente para renderizar cada rotina com confirmação inline de exclusão
 interface PlanListItemProps {
   item: { id: string; name: string };
@@ -109,37 +183,66 @@ export default function PlanningScreen() {
     getExercisePR,
   } = useWorkouts();
 
-  const [draftWorkout, setDraftWorkout] = useState<WorkoutData>(
-    createEmptyWorkoutData(),
+  const [blocks, setBlocks] = useState<WorkoutBlock[]>([createBlock("A")]);
+  const [daySplit, setDaySplit] = useState<Record<string, string | null>>({});
+  const [selectedBlockId, setSelectedBlockId] = useState<string | null>(
+    blocks[0]?.id ?? null,
   );
+
   const [planningName, setPlanningName] = useState("");
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
   const [isPlansModalVisible, setIsPlansModalVisible] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<DayIdType>(DAYS_OF_WEEK[1].id);
+  const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
+  const [isDayAssignModalVisible, setIsDayAssignModalVisible] = useState(false);
+  const [dayBeingAssigned, setDayBeingAssigned] = useState<string | null>(null);
+  const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
   const [selectedMuscleFilter, setSelectedMuscleFilter] =
     useState<MuscleFilterType>("Todos");
 
   const currentActivePlan = templates.find(
     (template) => template.id === activeId,
   );
+  const selectedBlock = blocks.find((b) => b.id === selectedBlockId) || null;
+  const trainingDaysCount = Object.values(daySplit).filter(Boolean).length;
+  const restDaysCount = DAYS_OF_WEEK.length - trainingDaysCount;
 
   // Sincroniza e reseta o estado da tela quando o plano ativo muda ou é excluído
   useEffect(() => {
     if (activeId && currentActivePlan?.data) {
-      setDraftWorkout(currentActivePlan.data);
+      const { blocks: rebuiltBlocks, daySplit: rebuiltSplit } =
+        reconstructFromWorkoutData(currentActivePlan.data);
+      setBlocks(rebuiltBlocks);
+      setDaySplit(rebuiltSplit);
+      setSelectedBlockId(rebuiltBlocks[0]?.id ?? null);
       setPlanningName(currentActivePlan.name);
     } else if (!activeId || !currentActivePlan) {
-      setDraftWorkout(createEmptyWorkoutData());
+      const freshBlock = createBlock("A");
+      setBlocks([freshBlock]);
+      setDaySplit({});
+      setSelectedBlockId(freshBlock.id);
       setPlanningName("");
     }
   }, [activeId, currentActivePlan]);
 
   const handleNewPlan = () => {
     selectActiveTemplate("");
-    setDraftWorkout(createEmptyWorkoutData());
+    const freshBlock = createBlock("A");
+    setBlocks([freshBlock]);
+    setDaySplit({});
+    setSelectedBlockId(freshBlock.id);
     setPlanningName("");
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  };
+
+  const buildWorkoutDataFromBlocks = (): WorkoutData => {
+    const data = createEmptyWorkoutData();
+    DAYS_OF_WEEK.forEach((day) => {
+      const blockId = daySplit[day.id];
+      const block = blocks.find((b) => b.id === blockId);
+      data[day.id] = block ? block.exercises : [];
+    });
+    return data;
   };
 
   const handleSavePlanning = async () => {
@@ -148,51 +251,162 @@ export default function PlanningScreen() {
       return;
     }
 
-    await saveTemplate(planningName, draftWorkout, activeId || undefined);
+    const workoutData = buildWorkoutDataFromBlocks();
+    await saveTemplate(planningName, workoutData, activeId || undefined);
     setIsSaveModalVisible(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const handleAddExercise = (item: (typeof EXERCISES_LIST)[0]) => {
-    const currentDayList = draftWorkout[selectedDay] || [];
-    const existingIndex = currentDayList.findIndex(
-      (exercise) => exercise.id === item.id,
-    );
+  // ---- Block management -----------------------------------------------
 
-    if (existingIndex > -1) {
-      handleUpdateSets(existingIndex, currentDayList[existingIndex].sets + 1);
-    } else {
-      const newExercise: PlannedExercise = {
-        id: item.id,
-        name: item.name,
-        muscleGroup: item.muscleGroup,
-        mechanic: item.mechanic,
-        equipment: item.equipment,
-        sets: item.defaultSets || 3,
-      };
-
-      setDraftWorkout((prev) => ({
-        ...prev,
-        [selectedDay]: [...(prev[selectedDay] || []), newExercise],
-      }));
-    }
+  const handleAddBlock = () => {
+    const newBlock = createBlock(getNextLabel(blocks));
+    setBlocks((prev) => [...prev, newBlock]);
+    setSelectedBlockId(newBlock.id);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   };
 
-  const handleUpdateSets = (index: number, newSets: number) => {
+  const confirmDeleteBlock = (blockId: string) => {
+    if (blocks.length <= 1) {
+      Alert.alert(
+        "Não é possível excluir",
+        "Mantenha pelo menos um bloco de treino ativo.",
+      );
+      return;
+    }
+
+    Alert.alert(
+      "Excluir bloco",
+      "Os dias vinculados a este bloco ficarão como descanso.",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => handleDeleteBlock(blockId),
+        },
+      ],
+    );
+  };
+
+  const handleDeleteBlock = (blockId: string) => {
+    const remainingBlocks = blocks.filter((b) => b.id !== blockId);
+    setBlocks(remainingBlocks);
+
+    setDaySplit((prev) => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach((dayId) => {
+        if (updated[dayId] === blockId) updated[dayId] = null;
+      });
+      return updated;
+    });
+
+    setSelectedBlockId((prev) =>
+      prev === blockId ? (remainingBlocks[0]?.id ?? null) : prev,
+    );
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  const handleRenameBlock = (blockId: string, newLabel: string) => {
+    if (!newLabel.trim()) return;
+    setBlocks((prev) =>
+      prev.map((b) =>
+        b.id === blockId ? { ...b, label: newLabel.trim().toUpperCase() } : b,
+      ),
+    );
+  };
+
+  const handleAddExerciseToBlock = (item: (typeof EXERCISES_LIST)[0]) => {
+    if (!selectedBlockId) return;
+
+    setBlocks((prev) =>
+      prev.map((block) => {
+        if (block.id !== selectedBlockId) return block;
+
+        const existingIndex = block.exercises.findIndex(
+          (exercise) => exercise.id === item.id,
+        );
+
+        if (existingIndex > -1) {
+          const updated = block.exercises.map((exercise, index) =>
+            index === existingIndex
+              ? { ...exercise, sets: exercise.sets + 1 }
+              : exercise,
+          );
+          return { ...block, exercises: updated };
+        }
+
+        const newExercise: PlannedExercise = {
+          id: item.id,
+          name: item.name,
+          muscleGroup: item.muscleGroup,
+          mechanic: item.mechanic,
+          equipment: item.equipment,
+          sets: item.defaultSets || 3,
+        };
+
+        return { ...block, exercises: [...block.exercises, newExercise] };
+      }),
+    );
+  };
+
+  const handleUpdateSetsInBlock = (
+    blockId: string,
+    index: number,
+    newSets: number,
+  ) => {
     if (newSets < 1) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-    setDraftWorkout((prev) => {
-      const currentDayList = prev[selectedDay] || [];
-      const updatedList = currentDayList.map((exercise, exerciseIndex) =>
-        exerciseIndex === index ? { ...exercise, sets: newSets } : exercise,
-      );
+    setBlocks((prev) =>
+      prev.map((block) => {
+        if (block.id !== blockId) return block;
+        const updated = block.exercises.map((exercise, i) =>
+          i === index ? { ...exercise, sets: newSets } : exercise,
+        );
+        return { ...block, exercises: updated };
+      }),
+    );
+  };
 
-      return {
-        ...prev,
-        [selectedDay]: updatedList,
-      };
+  const handleRemoveExerciseFromBlock = (blockId: string, index: number) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setBlocks((prev) =>
+      prev.map((block) => {
+        if (block.id !== blockId) return block;
+        return {
+          ...block,
+          exercises: block.exercises.filter((_, i) => i !== index),
+        };
+      }),
+    );
+  };
+
+  // ---- Weekly split management ------------------------------------------
+
+  const handleAssignDay = (dayId: string, blockId: string | null) => {
+    setDaySplit((prev) => ({ ...prev, [dayId]: blockId }));
+    setIsDayAssignModalVisible(false);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  };
+
+  // One tap: cycles the current blocks (A, B, C...) across the first N days
+  // of the week in order, leaving the rest as rest days. This is what turns
+  // an ABC block set into "Mon=A, Tue=B, Wed=C, Thu=A, Fri=B" instantly.
+  const handleDistributeAcrossDays = (targetTrainingDays: number) => {
+    if (blocks.length === 0) return;
+    const count = Math.min(
+      Math.max(targetTrainingDays, 1),
+      DAYS_OF_WEEK.length,
+    );
+
+    const updated: Record<string, string | null> = {};
+    DAYS_OF_WEEK.forEach((day, index) => {
+      updated[day.id] = index < count ? blocks[index % blocks.length].id : null;
     });
+
+    setDaySplit(updated);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
   return (
@@ -238,144 +452,262 @@ export default function PlanningScreen() {
         </View>
       </View>
 
-      <View style={styles.dayNavContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={DAYS_OF_WEEK}
-          contentContainerStyle={{ paddingHorizontal: 16 }}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              onPress={() => setSelectedDay(item.id)}
-              style={[
-                styles.dayChip,
-                item.id === selectedDay && styles.activeDayChip,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.dayChipText,
-                  item.id === selectedDay && styles.activeDayChipText,
-                ]}
-              >
-                {item.label.substring(0, 3)}
-              </Text>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item.id}
-        />
-      </View>
-
       <ScrollView
         contentContainerStyle={styles.contentBody}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.sectionHeader}>
-          <Text style={styles.selectedText}>{selectedDay.toUpperCase()}</Text>
-          <Text style={styles.exerciseCount}>
-            {draftWorkout[selectedDay]?.length || 0} EXERCÍCIOS
+        {/* ---- Blocks row ---- */}
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.splitTitle}>BLOCOS DE TREINO</Text>
+        </View>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.blockRow}
+        >
+          {blocks.map((block) => {
+            const isSelected = block.id === selectedBlockId;
+            return (
+              <TouchableOpacity
+                key={block.id}
+                style={[styles.blockChip, isSelected && styles.blockChipActive]}
+                onPress={() => setSelectedBlockId(block.id)}
+              >
+                <View
+                  style={[
+                    styles.blockAvatar,
+                    isSelected && styles.blockAvatarActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.blockAvatarText,
+                      isSelected && styles.blockAvatarTextActive,
+                    ]}
+                  >
+                    {block.label.charAt(0)}
+                  </Text>
+                </View>
+                <View>
+                  <Text
+                    style={[
+                      styles.blockChipLabel,
+                      isSelected && styles.blockChipLabelActive,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {block.label}
+                  </Text>
+                  <Text style={styles.blockChipMeta}>
+                    {block.exercises.length} exercícios
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+
+          <TouchableOpacity
+            style={styles.addBlockChip}
+            onPress={handleAddBlock}
+          >
+            <Ionicons name="add" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </ScrollView>
+
+        {/* ---- Selected block detail ---- */}
+        {selectedBlock && (
+          <>
+            <View style={styles.blockDetailHeader}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.selectedText}>
+                  {`BLOCO ${selectedBlock.label}`}
+                </Text>
+                <Text style={styles.exerciseCount}>
+                  {selectedBlock.exercises.length} EXERCÍCIOS
+                </Text>
+              </View>
+
+              <TouchableOpacity
+                style={styles.iconGhostButton}
+                onPress={() => {
+                  setRenameValue(selectedBlock.label);
+                  setIsRenameModalVisible(true);
+                }}
+              >
+                <Ionicons name="pencil-outline" size={16} color="#A2A2A7" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.iconGhostButton}
+                onPress={() => confirmDeleteBlock(selectedBlock.id)}
+              >
+                <Ionicons
+                  name="trash-outline"
+                  size={16}
+                  color={appTheme.colors.danger}
+                />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.workoutList}>
+              {selectedBlock.exercises.length === 0 ? (
+                <View style={styles.emptyState}>
+                  <Ionicons name="flash-off-outline" size={32} color="#333" />
+                  <Text style={styles.emptyStateText}>
+                    Bloco vazio. Adicione exercícios abaixo.
+                  </Text>
+                </View>
+              ) : (
+                selectedBlock.exercises.map((exercise, index) => {
+                  const mainListPR = getExercisePR(exercise.id);
+                  return (
+                    <View
+                      key={`${exercise.id}-${index}`}
+                      style={styles.exerciseCard}
+                    >
+                      <View style={styles.cardInfo}>
+                        <Text style={styles.cardExerciseName}>
+                          {exercise.name}
+                        </Text>
+                        <View
+                          style={{
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <Text style={styles.cardMuscleGroupMainList}>
+                            {exercise.muscleGroup}
+                          </Text>
+                          {mainListPR && (
+                            <View style={styles.mainListPrBadge}>
+                              <Ionicons
+                                name="trophy"
+                                size={9}
+                                color={appTheme.colors.accent}
+                              />
+                              <Text style={styles.mainListPrText}>
+                                {String(mainListPR.weight)} kg
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      </View>
+
+                      <View style={styles.stepperContainer}>
+                        <TouchableOpacity
+                          style={styles.stepperButton}
+                          onPress={() =>
+                            handleUpdateSetsInBlock(
+                              selectedBlock.id,
+                              index,
+                              exercise.sets - 1,
+                            )
+                          }
+                        >
+                          <Ionicons name="remove" size={14} color="#A2A2A7" />
+                        </TouchableOpacity>
+
+                        <View style={styles.stepperValueContainer}>
+                          <Text style={styles.stepperValue}>
+                            {exercise.sets}
+                          </Text>
+                          <Text style={styles.stepperLabel}>Séries</Text>
+                        </View>
+
+                        <TouchableOpacity
+                          style={styles.stepperButton}
+                          onPress={() =>
+                            handleUpdateSetsInBlock(
+                              selectedBlock.id,
+                              index,
+                              exercise.sets + 1,
+                            )
+                          }
+                        >
+                          <Ionicons name="add" size={14} color="#FFF" />
+                        </TouchableOpacity>
+                      </View>
+
+                      <TouchableOpacity
+                        style={styles.deleteCardButton}
+                        onPress={() =>
+                          handleRemoveExerciseFromBlock(selectedBlock.id, index)
+                        }
+                      >
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color={appTheme.colors.danger}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })
+              )}
+
+              <TouchableOpacity
+                style={styles.addExerciseInlineButton}
+                onPress={() => setIsExerciseModalVisible(true)}
+              >
+                <Ionicons name="add-circle-outline" size={16} color="#FFF" />
+                <Text style={styles.addExerciseInlineText}>
+                  ADICIONAR EXERCÍCIO
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        )}
+
+        {/* ---- Weekly split ---- */}
+        <View style={styles.splitDivider} />
+
+        <View style={styles.sectionHeaderRow}>
+          <Text style={styles.splitTitle}>DIVISÃO SEMANAL</Text>
+          <Text style={styles.splitSummary}>
+            {trainingDaysCount} DIAS DE TREINO ·{restDaysCount} DIAS DE DESCANSO
           </Text>
         </View>
 
-        <View style={styles.workoutList}>
-          {!draftWorkout[selectedDay] ||
-          draftWorkout[selectedDay].length === 0 ? (
-            <View style={styles.emptyState}>
-              <Ionicons name="flash-off-outline" size={32} color="#333" />
-              <Text style={styles.emptyStateText}>
-                Dia de descanso ou vazio.
-              </Text>
-            </View>
-          ) : (
-            draftWorkout[selectedDay].map((exercise, index) => {
-              const mainListPR = getExercisePR(exercise.id);
-              return (
+        <View style={styles.dayGrid}>
+          {DAYS_OF_WEEK.map((day) => {
+            const assignedBlockId = daySplit[day.id];
+            const assignedBlock = blocks.find((b) => b.id === assignedBlockId);
+            return (
+              <TouchableOpacity
+                key={day.id}
+                style={styles.daySplitChip}
+                onPress={() => {
+                  setDayBeingAssigned(day.id);
+                  setIsDayAssignModalVisible(true);
+                }}
+              >
+                <Text style={styles.daySplitLabel}>
+                  {day.label.substring(0, 3).toUpperCase()}
+                </Text>
                 <View
-                  key={`${exercise.id}-${index}`}
-                  style={styles.exerciseCard}
+                  style={[
+                    styles.daySplitBadge,
+                    assignedBlock && styles.daySplitBadgeActive,
+                  ]}
                 >
-                  <View style={styles.cardInfo}>
-                    <Text style={styles.cardExerciseName}>{exercise.name}</Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 8,
-                      }}
-                    >
-                      <Text style={styles.cardMuscleGroupMainList}>
-                        {exercise.muscleGroup}
-                      </Text>
-                      {mainListPR && (
-                        <View style={styles.mainListPrBadge}>
-                          <Ionicons
-                            name="trophy"
-                            size={9}
-                            color={appTheme.colors.accent}
-                          />
-                          <Text style={styles.mainListPrText}>
-                            {String(mainListPR.weight)} kg
-                          </Text>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-
-                  <View style={styles.stepperContainer}>
-                    <TouchableOpacity
-                      style={styles.stepperButton}
-                      onPress={() => handleUpdateSets(index, exercise.sets - 1)}
-                    >
-                      <Ionicons name="remove" size={14} color="#A2A2A7" />
-                    </TouchableOpacity>
-
-                    <View style={styles.stepperValueContainer}>
-                      <Text style={styles.stepperValue}>{exercise.sets}</Text>
-                      <Text style={styles.stepperLabel}>Séries</Text>
-                    </View>
-
-                    <TouchableOpacity
-                      style={styles.stepperButton}
-                      onPress={() => handleUpdateSets(index, exercise.sets + 1)}
-                    >
-                      <Ionicons name="add" size={14} color="#FFF" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <TouchableOpacity
-                    style={styles.deleteCardButton}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                      const newDayList = draftWorkout[selectedDay].filter(
-                        (_, currentIndex) => currentIndex !== index,
-                      );
-                      setDraftWorkout((prev) => ({
-                        ...prev,
-                        [selectedDay]: newDayList,
-                      }));
-                    }}
+                  <Text
+                    style={[
+                      styles.daySplitBadgeText,
+                      assignedBlock && styles.daySplitBadgeTextActive,
+                    ]}
                   >
-                    <Ionicons
-                      name="trash-outline"
-                      size={18}
-                      color={appTheme.colors.danger}
-                    />
-                  </TouchableOpacity>
+                    {assignedBlock ? assignedBlock.label.charAt(0) : "—"}
+                  </Text>
                 </View>
-              );
-            })
-          )}
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
 
       <View style={styles.footerActions}>
-        <TouchableOpacity
-          style={styles.fabAdd}
-          onPress={() => setModalVisible(true)}
-        >
-          <Ionicons name="add" size={24} color="#000" />
-        </TouchableOpacity>
-
         <TouchableOpacity
           style={styles.saveMainButton}
           onPress={() => setIsSaveModalVisible(true)}
@@ -431,20 +763,22 @@ export default function PlanningScreen() {
       </Modal>
 
       {/* Modal de Seleção de Exercícios */}
-      <Modal transparent visible={modalVisible} animationType="slide">
+      <Modal transparent visible={isExerciseModalVisible} animationType="slide">
         <View style={styles.centeredView}>
           <View style={[styles.modalView, styles.modalViewExpanded]}>
             <View style={styles.modalHeader}>
               <View>
                 <Text style={styles.modalTitle}>BIBLIOTECA</Text>
                 <Text style={styles.modalSubtitle}>
-                  Injete cargas na sua divisão
+                  {selectedBlock
+                    ? `Injetando cargas no Bloco ${selectedBlock.label}`
+                    : "Selecione um bloco primeiro"}
                 </Text>
               </View>
               <TouchableOpacity
                 style={styles.closeModalButton}
                 onPress={() => {
-                  setModalVisible(false);
+                  setIsExerciseModalVisible(false);
                   setSelectedMuscleFilter("Todos");
                 }}
               >
@@ -492,10 +826,88 @@ export default function PlanningScreen() {
                 <ExercisePickerCard
                   item={item}
                   pr={getExercisePR(item.id)}
-                  onAdd={() => handleAddExercise(item)}
+                  onAdd={() => handleAddExerciseToBlock(item)}
                 />
               )}
             />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Atribuição de Dia */}
+      <Modal transparent visible={isDayAssignModalVisible} animationType="fade">
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>ATRIBUIR BLOCO</Text>
+
+            <TouchableOpacity
+              style={styles.assignOption}
+              onPress={() =>
+                dayBeingAssigned && handleAssignDay(dayBeingAssigned, null)
+              }
+            >
+              <View style={styles.assignOptionBadge}>
+                <Text style={styles.assignOptionBadgeText}>—</Text>
+              </View>
+              <Text style={styles.assignOptionText}>DESCANSO</Text>
+            </TouchableOpacity>
+
+            {blocks.map((block) => (
+              <TouchableOpacity
+                key={block.id}
+                style={styles.assignOption}
+                onPress={() =>
+                  dayBeingAssigned &&
+                  handleAssignDay(dayBeingAssigned, block.id)
+                }
+              >
+                <View
+                  style={[styles.assignOptionBadge, styles.blockAvatarActive]}
+                >
+                  <Text style={styles.blockAvatarTextActive}>
+                    {block.label.charAt(0)}
+                  </Text>
+                </View>
+                <Text style={styles.assignOptionText}>
+                  {`BLOCO ${block.label} · ${block.exercises.length} EX.`}
+                </Text>
+              </TouchableOpacity>
+            ))}
+
+            <TouchableOpacity onPress={() => setIsDayAssignModalVisible(false)}>
+              <Text style={styles.cancelText}>CANCELAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Renomear Bloco */}
+      <Modal transparent visible={isRenameModalVisible} animationType="fade">
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>RENOMEAR BLOCO</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex: PUSH, A, SUPERIOR"
+              placeholderTextColor="#444"
+              value={renameValue}
+              onChangeText={setRenameValue}
+              autoCapitalize="characters"
+            />
+            <TouchableOpacity
+              style={styles.confirmSaveButton}
+              onPress={() => {
+                if (selectedBlockId) {
+                  handleRenameBlock(selectedBlockId, renameValue);
+                }
+                setIsRenameModalVisible(false);
+              }}
+            >
+              <Text style={styles.confirmSaveText}>SALVAR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => setIsRenameModalVisible(false)}>
+              <Text style={styles.cancelText}>CANCELAR</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -561,38 +973,104 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   presetButtonText: { color: "#FFF", fontWeight: "700", fontSize: 11 },
-  dayNavContainer: {
-    paddingVertical: 10,
-    backgroundColor: appTheme.colors.background,
-  },
-  dayChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: appTheme.colors.surfaceElevated,
-    marginRight: 8,
-    minWidth: 50,
-    alignItems: "center",
-  },
-  activeDayChip: { backgroundColor: "#FFF" },
-  dayChipText: {
-    color: appTheme.colors.textSecondary,
-    fontWeight: "700",
-    fontSize: 12,
-    textTransform: "uppercase",
-  },
-  activeDayChipText: { color: "#000" },
-  contentBody: { paddingHorizontal: 16, paddingBottom: 130 },
-  sectionHeader: {
+  contentBody: { paddingHorizontal: 16, paddingBottom: 130, paddingTop: 4 },
+
+  sectionHeaderRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 15,
-    marginBottom: 16,
+    marginTop: 18,
+    marginBottom: 10,
+  },
+  splitTitle: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 1,
+  },
+  splitSummary: {
+    color: appTheme.colors.textPrimary,
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+
+  // Blocks
+  blockRow: { gap: 8, paddingRight: 8 },
+  blockChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    minWidth: 128,
+  },
+  blockChipActive: { borderColor: appTheme.colors.accent },
+  blockAvatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#121212",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  blockAvatarActive: {
+    backgroundColor: "rgba(255, 159, 10, 0.15)",
+    borderColor: appTheme.colors.accent,
+  },
+  blockAvatarText: { color: "#A2A2A7", fontSize: 13, fontWeight: "900" },
+  blockAvatarTextActive: { color: appTheme.colors.accent },
+  blockChipLabel: {
+    color: "#A2A2A7",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.4,
+  },
+  blockChipLabelActive: { color: "#FFF" },
+  blockChipMeta: {
+    color: "#636366",
+    fontSize: 9,
+    fontWeight: "600",
+    marginTop: 1,
+  },
+  addBlockChip: {
+    width: 44,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    borderStyle: "dashed",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  blockDetailHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 20,
+    marginBottom: 14,
+  },
+  iconGhostButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
   },
   selectedText: {
     color: "#FFF",
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "900",
     letterSpacing: 0.5,
   },
@@ -601,7 +1079,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "700",
     letterSpacing: 0.5,
+    marginTop: 2,
   },
+
   workoutList: { width: "100%" },
   exerciseCard: {
     backgroundColor: appTheme.colors.surfaceElevated,
@@ -655,27 +1135,97 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     marginTop: -2,
   },
-  emptyState: { alignItems: "center", marginTop: 60, gap: 10 },
+  emptyState: {
+    alignItems: "center",
+    marginTop: 30,
+    marginBottom: 14,
+    gap: 10,
+  },
   emptyStateText: { color: "#444", fontSize: 13, fontWeight: "600" },
+
+  addExerciseInlineButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    backgroundColor: "#121212",
+    borderRadius: 10,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    borderStyle: "dashed",
+  },
+  addExerciseInlineText: {
+    color: "#FFF",
+    fontSize: 11,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+
+  // Weekly split
+  splitDivider: {
+    height: 1,
+    backgroundColor: appTheme.colors.borderStrong,
+    marginTop: 24,
+  },
+  presetRow: { gap: 8, paddingBottom: 4 },
+  presetDayButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#FFF",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  presetDayButtonText: {
+    color: "#000",
+    fontSize: 11,
+    fontWeight: "900",
+    letterSpacing: 0.3,
+  },
+  dayGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 14,
+  },
+  daySplitChip: {
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    minWidth: 46,
+  },
+  daySplitLabel: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.3,
+  },
+  daySplitBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: "#121212",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  daySplitBadgeActive: { backgroundColor: "#FFF" },
+  daySplitBadgeText: { color: "#636366", fontSize: 12, fontWeight: "900" },
+  daySplitBadgeTextActive: { color: "#000" },
+
   footerActions: {
     position: "absolute",
     bottom: 24,
     left: 16,
     right: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  fabAdd: {
-    backgroundColor: "#FFF",
-    width: 54,
-    height: 54,
-    borderRadius: 12,
-    justifyContent: "center",
-    alignItems: "center",
   },
   saveMainButton: {
-    flex: 1,
     backgroundColor: appTheme.colors.textPrimary,
     height: 54,
     borderRadius: 12,
@@ -688,6 +1238,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     letterSpacing: 1,
   },
+
   centeredView: {
     flex: 1,
     justifyContent: "flex-end",
@@ -827,5 +1378,34 @@ const styles = StyleSheet.create({
     color: appTheme.colors.accent,
     fontSize: 9,
     fontWeight: "700",
+  },
+  assignOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: "#121212",
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  assignOptionBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: "#1C1C1E",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  assignOptionBadgeText: { color: "#636366", fontSize: 13, fontWeight: "900" },
+  assignOptionText: {
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.3,
   },
 });
