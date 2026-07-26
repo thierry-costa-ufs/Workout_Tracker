@@ -75,7 +75,7 @@ export const setSegmentStyles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 8,
-    backgroundColor: '#3A3A3D',
+    backgroundColor: appTheme.colors.gray,
     marginRight: 6,
   },
   segmentCompleted: {

@@ -5,7 +5,7 @@ export const exercisePickerStyles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderRadius: 10,
     padding: 14,
     marginBottom: 8,
@@ -16,7 +16,7 @@ export const exercisePickerStyles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 13,
     fontWeight: '700',
     marginBottom: 3,

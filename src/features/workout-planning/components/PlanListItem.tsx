@@ -39,7 +39,7 @@ export function PlanListItem({ item, isSelected, onSelect, onDelete }: PlanListI
           </TouchableOpacity>
 
           <TouchableOpacity style={{ padding: 6 }} onPress={() => setIsConfirming(false)}>
-            <Ionicons name="close" size={18} color="#A2A2A7" />
+            <Ionicons name="close" size={18} color={appTheme.colors.textTertiary} />
           </TouchableOpacity>
         </View>
       ) : (

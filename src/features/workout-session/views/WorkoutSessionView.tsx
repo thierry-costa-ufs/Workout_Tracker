@@ -1,6 +1,7 @@
 import { ExerciseCard } from '../components/ExerciseCard';
 import { TelemetryDisplay } from '../components/TelemetryDisplay';
 import { PlannedExercise, PersonalRecord } from '@/types/workout';
+import { appTheme } from '@/shared/constants/theme';
 import { ScrollView, Text, View } from 'react-native';
 import { useSessionEngine } from '../hooks/useSessionEngine';
 
@@ -20,7 +21,7 @@ export function WorkoutSessionView({ exercises, personalRecords }: WorkoutSessio
   if (!exercises || exercises.length === 0) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#8E8E93', fontSize: 14 }}>
+        <Text style={{ color: appTheme.colors.textSecondary, fontSize: 14 }}>
           Nenhum exercício planejado para hoje.
         </Text>
       </View>

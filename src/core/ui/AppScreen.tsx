@@ -2,6 +2,7 @@ import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { StatusBar, StyleSheet, View, ViewStyle } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { appTheme } from '@/shared/constants/theme';
 
 interface AppScreenProps {
   children: React.ReactNode;
@@ -14,7 +15,7 @@ interface AppScreenProps {
 export function AppScreen({
   children,
   style,
-  backgroundColor = '#121214',
+  backgroundColor = appTheme.colors.background,
   edges = ['top'],
   barStyle = 'light-content',
 }: AppScreenProps) {

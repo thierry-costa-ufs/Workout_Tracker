@@ -87,7 +87,7 @@ export default function PlanningScreen() {
 
         <View style={styles.headerActions}>
           <TouchableOpacity style={styles.presetButton} onPress={handleNewPlan}>
-            <Ionicons name="refresh-outline" size={14} color="#FFF" />
+            <Ionicons name="refresh-outline" size={14} color={appTheme.colors.white} />
             <Text style={styles.presetButtonText}>Limpar</Text>
           </TouchableOpacity>
 
@@ -95,7 +95,7 @@ export default function PlanningScreen() {
             style={styles.presetButton}
             onPress={() => setIsPlansModalVisible(true)}
           >
-            <Ionicons name="folder-open-outline" size={14} color="#FFF" />
+            <Ionicons name="folder-open-outline" size={14} color={appTheme.colors.white} />
             <Text style={styles.presetButtonText}>Planos</Text>
           </TouchableOpacity>
         </View>
@@ -141,7 +141,7 @@ export default function PlanningScreen() {
           })}
 
           <TouchableOpacity style={styles.addBlockChip} onPress={handleAddBlock}>
-            <Ionicons name="add" size={20} color="#FFF" />
+            <Ionicons name="add" size={20} color={appTheme.colors.white} />
           </TouchableOpacity>
         </ScrollView>
 
@@ -163,7 +163,7 @@ export default function PlanningScreen() {
                   setIsRenameModalVisible(true);
                 }}
               >
-                <Ionicons name="pencil-outline" size={16} color="#A2A2A7" />
+                <Ionicons name="pencil-outline" size={16} color={appTheme.colors.textTertiary} />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -177,7 +177,7 @@ export default function PlanningScreen() {
             <View style={styles.workoutList}>
               {selectedBlock.exercises.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <Ionicons name="flash-off-outline" size={32} color="#333" />
+                  <Ionicons name="flash-off-outline" size={32} color={appTheme.colors.gray} />
                   <Text style={styles.emptyStateText}>
                     Bloco vazio. Adicione exercícios abaixo.
                   </Text>
@@ -209,7 +209,7 @@ export default function PlanningScreen() {
                             handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets - 1)
                           }
                         >
-                          <Ionicons name="remove" size={14} color="#A2A2A7" />
+                          <Ionicons name="remove" size={14} color={appTheme.colors.textTertiary} />
                         </TouchableOpacity>
 
                         <View style={styles.stepperValueContainer}>
@@ -223,7 +223,7 @@ export default function PlanningScreen() {
                             handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets + 1)
                           }
                         >
-                          <Ionicons name="add" size={14} color="#FFF" />
+                          <Ionicons name="add" size={14} color={appTheme.colors.white} />
                         </TouchableOpacity>
                       </View>
 
@@ -242,7 +242,7 @@ export default function PlanningScreen() {
                 style={styles.addExerciseInlineButton}
                 onPress={() => setIsExerciseModalVisible(true)}
               >
-                <Ionicons name="add-circle-outline" size={16} color="#FFF" />
+                <Ionicons name="add-circle-outline" size={16} color={appTheme.colors.white} />
                 <Text style={styles.addExerciseInlineText}>ADICIONAR EXERCÍCIO</Text>
               </TouchableOpacity>
             </View>
@@ -362,7 +362,7 @@ export default function PlanningScreen() {
         <TextInput
           style={styles.input}
           placeholder="Ex: PUSH, A, SUPERIOR"
-          placeholderTextColor="#444"
+          placeholderTextColor={appTheme.colors.muted}
           value={renameValue}
           onChangeText={setRenameValue}
           autoCapitalize="characters"
@@ -393,7 +393,7 @@ export default function PlanningScreen() {
         <TextInput
           style={styles.input}
           placeholder="Ex: PUSH/PULL/LEGS EVOLUTION"
-          placeholderTextColor="#444"
+          placeholderTextColor={appTheme.colors.muted}
           value={planningName}
           onChangeText={setPlanningName}
         />

@@ -144,14 +144,18 @@ export default function TimerScreen() {
 
         <View style={styles.mainControls}>
           <TouchableOpacity style={styles.controlCircleReset} onPress={resetTimer}>
-            <Ionicons name="refresh" size={24} color="#FFF" />
+            <Ionicons name="refresh" size={24} color={appTheme.colors.white} />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.controlCirclePlay, isActive && styles.controlCirclePause]}
             onPress={toggleTimer}
           >
-            <Ionicons name={isActive ? 'pause' : 'play'} size={32} color="#1C1C1E" />
+            <Ionicons
+              name={isActive ? 'pause' : 'play'}
+              size={32}
+              color={appTheme.colors.surfaceElevated}
+            />
           </TouchableOpacity>
         </View>
 
@@ -181,7 +185,9 @@ export default function TimerScreen() {
                     <Ionicons
                       name={preset.icon}
                       size={16}
-                      color={isCurrent ? '#000' : appTheme.colors.textSecondary}
+                      color={
+                        isCurrent ? appTheme.colors.textInverse : appTheme.colors.textSecondary
+                      }
                     />
                   </View>
                   <View style={styles.presetInfo}>
@@ -199,7 +205,7 @@ export default function TimerScreen() {
                   <Ionicons
                     name={isCurrent ? 'ellipse' : 'chevron-forward-outline'}
                     size={12}
-                    color={isCurrent ? '#FFF' : '#2C2C2E'}
+                    color={isCurrent ? appTheme.colors.white : appTheme.colors.borderStrong}
                   />
                 </View>
               </TouchableOpacity>
@@ -223,19 +229,19 @@ const styles = StyleSheet.create({
     height: width * 0.65,
     borderRadius: (width * 0.65) / 2,
     borderWidth: 1,
-    borderColor: '#1E1E1E',
-    backgroundColor: '#0A0A0A',
+    borderColor: appTheme.colors.border,
+    backgroundColor: appTheme.colors.surfaceDark,
     justifyContent: 'center',
     alignItems: 'center',
   },
   timerText: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 54,
     fontWeight: '300',
     fontVariant: ['tabular-nums'],
   },
   activePresetLabel: {
-    color: '#666',
+    color: appTheme.colors.gray,
     fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -245,7 +251,7 @@ const styles = StyleSheet.create({
   progressTrack: {
     width: width * 0.6,
     height: 3,
-    backgroundColor: '#1A1A1A',
+    backgroundColor: appTheme.colors.surfaceDark,
     borderRadius: 2,
     marginTop: 25,
     overflow: 'hidden',
@@ -263,9 +269,9 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
   adjustButton: {
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderWidth: 1,
-    borderColor: '#1E1E1E',
+    borderColor: appTheme.colors.border,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
@@ -307,7 +313,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...sharedScreenStyles.sectionTitleText,
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 1,
@@ -325,10 +331,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderWidth: 1,
     borderColor: appTheme.colors.surfaceElevated,
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
   },
   presetCardActive: {
-    borderColor: '#FFF',
+    borderColor: appTheme.colors.white,
     backgroundColor: appTheme.colors.surfaceElevated,
   },
   presetLeftRow: { flexDirection: 'row', alignItems: 'center' },
@@ -340,7 +346,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  iconWrapperActive: { backgroundColor: '#FFF' },
+  iconWrapperActive: { backgroundColor: appTheme.colors.white },
   presetInfo: { marginLeft: 12 },
   presetLabel: {
     color: appTheme.colors.textSecondary,
@@ -348,9 +354,9 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 0.5,
   },
-  presetLabelActive: { color: '#FFF' },
+  presetLabelActive: { color: appTheme.colors.white },
   presetSubtext: {
-    color: '#444',
+    color: appTheme.colors.muted,
     fontSize: 9,
     fontWeight: '700',
     marginTop: 2,
@@ -363,5 +369,5 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     fontVariant: ['tabular-nums'],
   },
-  presetTimeActive: { color: '#FFF' },
+  presetTimeActive: { color: appTheme.colors.white },
 });

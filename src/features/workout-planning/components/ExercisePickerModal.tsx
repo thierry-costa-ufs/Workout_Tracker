@@ -1,6 +1,7 @@
 import { MUSCLE_FILTERS, MuscleFilterType } from '@/core/constants/days';
 import { EXERCISES_LIST } from '@/core/constants/exercises';
 import { ExerciseData, PersonalRecord } from '@/types/workout';
+import { appTheme } from '@/shared/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useMemo, useState } from 'react';
 import { FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
@@ -58,7 +59,7 @@ export function ExercisePickerModal({
           </Text>
         </View>
         <TouchableOpacity style={styles.closeModalButton} onPress={handleClose}>
-          <Ionicons name="close" size={20} color="#000" />
+          <Ionicons name="close" size={20} color={appTheme.colors.textInverse} />
         </TouchableOpacity>
       </View>
 
@@ -82,11 +83,11 @@ export function ExercisePickerModal({
       </View>
 
       <View style={styles.searchContainer}>
-        <Ionicons name="search" size={16} color="#636366" />
+        <Ionicons name="search" size={16} color={appTheme.colors.textMuted} />
         <TextInput
           style={styles.searchInput}
           placeholder="Buscar exercício..."
-          placeholderTextColor="#636366"
+          placeholderTextColor={appTheme.colors.textMuted}
           value={exerciseSearch}
           onChangeText={setExerciseSearch}
           autoCorrect={false}

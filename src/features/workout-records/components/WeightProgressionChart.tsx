@@ -128,7 +128,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
               cx={p.x}
               cy={p.y}
               r={i === bestIndex ? 5 : 3.5}
-              fill={i === bestIndex ? appTheme.colors.accent : '#1C1C1E'}
+              fill={i === bestIndex ? appTheme.colors.accent : appTheme.colors.surfaceElevated}
               stroke={i === bestIndex ? appTheme.colors.accent : appTheme.colors.textMuted}
               strokeWidth={i === bestIndex ? 2 : 1.5}
             />
@@ -202,7 +202,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,

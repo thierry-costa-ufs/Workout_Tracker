@@ -63,7 +63,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
         <Ionicons
           name={isAdded ? 'checkmark' : 'add'}
           size={16}
-          color={isAdded ? appTheme.colors.textPrimary : '#FFF'}
+          color={isAdded ? appTheme.colors.textPrimary : appTheme.colors.white}
         />
       </View>
     </TouchableOpacity>
@@ -72,7 +72,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
     borderRadius: 10,
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 6,
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   badgeComposto: { backgroundColor: 'rgba(255, 159, 10, 0.1)' },
   badgeIsolado: { backgroundColor: 'rgba(255, 255, 255, 0.05)' },
   metaBadgeText: { fontSize: 9, fontWeight: '800' },
-  subtleTargetText: { color: '#636366', fontSize: 9, fontWeight: '700' },
+  subtleTargetText: { color: appTheme.colors.textMuted, fontSize: 9, fontWeight: '700' },
   prBadge: {
     flexDirection: 'row',
     alignItems: 'center',

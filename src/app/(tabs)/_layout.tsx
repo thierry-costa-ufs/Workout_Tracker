@@ -1,4 +1,4 @@
-import { Feather } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import { Tabs } from 'expo-router';
 import { Platform, StatusBar, StyleSheet } from 'react-native';
@@ -10,13 +10,13 @@ export default function TabsLayout() {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="#000000" />
+      <StatusBar barStyle="light-content" backgroundColor={appTheme.colors.textInverse} />
 
       <Tabs
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: '#E5E5EA',
-          tabBarInactiveTintColor: '#545456',
+          tabBarActiveTintColor: appTheme.colors.textPrimary,
+          tabBarInactiveTintColor: appTheme.colors.borderLight,
           tabBarShowLabel: true,
           tabBarLabelStyle: {
             fontSize: 10,
@@ -41,10 +41,10 @@ export default function TabsLayout() {
             backgroundColor: appTheme.colors.surfaceElevated,
             borderTopWidth: 1,
             borderWidth: 2,
-            borderColor: '#26262B',
+            borderColor: appTheme.colors.border,
             overflow: 'hidden',
             elevation: 8,
-            shadowColor: '#000',
+            shadowColor: appTheme.colors.textInverse,
             shadowOpacity: 0.4,
             shadowRadius: 12,
             shadowOffset: { width: 0, height: 6 },
@@ -56,7 +56,11 @@ export default function TabsLayout() {
           options={{
             title: 'INÍCIO',
             tabBarIcon: ({ color, focused }) => (
-              <Feather name="home" size={focused ? 19 : 18} color={focused ? '#E5E5EA' : color} />
+              <Ionicons
+                name="home"
+                size={focused ? 19 : 18}
+                color={focused ? appTheme.colors.textPrimary : color}
+              />
             ),
           }}
         />
@@ -66,7 +70,11 @@ export default function TabsLayout() {
           options={{
             title: 'SESSÃO',
             tabBarIcon: ({ color, focused }) => (
-              <Feather name="zap" size={focused ? 19 : 18} color={focused ? '#E5E5EA' : color} />
+              <Ionicons
+                name="flash"
+                size={focused ? 19 : 18}
+                color={focused ? appTheme.colors.textPrimary : color}
+              />
             ),
           }}
         />
@@ -76,7 +84,11 @@ export default function TabsLayout() {
           options={{
             title: 'PAUSA',
             tabBarIcon: ({ color, focused }) => (
-              <Feather name="clock" size={focused ? 19 : 18} color={focused ? '#E5E5EA' : color} />
+              <Ionicons
+                name="time"
+                size={focused ? 19 : 18}
+                color={focused ? appTheme.colors.textPrimary : color}
+              />
             ),
           }}
         />
@@ -86,10 +98,10 @@ export default function TabsLayout() {
           options={{
             title: 'PLANO',
             tabBarIcon: ({ color, focused }) => (
-              <Feather
-                name="clipboard"
+              <Ionicons
+                name="document-text"
                 size={focused ? 19 : 18}
-                color={focused ? '#E5E5EA' : color}
+                color={focused ? appTheme.colors.textPrimary : color}
               />
             ),
           }}
@@ -100,7 +112,11 @@ export default function TabsLayout() {
           options={{
             title: 'MARCO',
             tabBarIcon: ({ color, focused }) => (
-              <Feather name="target" size={focused ? 19 : 18} color={focused ? '#E5E5EA' : color} />
+              <Ionicons
+                name="ribbon"
+                size={focused ? 19 : 18}
+                color={focused ? appTheme.colors.textPrimary : color}
+              />
             ),
           }}
         />

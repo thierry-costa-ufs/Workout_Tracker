@@ -76,7 +76,7 @@ export const dashboardStyles = StyleSheet.create({
   } satisfies ViewStyle,
   featureCard: {
     width: (width - 24 * 2 - 12) / 2,
-    backgroundColor: '#1C1C1E',
+    backgroundColor: appTheme.colors.surfaceElevated,
     overflow: 'hidden',
     borderRadius: 4,
   } satisfies ViewStyle,

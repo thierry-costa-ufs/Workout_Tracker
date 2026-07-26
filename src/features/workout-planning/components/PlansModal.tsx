@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from '@/shared/ui/Overlay';
+import { appTheme } from '@/shared/constants/theme';
 import { WorkoutTemplate } from '@/types/workout';
 import { PlanListItem } from './PlanListItem';
 import { planningStyles as styles } from '../styles/planningStyles';
@@ -28,7 +29,7 @@ export function PlansModal({
       <View style={styles.modalHeader}>
         <Text style={styles.modalTitle}>ROTINAS SALVAS</Text>
         <TouchableOpacity onPress={onClose} style={styles.closeModalHeaderBtn}>
-          <Ionicons name="close" size={20} color="#FFF" />
+          <Ionicons name="close" size={20} color={appTheme.colors.white} />
         </TouchableOpacity>
       </View>
 

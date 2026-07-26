@@ -203,14 +203,14 @@ export default function RecordsScreen() {
           <Text style={sharedScreenStyles.pageSubtitle}>Mapeamento de Força</Text>
         </View>
         <TouchableOpacity style={styles.addPresetButton} onPress={() => setModalVisible(true)}>
-          <Ionicons name="add" size={14} color="#000" />
+          <Ionicons name="add" size={14} color={appTheme.colors.textInverse} />
           <Text style={styles.addPresetText}>NOVO PR</Text>
         </TouchableOpacity>
       </View>
 
       {personalRecords.length === 0 ? (
         <View style={styles.emptyState}>
-          <Ionicons name="trophy-outline" size={42} color="#2C2C2E" />
+          <Ionicons name="trophy-outline" size={42} color={appTheme.colors.borderStrong} />
           <Text style={styles.emptyStateText}>Nenhuma carga máxima computada.</Text>
         </View>
       ) : (
@@ -220,13 +220,13 @@ export default function RecordsScreen() {
             <TextInput
               style={styles.searchInput}
               placeholder="Buscar exercício..."
-              placeholderTextColor="#444"
+              placeholderTextColor={appTheme.colors.muted}
               value={searchQuery}
               onChangeText={setSearchQuery}
             />
             {searchQuery.length > 0 && (
               <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={16} color="#444" />
+                <Ionicons name="close-circle" size={16} color={appTheme.colors.muted} />
               </TouchableOpacity>
             )}
           </View>
@@ -281,7 +281,7 @@ export default function RecordsScreen() {
 
           {filteredGroups.length === 0 ? (
             <View style={styles.emptyState}>
-              <Ionicons name="search-outline" size={36} color="#2C2C2E" />
+              <Ionicons name="search-outline" size={36} color={appTheme.colors.borderStrong} />
               <Text style={styles.emptyStateText}>Nenhum exercício encontrado.</Text>
             </View>
           ) : (
@@ -315,7 +315,11 @@ export default function RecordsScreen() {
                           </Text>
                         </View>
 
-                        <Ionicons name="chevron-forward" size={16} color="#545456" />
+                        <Ionicons
+                          name="chevron-forward"
+                          size={16}
+                          color={appTheme.colors.borderLight}
+                        />
                       </View>
                     </TouchableOpacity>
 
@@ -371,7 +375,7 @@ export default function RecordsScreen() {
               setReps('');
             }}
           >
-            <Ionicons name="close" size={22} color="#FFF" />
+            <Ionicons name="close" size={22} color={appTheme.colors.white} />
           </TouchableOpacity>
         </View>
 
@@ -383,7 +387,7 @@ export default function RecordsScreen() {
             style={[
               styles.selectedExerciseText,
               {
-                color: selectedExercise ? '#FFF' : '#444',
+                color: selectedExercise ? appTheme.colors.white : appTheme.colors.muted,
               },
             ]}
           >
@@ -407,7 +411,7 @@ export default function RecordsScreen() {
             <TextInput
               style={[styles.technicalInput, styles.flex1]}
               placeholder="0.0"
-              placeholderTextColor="#444"
+              placeholderTextColor={appTheme.colors.muted}
               keyboardType="numeric"
               value={weight}
               onChangeText={setWeight}
@@ -420,12 +424,12 @@ export default function RecordsScreen() {
                 style={styles.weightStepperButton}
                 onPress={() => adjustReps(-REP_STEP)}
               >
-                <Ionicons name="remove" size={14} color="#A2A2A7" />
+                <Ionicons name="remove" size={14} color={appTheme.colors.textTertiary} />
               </TouchableOpacity>
               <TextInput
                 style={styles.technicalInput}
                 placeholder="0"
-                placeholderTextColor="#444"
+                placeholderTextColor={appTheme.colors.muted}
                 keyboardType="numeric"
                 value={reps}
                 onChangeText={setReps}
@@ -434,7 +438,7 @@ export default function RecordsScreen() {
                 style={styles.weightStepperButton}
                 onPress={() => adjustReps(REP_STEP)}
               >
-                <Ionicons name="add" size={14} color="#FFF" />
+                <Ionicons name="add" size={14} color={appTheme.colors.white} />
               </TouchableOpacity>
             </View>
           </View>
@@ -467,7 +471,7 @@ export default function RecordsScreen() {
               setExerciseMuscleFilter('Todos');
             }}
           >
-            <Ionicons name="close" size={20} color="#000" />
+            <Ionicons name="close" size={20} color={appTheme.colors.textInverse} />
           </TouchableOpacity>
         </View>
 
@@ -541,7 +545,7 @@ export default function RecordsScreen() {
                     </Text>
                   </View>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color="#545456" />
+                <Ionicons name="chevron-forward" size={16} color={appTheme.colors.borderLight} />
               </TouchableOpacity>
             );
           }}
@@ -565,7 +569,7 @@ export default function RecordsScreen() {
             </Text>
           </View>
           <TouchableOpacity onPress={() => setHistoryModalVisible(false)}>
-            <Ionicons name="close" size={22} color="#FFF" />
+            <Ionicons name="close" size={22} color={appTheme.colors.white} />
           </TouchableOpacity>
         </View>
 
@@ -610,7 +614,7 @@ export default function RecordsScreen() {
                           ? appTheme.colors.success
                           : historyEvolution < 0
                             ? appTheme.colors.danger
-                            : '#FFF',
+                            : appTheme.colors.white,
                     },
                   ]}
                 >
@@ -707,14 +711,14 @@ const styles = StyleSheet.create({
   addPresetButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: appTheme.colors.white,
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 6,
     gap: 4,
   },
   addPresetText: {
-    color: '#000',
+    color: appTheme.colors.textInverse,
     fontWeight: '900',
     fontSize: 11,
     letterSpacing: 0.5,
@@ -734,7 +738,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
   },
-  searchInput: { flex: 1, color: '#FFF', fontSize: 13, fontWeight: '600' },
+  searchInput: { flex: 1, color: appTheme.colors.white, fontSize: 13, fontWeight: '600' },
   filterContainer: {
     marginBottom: 10,
   },
@@ -742,7 +746,7 @@ const styles = StyleSheet.create({
   filterChip: {
     flexShrink: 0,
     height: 36,
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     paddingHorizontal: 14,
     borderRadius: 6,
     borderWidth: 1,
@@ -759,7 +763,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-  filterChipTextActive: { color: '#000' },
+  filterChipTextActive: { color: appTheme.colors.textInverse },
   sortRow: {
     flexDirection: 'row',
     gap: 6,
@@ -780,7 +784,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.accent,
   },
   sortButtonText: {
-    color: '#A2A2A7',
+    color: appTheme.colors.textTertiary,
     fontSize: 9,
     fontWeight: '800',
     letterSpacing: 0.4,
@@ -789,7 +793,7 @@ const styles = StyleSheet.create({
   emptyState: { ...sharedScreenStyles.emptyStateContainer, flex: 0.7, gap: 12 },
   emptyStateText: {
     ...sharedScreenStyles.emptyStateText,
-    color: '#444',
+    color: appTheme.colors.muted,
     fontSize: 13,
     fontWeight: '600',
   },
@@ -806,7 +810,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   prExerciseName: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 4,
@@ -819,7 +823,7 @@ const styles = StyleSheet.create({
   },
   groupMetricsRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   metricBadge: {
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderRadius: 6,
     paddingVertical: 6,
     paddingHorizontal: 10,
@@ -834,7 +838,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   metricLabel: {
-    color: '#545456',
+    color: appTheme.colors.borderLight,
     fontSize: 7,
     fontWeight: '700',
     marginTop: 1,
@@ -868,7 +872,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalTitle: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 14,
     fontWeight: '900',
     letterSpacing: 1,
@@ -881,7 +885,7 @@ const styles = StyleSheet.create({
   },
   selectSelectable: {
     width: '100%',
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     padding: 16,
     borderRadius: 8,
     flexDirection: 'row',
@@ -915,8 +919,8 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   technicalInput: {
-    backgroundColor: '#121212',
-    color: '#FFF',
+    backgroundColor: appTheme.colors.background,
+    color: appTheme.colors.white,
     padding: 14,
     borderRadius: 8,
     fontSize: 16,
@@ -937,20 +941,20 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
   },
   confirmSaveButton: {
-    backgroundColor: '#FFF',
+    backgroundColor: appTheme.colors.white,
     width: '100%',
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   confirmSaveText: {
-    color: '#000',
+    color: appTheme.colors.textInverse,
     fontSize: 12,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   exerciseSelectionRow: {
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderRadius: 10,
     padding: 14,
     marginBottom: 8,
@@ -960,7 +964,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
   },
   exerciseSelectionText: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 4,
@@ -980,7 +984,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   closeModalButton: {
-    backgroundColor: '#FFF',
+    backgroundColor: appTheme.colors.white,
     padding: 6,
     borderRadius: 8,
   },
@@ -990,7 +994,7 @@ const styles = StyleSheet.create({
   },
   exerciseFilterChip: {
     flexShrink: 0,
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 6,
@@ -1008,9 +1012,9 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
   },
-  exerciseFilterChipTextActive: { color: '#000' },
+  exerciseFilterChipTextActive: { color: appTheme.colors.textInverse },
   emptyPlansText: {
-    color: '#444',
+    color: appTheme.colors.muted,
     paddingVertical: 20,
     fontSize: 13,
     fontWeight: '600',
@@ -1024,7 +1028,7 @@ const styles = StyleSheet.create({
   },
   historyStatBadge: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderRadius: 10,
     paddingVertical: 10,
     alignItems: 'center',
@@ -1033,7 +1037,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
   },
   historyStatValue: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 14,
     fontWeight: '900',
   },
@@ -1046,7 +1050,7 @@ const styles = StyleSheet.create({
   historyCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#121212',
+    backgroundColor: appTheme.colors.background,
     borderRadius: 10,
     paddingVertical: 10,
     paddingLeft: 14,
@@ -1081,7 +1085,7 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   historyCardWeight: {
-    color: '#FFF',
+    color: appTheme.colors.white,
     fontSize: 15,
     fontWeight: '900',
   },

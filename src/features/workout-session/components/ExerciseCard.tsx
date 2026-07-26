@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PersonalRecord } from '@/types/workout';
+import { appTheme } from '@/shared/constants/theme';
 import { SetSegment } from './SetSegment';
 import { exerciseCardStyles as styles } from '../styles/componentsStyles';
 
@@ -42,7 +43,7 @@ export const ExerciseCard = React.memo(function ExerciseCard({
         {personalRecord && (
           <View style={styles.prRow}>
             <View style={styles.prBadge}>
-              <Ionicons name="trophy" size={10} color="#FF9F0A" />
+              <Ionicons name="trophy" size={10} color={appTheme.colors.accent} />
               <Text style={styles.prBadgeText}>
                 {personalRecord.weight} KG × {personalRecord.reps}
               </Text>
