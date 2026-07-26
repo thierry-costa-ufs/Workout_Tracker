@@ -1,9 +1,19 @@
 import { appTheme } from "@/shared/constants/theme";
+import { sharedScreenStyles } from "@/shared/styles/screenStyles";
 import { AppScreen } from "@/shared/ui/AppScreen";
+import { useTabBackHandler } from "@/shared/hooks/useTabBackHandler";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useEffect, useRef, useState } from "react";
-import { Dimensions, ScrollView, StyleSheet, Text, TouchableOpacity, Vibration, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import {
+  Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Vibration,
+  View,
+} from "react-native";
 
 const { width } = Dimensions.get("window");
 
@@ -18,13 +28,24 @@ interface Preset {
 
 const TIMER_PRESETS: Preset[] = [
   { id: "warmup", label: "AQUECIMENTO", duration: 45, icon: "flame-outline" },
-  { id: "feeder", label: "PREPARO / FEEDER", duration: 90, icon: "trending-up-outline" },
-  { id: "work", label: "SÉRIE DE TRABALHO", duration: 120, icon: "barbell-outline" },
+  {
+    id: "feeder",
+    label: "PREPARO / FEEDER",
+    duration: 90,
+    icon: "trending-up-outline",
+  },
+  {
+    id: "work",
+    label: "SÉRIE DE TRABALHO",
+    duration: 120,
+    icon: "barbell-outline",
+  },
   { id: "power", label: "FORÇA / RPT", duration: 180, icon: "flash-outline" },
   { id: "cardio", label: "CARDIO (HIIT)", duration: 30, icon: "heart-outline" },
 ];
 
 export default function TimerScreen() {
+  useTabBackHandler();
   const [secondsLeft, setSecondsLeft] = useState(90);
   const [totalDuration, setTotalDuration] = useState(90);
   const [isActive, setIsActive] = useState(false);
@@ -86,44 +107,76 @@ export default function TimerScreen() {
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const progressPercent = totalDuration > 0 ? (secondsLeft / totalDuration) * 100 : 0;
+  const progressPercent =
+    totalDuration > 0 ? (secondsLeft / totalDuration) * 100 : 0;
 
   return (
-    <AppScreen style={styles.mainContainer} backgroundColor={appTheme.colors.background}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>INTERVALO DE SÉRIE</Text>
-        <Text style={styles.headerSubtitle}>CRONOMETRAGEM E CADÊNCIA ESTRATÉGICA</Text>
+    <AppScreen
+      style={styles.mainContainer}
+      backgroundColor={appTheme.colors.background}
+    >
+      <View style={sharedScreenStyles.pageHeader}>
+        <View style={sharedScreenStyles.pageTitleBlock}>
+          <Text style={sharedScreenStyles.pageTitle}>INTERVALO DE SÉRIE</Text>
+          <Text style={sharedScreenStyles.pageSubtitle}>
+            CRONOMETRAGEM E CADÊNCIA ESTRATÉGICA
+          </Text>
+        </View>
       </View>
 
       <View style={styles.displayContainer}>
         <View style={styles.outerRing}>
           <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
           <Text style={styles.activePresetLabel}>
-            {activePreset ? TIMER_PRESETS.find((preset) => preset.id === activePreset)?.label : "TEMPO CUSTOMIZADO"}
+            {activePreset
+              ? TIMER_PRESETS.find((preset) => preset.id === activePreset)
+                  ?.label
+              : "TEMPO CUSTOMIZADO"}
           </Text>
         </View>
 
         <View style={styles.progressTrack}>
-          <View style={[styles.progressBar, { width: `${progressPercent}%` }]} />
+          <View
+            style={[styles.progressBar, { width: `${progressPercent}%` }]}
+          />
         </View>
       </View>
 
       <View style={styles.adjustmentContainer}>
-        <TouchableOpacity style={styles.adjustButton} onPress={() => adjustTime(-15)}>
+        <TouchableOpacity
+          style={styles.adjustButton}
+          onPress={() => adjustTime(-15)}
+        >
           <Text style={styles.adjustButtonText}>-15s</Text>
         </TouchableOpacity>
 
         <View style={styles.mainControls}>
-          <TouchableOpacity style={styles.controlCircleReset} onPress={resetTimer}>
+          <TouchableOpacity
+            style={styles.controlCircleReset}
+            onPress={resetTimer}
+          >
             <Ionicons name="refresh" size={24} color="#FFF" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.controlCirclePlay, isActive && styles.controlCirclePause]} onPress={toggleTimer}>
-            <Ionicons name={isActive ? "pause" : "play"} size={32} color="#1C1C1E" />
+          <TouchableOpacity
+            style={[
+              styles.controlCirclePlay,
+              isActive && styles.controlCirclePause,
+            ]}
+            onPress={toggleTimer}
+          >
+            <Ionicons
+              name={isActive ? "pause" : "play"}
+              size={32}
+              color="#1C1C1E"
+            />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.adjustButton} onPress={() => adjustTime(15)}>
+        <TouchableOpacity
+          style={styles.adjustButton}
+          onPress={() => adjustTime(15)}
+        >
           <Text style={styles.adjustButtonText}>+15s</Text>
         </TouchableOpacity>
       </View>
@@ -131,24 +184,62 @@ export default function TimerScreen() {
       <View style={styles.presetsSection}>
         <Text style={styles.sectionTitle}>MÉTODO DE DESCANSO</Text>
 
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.presetsList}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.presetsList}
+        >
           {TIMER_PRESETS.map((preset) => {
             const isCurrent = activePreset === preset.id;
             return (
-              <TouchableOpacity key={preset.id} style={[styles.presetCard, isCurrent && styles.presetCardActive]} onPress={() => selectPreset(preset.id, preset.duration)}>
+              <TouchableOpacity
+                key={preset.id}
+                style={[
+                  sharedScreenStyles.cardSurface,
+                  styles.presetCard,
+                  isCurrent && styles.presetCardActive,
+                ]}
+                onPress={() => selectPreset(preset.id, preset.duration)}
+              >
                 <View style={styles.presetLeftRow}>
-                  <View style={[styles.iconWrapper, isCurrent && styles.iconWrapperActive]}>
-                    <Ionicons name={preset.icon} size={16} color={isCurrent ? "#000" : appTheme.colors.textSecondary} />
+                  <View
+                    style={[
+                      styles.iconWrapper,
+                      isCurrent && styles.iconWrapperActive,
+                    ]}
+                  >
+                    <Ionicons
+                      name={preset.icon}
+                      size={16}
+                      color={isCurrent ? "#000" : appTheme.colors.textSecondary}
+                    />
                   </View>
                   <View style={styles.presetInfo}>
-                    <Text style={[styles.presetLabel, isCurrent && styles.presetLabelActive]}>{preset.label}</Text>
+                    <Text
+                      style={[
+                        styles.presetLabel,
+                        isCurrent && styles.presetLabelActive,
+                      ]}
+                    >
+                      {preset.label}
+                    </Text>
                     <Text style={styles.presetSubtext}>FOCO TÉCNICO</Text>
                   </View>
                 </View>
 
                 <View style={styles.presetRightRow}>
-                  <Text style={[styles.presetTime, isCurrent && styles.presetTimeActive]}>{formatTime(preset.duration)}</Text>
-                  <Ionicons name={isCurrent ? "ellipse" : "chevron-forward-outline"} size={12} color={isCurrent ? "#FFF" : "#2C2C2E"} />
+                  <Text
+                    style={[
+                      styles.presetTime,
+                      isCurrent && styles.presetTimeActive,
+                    ]}
+                  >
+                    {formatTime(preset.duration)}
+                  </Text>
+                  <Ionicons
+                    name={isCurrent ? "ellipse" : "chevron-forward-outline"}
+                    size={12}
+                    color={isCurrent ? "#FFF" : "#2C2C2E"}
+                  />
                 </View>
               </TouchableOpacity>
             );
@@ -161,35 +252,173 @@ export default function TimerScreen() {
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: appTheme.colors.background },
-  header: { paddingHorizontal: 16, paddingVertical: 16, backgroundColor: appTheme.colors.background },
-  headerTitle: { color: "#FFF", fontSize: 16, fontWeight: "900", letterSpacing: 1 },
-  headerSubtitle: { color: appTheme.colors.textMuted, fontSize: 10, fontWeight: "700", marginTop: 4, letterSpacing: 0.5 },
-  displayContainer: { alignItems: "center", justifyContent: "center", paddingVertical: 30 },
-  outerRing: { width: width * 0.65, height: width * 0.65, borderRadius: (width * 0.65) / 2, borderWidth: 1, borderColor: "#1E1E1E", backgroundColor: "#0A0A0A", justifyContent: "center", alignItems: "center" },
-  timerText: { color: "#FFF", fontSize: 54, fontWeight: "300", fontVariant: ["tabular-nums"] },
-  activePresetLabel: { color: "#666", fontSize: 10, fontWeight: "700", textTransform: "uppercase", marginTop: 4, letterSpacing: 1 },
-  progressTrack: { width: width * 0.6, height: 3, backgroundColor: "#1A1A1A", borderRadius: 2, marginTop: 25, overflow: "hidden" },
-  progressBar: { height: "100%", backgroundColor: appTheme.colors.textPrimary, borderRadius: 2 },
-  adjustmentContainer: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 30, marginBottom: 25 },
-  adjustButton: { backgroundColor: "#121212", borderWidth: 1, borderColor: "#1E1E1E", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  adjustButtonText: { color: appTheme.colors.textSecondary, fontSize: 13, fontWeight: "600" },
+  header: {
+    ...sharedScreenStyles.pageHeader,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  headerTitle: {
+    color: "#FFF",
+    fontSize: 16,
+    fontWeight: "900",
+    letterSpacing: 1,
+  },
+  headerSubtitle: {
+    color: appTheme.colors.textMuted,
+    fontSize: 10,
+    fontWeight: "700",
+    marginTop: 4,
+    letterSpacing: 0.5,
+  },
+  displayContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
+  },
+  outerRing: {
+    width: width * 0.65,
+    height: width * 0.65,
+    borderRadius: (width * 0.65) / 2,
+    borderWidth: 1,
+    borderColor: "#1E1E1E",
+    backgroundColor: "#0A0A0A",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  timerText: {
+    color: "#FFF",
+    fontSize: 54,
+    fontWeight: "300",
+    fontVariant: ["tabular-nums"],
+  },
+  activePresetLabel: {
+    color: "#666",
+    fontSize: 10,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    marginTop: 4,
+    letterSpacing: 1,
+  },
+  progressTrack: {
+    width: width * 0.6,
+    height: 3,
+    backgroundColor: "#1A1A1A",
+    borderRadius: 2,
+    marginTop: 25,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: appTheme.colors.textPrimary,
+    borderRadius: 2,
+  },
+  adjustmentContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    marginBottom: 25,
+  },
+  adjustButton: {
+    backgroundColor: "#121212",
+    borderWidth: 1,
+    borderColor: "#1E1E1E",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  adjustButtonText: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 13,
+    fontWeight: "600",
+  },
   mainControls: { flexDirection: "row", alignItems: "center", gap: 16 },
-  controlCircleReset: { width: 48, height: 48, borderRadius: 24, backgroundColor: appTheme.colors.surfaceElevated, justifyContent: "center", alignItems: "center", borderWidth: 0.5, borderColor: appTheme.colors.borderStrong },
-  controlCirclePlay: { width: 72, height: 72, borderRadius: 36, backgroundColor: appTheme.colors.textPrimary, justifyContent: "center", alignItems: "center" },
+  controlCircleReset: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 0.5,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  controlCirclePlay: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: appTheme.colors.textPrimary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   controlCirclePause: { backgroundColor: appTheme.colors.textPrimary },
-  presetsSection: { flex: 1, backgroundColor: appTheme.colors.background, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingHorizontal: 16, paddingTop: 24, borderWidth: 1, borderColor: appTheme.colors.surfaceElevated },
-  sectionTitle: { color: "#FFF", fontSize: 12, fontWeight: "900", letterSpacing: 1, marginBottom: 16 },
+  presetsSection: {
+    flex: 1,
+    backgroundColor: appTheme.colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    borderWidth: 1,
+    borderColor: appTheme.colors.surfaceElevated,
+  },
+  sectionTitle: {
+    ...sharedScreenStyles.sectionTitleText,
+    color: "#FFF",
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 1,
+    marginBottom: 16,
+    marginRight: 0,
+  },
   presetsList: { paddingBottom: 24 },
-  presetCard: { backgroundColor: "#121212", borderRadius: 8, paddingVertical: 12, paddingHorizontal: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 8, borderWidth: 1, borderColor: appTheme.colors.surfaceElevated },
-  presetCardActive: { borderColor: "#FFF", backgroundColor: appTheme.colors.surfaceElevated },
+  presetCard: {
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: appTheme.colors.surfaceElevated,
+    backgroundColor: "#121212",
+  },
+  presetCardActive: {
+    borderColor: "#FFF",
+    backgroundColor: appTheme.colors.surfaceElevated,
+  },
   presetLeftRow: { flexDirection: "row", alignItems: "center" },
-  iconWrapper: { width: 32, height: 32, borderRadius: 6, backgroundColor: appTheme.colors.surfaceElevated, justifyContent: "center", alignItems: "center" },
+  iconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 6,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   iconWrapperActive: { backgroundColor: "#FFF" },
   presetInfo: { marginLeft: 12 },
-  presetLabel: { color: appTheme.colors.textSecondary, fontSize: 12, fontWeight: "700", letterSpacing: 0.5 },
+  presetLabel: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+  },
   presetLabelActive: { color: "#FFF" },
-  presetSubtext: { color: "#444", fontSize: 9, fontWeight: "700", marginTop: 2, letterSpacing: 0.5 },
+  presetSubtext: {
+    color: "#444",
+    fontSize: 9,
+    fontWeight: "700",
+    marginTop: 2,
+    letterSpacing: 0.5,
+  },
   presetRightRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  presetTime: { color: appTheme.colors.textMuted, fontSize: 14, fontWeight: "800", fontVariant: ["tabular-nums"] },
+  presetTime: {
+    color: appTheme.colors.textMuted,
+    fontSize: 14,
+    fontWeight: "800",
+    fontVariant: ["tabular-nums"],
+  },
   presetTimeActive: { color: "#FFF" },
 });
