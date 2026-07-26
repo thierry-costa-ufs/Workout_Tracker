@@ -4,7 +4,7 @@ import {
   MuscleFilterType,
   DAYS_OF_WEEK,
 } from "@/core/constants/days";
-import { useWorkouts } from "@/context/WorkoutContext";
+import { useTemplates, usePersonalRecords } from "@/context/WorkoutContext";
 import { AppScreen } from "@/core/ui/AppScreen";
 import { appTheme } from "@/shared/constants/theme";
 import { sharedScreenStyles } from "@/shared/styles/screenStyles";
@@ -53,7 +53,8 @@ export default function PlanningScreen() {
     selectActiveTemplate,
   } = usePlanningBlocks();
 
-  const { deleteTemplate, getExercisePR } = useWorkouts();
+  const { deleteTemplate } = useTemplates();
+  const { getExercisePR } = usePersonalRecords();
 
   const [planningName, setPlanningName] = useState("");
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
@@ -66,6 +67,7 @@ export default function PlanningScreen() {
   const [renameValue, setRenameValue] = useState("");
   const [selectedMuscleFilter, setSelectedMuscleFilter] =
     useState<MuscleFilterType>("Todos");
+  const [exerciseSearch, setExerciseSearch] = useState("");
 
   const handleSavePlanning = async () => {
     if (!planningName.trim()) {
@@ -195,7 +197,7 @@ export default function PlanningScreen() {
         {selectedBlock && (
           <>
             <View style={styles.blockDetailHeader}>
-              <View style={{ flex: 1 }}>
+              <View style={styles.flex1}>
                 <Text style={styles.selectedText}>
                   {`BLOCO ${selectedBlock.label}`}
                 </Text>
@@ -247,11 +249,7 @@ export default function PlanningScreen() {
                           {exercise.name}
                         </Text>
                         <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 8,
-                          }}
+                          style={styles.prRow}
                         >
                           <Text style={styles.cardMuscleGroupMainList}>
                             {exercise.muscleGroup}
@@ -429,7 +427,7 @@ export default function PlanningScreen() {
             data={templates}
             extraData={[templates, activeId]}
             keyExtractor={(item) => item.id}
-            style={{ width: "100%", maxHeight: 280 }}
+            style={styles.fullWidthMaxHeight}
             renderItem={({ item }) => (
               <PlanListItem
                 item={item}
@@ -456,6 +454,7 @@ export default function PlanningScreen() {
         onClose={() => {
           setIsExerciseModalVisible(false);
           setSelectedMuscleFilter("Todos");
+          setExerciseSearch("");
         }}
         animationType="slide"
         style={{ height: "85%" }}
@@ -507,15 +506,31 @@ export default function PlanningScreen() {
           </ScrollView>
         </View>
 
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={16} color="#636366" />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Buscar exercício..."
+            placeholderTextColor="#636366"
+            value={exerciseSearch}
+            onChangeText={setExerciseSearch}
+            autoCorrect={false}
+          />
+        </View>
+
         <FlatList
           data={EXERCISES_LIST.filter(
             (exercise) =>
-              selectedMuscleFilter === "Todos" ||
-              exercise.muscleGroup === selectedMuscleFilter,
+              (selectedMuscleFilter === "Todos" ||
+                exercise.muscleGroup === selectedMuscleFilter) &&
+              (exerciseSearch === "" ||
+                exercise.name
+                  .toLowerCase()
+                  .includes(exerciseSearch.toLowerCase())),
           )}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
-          style={{ width: "100%" }}
+          style={styles.fullWidth}
           renderItem={({ item }) => (
             <ExercisePickerCard
               item={item}

@@ -24,63 +24,71 @@ export interface WorkoutStorage {
   savePersonalRecords(records: PersonalRecord[]): Promise<void>;
 }
 
+function parseJsonArray<T>(raw: string | null): T[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export function createWorkoutStorage(): WorkoutStorage {
   return {
     async loadAll() {
-      try {
-        const [vWorkouts, vTemplates, vActiveId, vPRs] = await Promise.all([
-          AsyncStorage.getItem(STORAGE_KEY_WORKOUTS),
-          AsyncStorage.getItem(STORAGE_KEY_TEMPLATES),
-          AsyncStorage.getItem(STORAGE_KEY_ACTIVE),
-          AsyncStorage.getItem(STORAGE_KEY_PRS),
-        ]);
+      const [vWorkouts, vTemplates, vActiveId, vPRs] = await Promise.allSettled([
+        AsyncStorage.getItem(STORAGE_KEY_WORKOUTS),
+        AsyncStorage.getItem(STORAGE_KEY_TEMPLATES),
+        AsyncStorage.getItem(STORAGE_KEY_ACTIVE),
+        AsyncStorage.getItem(STORAGE_KEY_PRS),
+      ]);
 
-        return {
-          workouts: vWorkouts ? JSON.parse(vWorkouts) : [],
-          templates: vTemplates ? JSON.parse(vTemplates) : [],
-          activeId: vActiveId || null,
-          personalRecords: vPRs ? JSON.parse(vPRs) : [],
-        };
-      } catch (e) {
-        console.error("Erro ao carregar dados do AsyncStorage:", e);
-        return { workouts: [], templates: [], activeId: null, personalRecords: [] };
-      }
+      return {
+        workouts:
+          vWorkouts.status === "fulfilled"
+            ? parseJsonArray<WorkoutSession>(vWorkouts.value)
+            : [],
+        templates:
+          vTemplates.status === "fulfilled"
+            ? parseJsonArray<WorkoutTemplate>(vTemplates.value)
+            : [],
+        activeId:
+          vActiveId.status === "fulfilled" ? vActiveId.value || null : null,
+        personalRecords:
+          vPRs.status === "fulfilled"
+            ? parseJsonArray<PersonalRecord>(vPRs.value)
+            : [],
+      };
     },
 
     async saveWorkouts(workouts) {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY_WORKOUTS, JSON.stringify(workouts));
-      } catch (e) {
-        console.error("Erro ao salvar sessões:", e);
-      }
+      await AsyncStorage.setItem(
+        STORAGE_KEY_WORKOUTS,
+        JSON.stringify(workouts),
+      );
     },
 
     async saveTemplates(templates) {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(templates));
-      } catch (e) {
-        console.error("Erro ao salvar templates:", e);
-      }
+      await AsyncStorage.setItem(
+        STORAGE_KEY_TEMPLATES,
+        JSON.stringify(templates),
+      );
     },
 
     async saveActiveId(id) {
-      try {
-        if (id) {
-          await AsyncStorage.setItem(STORAGE_KEY_ACTIVE, id);
-        } else {
-          await AsyncStorage.removeItem(STORAGE_KEY_ACTIVE);
-        }
-      } catch (e) {
-        console.error("Erro ao salvar activeId:", e);
+      if (id) {
+        await AsyncStorage.setItem(STORAGE_KEY_ACTIVE, id);
+      } else {
+        await AsyncStorage.removeItem(STORAGE_KEY_ACTIVE);
       }
     },
 
     async savePersonalRecords(records) {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY_PRS, JSON.stringify(records));
-      } catch (e) {
-        console.error("Erro ao salvar PRs:", e);
-      }
+      await AsyncStorage.setItem(
+        STORAGE_KEY_PRS,
+        JSON.stringify(records),
+      );
     },
   };
 }

@@ -1,4 +1,5 @@
 import {
+  MuscleGroup,
   PersonalRecord,
   WorkoutData,
   WorkoutSession,
@@ -12,32 +13,60 @@ import React, {
   useMemo,
   useState,
 } from "react";
-import { createWorkoutStorage, WorkoutStorage } from "@/core/storage/workoutStorage";
+import { Alert } from "react-native";
+import {
+  createWorkoutStorage,
+  WorkoutStorage,
+} from "@/core/storage/workoutStorage";
 
-interface WorkoutContextType {
+// ─── Sessions Context ───────────────────────────────────────────────
+interface SessionsContextType {
   workouts: WorkoutSession[];
-  templates: WorkoutTemplate[];
-  personalRecords: PersonalRecord[];
-  activeId: string | null;
   isLoading: boolean;
   storeData: (value: WorkoutSession[]) => Promise<void>;
-  saveTemplate: (name: string, data: WorkoutData, id?: string) => Promise<void>;
+  loadData: () => Promise<void>;
+}
+
+const SessionsContext = createContext<SessionsContextType | undefined>(
+  undefined,
+);
+
+// ─── Templates Context ──────────────────────────────────────────────
+interface TemplatesContextType {
+  templates: WorkoutTemplate[];
+  activeId: string | null;
+  saveTemplate: (
+    name: string,
+    data: WorkoutData,
+    id?: string,
+  ) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
   selectActiveTemplate: (id: string) => Promise<void>;
+}
+
+const TemplatesContext = createContext<TemplatesContextType | undefined>(
+  undefined,
+);
+
+// ─── Personal Records Context ───────────────────────────────────────
+interface PersonalRecordsContextType {
+  personalRecords: PersonalRecord[];
   savePR: (
     exerciseId: string,
     exerciseName: string,
-    muscleGroup: string,
+    muscleGroup: MuscleGroup,
     weight: number,
     reps: number,
   ) => Promise<void>;
   deletePR: (id: string) => Promise<void>;
   getExercisePR: (exerciseId: string) => PersonalRecord | undefined;
-  loadData: () => Promise<void>;
 }
 
-const WorkoutContext = createContext<WorkoutContextType | undefined>(undefined);
+const PersonalRecordsContext = createContext<
+  PersonalRecordsContextType | undefined
+>(undefined);
 
+// ─── Provider ───────────────────────────────────────────────────────
 const storage: WorkoutStorage = createWorkoutStorage();
 
 export function WorkoutProvider({ children }: { children: React.ReactNode }) {
@@ -64,8 +93,12 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   }, [loadData]);
 
   const storeData = useCallback(async (value: WorkoutSession[]) => {
-    setWorkouts(value);
-    await storage.saveWorkouts(value);
+    try {
+      await storage.saveWorkouts(value);
+      setWorkouts(value);
+    } catch {
+      Alert.alert("Erro", "Não foi possível salvar as sessões.");
+    }
   }, []);
 
   const saveTemplate = useCallback(
@@ -90,39 +123,39 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         updatedTemplates = [...templates, newTemplate];
       }
 
-      setTemplates(updatedTemplates);
-
       const nextActiveId = activeId || targetId || null;
-      setActiveId(nextActiveId);
 
-      await Promise.all([
-        storage.saveTemplates(updatedTemplates),
-        storage.saveActiveId(nextActiveId),
-      ]);
+      try {
+        await Promise.all([
+          storage.saveTemplates(updatedTemplates),
+          storage.saveActiveId(nextActiveId),
+        ]);
+        setTemplates(updatedTemplates);
+        setActiveId(nextActiveId);
+      } catch {
+        Alert.alert("Erro", "Não foi possível salvar o template.");
+      }
     },
     [templates, activeId],
   );
 
   const deleteTemplate = useCallback(
     async (id: string) => {
-      let nextTemplates: WorkoutTemplate[] = [];
-
-      setTemplates((prev) => {
-        nextTemplates = prev.filter((t) => t.id !== id);
-        return nextTemplates;
-      });
-
+      const nextTemplates = templates.filter((t) => t.id !== id);
       const isActiveDeleted = activeId === id;
-      if (isActiveDeleted) {
-        setActiveId(null);
-      }
 
-      await Promise.all([
-        storage.saveTemplates(nextTemplates),
-        isActiveDeleted ? storage.saveActiveId(null) : Promise.resolve(),
-      ]);
+      try {
+        await Promise.all([
+          storage.saveTemplates(nextTemplates),
+          isActiveDeleted ? storage.saveActiveId(null) : Promise.resolve(),
+        ]);
+        setTemplates(nextTemplates);
+        if (isActiveDeleted) setActiveId(null);
+      } catch {
+        Alert.alert("Erro", "Não foi possível excluir o template.");
+      }
     },
-    [activeId],
+    [templates, activeId],
   );
 
   const selectActiveTemplate = useCallback(async (id: string) => {
@@ -139,7 +172,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     async (
       exerciseId: string,
       exerciseName: string,
-      muscleGroup: string,
+      muscleGroup: MuscleGroup,
       weight: number,
       reps: number,
     ) => {
@@ -157,8 +190,12 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
       const updated = [newRecord, ...personalRecords];
 
-      setPersonalRecords(updated);
-      await storage.savePersonalRecords(updated);
+      try {
+        await storage.savePersonalRecords(updated);
+        setPersonalRecords(updated);
+      } catch {
+        Alert.alert("Erro", "Não foi possível salvar o recorde.");
+      }
     },
     [personalRecords],
   );
@@ -166,8 +203,13 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const deletePR = useCallback(
     async (id: string) => {
       const updated = personalRecords.filter((r) => r.id !== id);
-      setPersonalRecords(updated);
-      await storage.savePersonalRecords(updated);
+
+      try {
+        await storage.savePersonalRecords(updated);
+        setPersonalRecords(updated);
+      } catch {
+        Alert.alert("Erro", "Não foi possível excluir o recorde.");
+      }
     },
     [personalRecords],
   );
@@ -179,7 +221,76 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     [personalRecords],
   );
 
-  const contextValue = useMemo(
+  const sessionsValue = useMemo(
+    () => ({ workouts, isLoading, storeData, loadData }),
+    [workouts, isLoading, storeData, loadData],
+  );
+
+  const templatesValue = useMemo(
+    () => ({
+      templates,
+      activeId,
+      saveTemplate,
+      deleteTemplate,
+      selectActiveTemplate,
+    }),
+    [templates, activeId, saveTemplate, deleteTemplate, selectActiveTemplate],
+  );
+
+  const prValue = useMemo(
+    () => ({
+      personalRecords,
+      savePR,
+      deletePR,
+      getExercisePR,
+    }),
+    [personalRecords, savePR, deletePR, getExercisePR],
+  );
+
+  return (
+    <SessionsContext.Provider value={sessionsValue}>
+      <TemplatesContext.Provider value={templatesValue}>
+        <PersonalRecordsContext.Provider value={prValue}>
+          {children}
+        </PersonalRecordsContext.Provider>
+      </TemplatesContext.Provider>
+    </SessionsContext.Provider>
+  );
+}
+
+// ─── Hooks ──────────────────────────────────────────────────────────
+export function useSessions() {
+  const ctx = useContext(SessionsContext);
+  if (!ctx)
+    throw new Error("useSessions must be used within a WorkoutProvider");
+  return ctx;
+}
+
+export function useTemplates() {
+  const ctx = useContext(TemplatesContext);
+  if (!ctx)
+    throw new Error("useTemplates must be used within a WorkoutProvider");
+  return ctx;
+}
+
+export function usePersonalRecords() {
+  const ctx = useContext(PersonalRecordsContext);
+  if (!ctx)
+    throw new Error(
+      "usePersonalRecords must be used within a WorkoutProvider",
+    );
+  return ctx;
+}
+
+/** Backward-compatible hook — combines all three contexts. */
+export function useWorkouts() {
+  const { workouts, isLoading, storeData, loadData } = useSessions();
+  const { templates, activeId, saveTemplate, deleteTemplate, selectActiveTemplate } =
+    useTemplates();
+  const { personalRecords, savePR, deletePR, getExercisePR } =
+    usePersonalRecords();
+
+  return useMemo(
     () => ({
       workouts,
       templates,
@@ -211,20 +322,4 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       loadData,
     ],
   );
-
-  return (
-    <WorkoutContext.Provider value={contextValue}>
-      {children}
-    </WorkoutContext.Provider>
-  );
-}
-
-export function useWorkouts() {
-  const context = useContext(WorkoutContext);
-  if (!context) {
-    throw new Error(
-      "useWorkouts deve ser utilizado dentro de um WorkoutProvider",
-    );
-  }
-  return context;
 }

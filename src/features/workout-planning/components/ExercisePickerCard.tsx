@@ -1,18 +1,12 @@
 import { appTheme } from "@/shared/constants/theme";
-import { PersonalRecord } from "@/types/workout";
+import { ExerciseData, PersonalRecord } from "@/types/workout";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import * as Haptics from "expo-haptics";
 
 interface ExercisePickerCardProps {
-  item: {
-    id: string;
-    name: string;
-    muscleGroup: string;
-    mechanic: string;
-    equipment: string;
-  };
+  item: ExerciseData;
   pr: PersonalRecord | undefined;
   onAdd: () => void;
 }

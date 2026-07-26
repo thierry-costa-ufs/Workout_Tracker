@@ -1,6 +1,6 @@
 import { appTheme } from "@/shared/constants/theme";
 import { sharedScreenStyles } from "@/shared/styles/screenStyles";
-import { AppScreen } from "@/shared/ui/AppScreen";
+import { AppScreen } from "@/core/ui/AppScreen";
 import { useTabBackHandler } from "@/shared/hooks/useTabBackHandler";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -50,28 +50,32 @@ export default function TimerScreen() {
   const [totalDuration, setTotalDuration] = useState(90);
   const [isActive, setIsActive] = useState(false);
   const [activePreset, setActivePreset] = useState("feeder");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+
     if (isActive && secondsLeft > 0) {
-      timerRef.current = setTimeout(() => {
-        setSecondsLeft((prev) => prev - 1);
+      intervalRef.current = setInterval(() => {
+        setSecondsLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(intervalRef.current!);
+            intervalRef.current = null;
+            setIsActive(false);
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            Vibration.vibrate([0, 500, 200, 500]);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (secondsLeft === 0 && isActive) {
-      handleTimerFinished();
     }
 
     return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isActive, secondsLeft]);
-
-  const handleTimerFinished = () => {
-    setIsActive(false);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Vibration.vibrate([0, 500, 200, 500]);
-  };
+  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps -- secondsLeft only used inside functional updater
 
   const toggleTimer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);

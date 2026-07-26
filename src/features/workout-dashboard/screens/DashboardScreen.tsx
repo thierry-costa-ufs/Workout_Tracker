@@ -1,4 +1,4 @@
-import { useWorkouts } from "@/context/WorkoutContext";
+import { useTemplates } from "@/context/WorkoutContext";
 import { AppScreen } from "@/core/ui/AppScreen";
 import { appTheme } from "@/shared/constants/theme";
 import { sharedScreenStyles } from "@/shared/styles/screenStyles";
@@ -16,7 +16,7 @@ import { dashboardStyles as styles } from "../styles/dashboardStyles";
 export default function DashboardScreen() {
   useTabBackHandler();
   const router = useRouter();
-  const { activeId, templates } = useWorkouts();
+  const { activeId, templates } = useTemplates();
 
   const currentTemplate = templates.find(
     (template) => template.id === activeId,

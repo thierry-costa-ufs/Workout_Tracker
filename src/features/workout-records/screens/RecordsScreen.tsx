@@ -1,12 +1,13 @@
-import { EXERCISES_LIST } from "@/constants/exercises";
+import { EXERCISES_LIST } from "@/core/constants/exercises";
 import { MUSCLE_FILTERS } from "@/core/constants/days";
-import { useWorkouts } from "@/context/WorkoutContext";
+import { usePersonalRecords } from "@/context/WorkoutContext";
+import { PersonalRecord } from "@/types/workout";
 import { appTheme } from "@/shared/constants/theme";
 import { sharedScreenStyles } from "@/shared/styles/screenStyles";
 import { Overlay } from "@/shared/ui/Overlay";
 import { useTabBackHandler } from "@/shared/hooks/useTabBackHandler";
 import { WeightProgressionChart } from "../components/WeightProgressionChart";
-import { AppScreen } from "@/shared/ui/AppScreen";
+import { AppScreen } from "@/core/ui/AppScreen";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useMemo, useState } from "react";
@@ -29,10 +30,10 @@ interface RecordGroup {
   key: string;
   exerciseName: string;
   muscleGroup: string;
-  records: any[];
+  records: PersonalRecord[];
 }
 
-function groupRecordsByExercise(records: any[]): RecordGroup[] {
+function groupRecordsByExercise(records: PersonalRecord[]): RecordGroup[] {
   const map = new Map<string, RecordGroup>();
 
   records.forEach((record) => {
@@ -65,7 +66,7 @@ function getSecondBestRecord(group: RecordGroup) {
 
 export default function RecordsScreen() {
   useTabBackHandler();
-  const { personalRecords, savePR, deletePR } = useWorkouts();
+  const { personalRecords, savePR, deletePR } = usePersonalRecords();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
@@ -359,8 +360,8 @@ export default function RecordsScreen() {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       }}
                     >
-                      <View style={{flex: 1, flexDirection:"row"}}>
-                        <View style={{ flex: 1 }}>
+                      <View style={styles.groupCardBodyRow}>
+                        <View style={styles.flex1}>
                           <Text style={styles.prExerciseName}>
                             {item.exerciseName}
                           </Text>
@@ -452,10 +453,9 @@ export default function RecordsScreen() {
             onPress={() => setExerciseModalVisible(true)}
           >
             <Text
-              style={{
+              style={[styles.selectedExerciseText, {
                 color: selectedExercise ? "#FFF" : "#444",
-                fontWeight: "600",
-              }}
+              }]}
             >
               {selectedExercise
                 ? selectedExercise.name.toUpperCase()
@@ -482,10 +482,10 @@ export default function RecordsScreen() {
           )}
 
           <View style={styles.rowInputs}>
-            <View style={{ flex: 1.3 }}>
+            <View style={styles.flex13}>
               <Text style={styles.inputLabel}>CARGA TOTAL (KG)</Text>
               <TextInput
-                style={[styles.technicalInput, { flex: 1 }]}
+                style={[styles.technicalInput, styles.flex1]}
                 placeholder="0.0"
                 placeholderTextColor="#444"
                 keyboardType="numeric"
@@ -493,7 +493,7 @@ export default function RecordsScreen() {
                 onChangeText={setWeight}
               />
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={styles.flex1}>
               <Text style={styles.inputLabel}>REPETIÇÕES MÁX.</Text>
               <View style={styles.weightStepperRow}>
                 <TouchableOpacity
@@ -602,7 +602,7 @@ export default function RecordsScreen() {
                     setExerciseMuscleFilter("Todos");
                   }}
                 >
-                  <View style={{ flex: 1}}>
+                  <View style={styles.flex1}>
                       <Text style={styles.exerciseSelectionText}>
                         {item.name}
                       </Text>
@@ -674,7 +674,7 @@ export default function RecordsScreen() {
           ) : (
             <ScrollView
               showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 16 }}
+              contentContainerStyle={styles.historyContent}
             >
               <View style={styles.historyStatsRow}>
                 <View style={styles.historyStatBadge}>
@@ -727,7 +727,7 @@ export default function RecordsScreen() {
                 <WeightProgressionChart records={sortedHistory} />
               )}
 
-              <View style={{ gap: 6 }}>
+              <View style={styles.historyCardList}>
                 {[...sortedHistory].reverse().map((item, idx) => {
                   const isBest = item.id === historyBest?.id;
                   const reversedIdx = idx;
@@ -746,7 +746,7 @@ export default function RecordsScreen() {
                       ]}
                     >
                       {isBest && <View style={styles.historyCardAccent} />}
-                      <View style={{ flex: 1 }}>
+                      <View style={styles.flex1}>
                         <Text style={styles.historyCardDate}>{item.date}</Text>
                         <View style={styles.historyCardWeightRow}>
                           <Text style={styles.historyCardWeight}>
@@ -761,7 +761,7 @@ export default function RecordsScreen() {
                               name="trophy"
                               size={11}
                               color={appTheme.colors.accent}
-                              style={{ marginLeft: 6 }}
+                              style={styles.trophyMargin}
                             />
                           )}
                         </View>
@@ -1320,4 +1320,11 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     backgroundColor: "rgba(255, 69, 58, 0.1)",
   },
+  groupCardBodyRow: { flex: 1, flexDirection: "row" },
+  flex1: { flex: 1 },
+  flex13: { flex: 1.3 },
+  historyContent: { paddingBottom: 16 },
+  historyCardList: { gap: 6 },
+  trophyMargin: { marginLeft: 6 },
+  selectedExerciseText: { fontWeight: "600" },
 });

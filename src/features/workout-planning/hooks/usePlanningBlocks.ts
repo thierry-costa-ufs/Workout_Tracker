@@ -1,9 +1,9 @@
 import { DAYS_OF_WEEK, createEmptyWorkoutData } from "@/core/constants/days";
-import { WorkoutData } from "@/types/workout";
+import { ExerciseData, WorkoutData } from "@/types/workout";
 import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
-import { useWorkouts } from "@/context/WorkoutContext";
+import { useTemplates } from "@/context/WorkoutContext";
 import {
   WorkoutBlock,
   createBlock,
@@ -13,7 +13,7 @@ import {
 
 export function usePlanningBlocks() {
   const { templates, activeId, saveTemplate, selectActiveTemplate } =
-    useWorkouts();
+    useTemplates();
 
   const [blocks, setBlocks] = useState<WorkoutBlock[]>([createBlock("A")]);
   const [daySplit, setDaySplit] = useState<Record<string, string | null>>({});
@@ -125,7 +125,7 @@ export function usePlanningBlocks() {
   }, []);
 
   const handleAddExerciseToBlock = useCallback(
-    (item: { id: string; name: string; muscleGroup: string; mechanic: string; equipment: string; defaultSets?: number }) => {
+    (item: ExerciseData) => {
       if (!selectedBlockId) return;
 
       setBlocks((prev) =>

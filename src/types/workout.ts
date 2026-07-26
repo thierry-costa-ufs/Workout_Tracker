@@ -9,12 +9,44 @@ export type WorkoutDayKey =
   | "sex"
   | "sab";
 
+export type MuscleGroup =
+  | "Peito"
+  | "Costas"
+  | "Ombro"
+  | "Quadríceps"
+  | "Posterior"
+  | "Panturrilha"
+  | "Bíceps"
+  | "Tríceps"
+  | "Antebraço"
+  | "Trapézio"
+  | "Abdômen";
+
+export type MechanicType = "Composto" | "Isolado";
+
+export type EquipmentType =
+  | "Barra"
+  | "Halter"
+  | "Polia"
+  | "Máquina"
+  | "Peso Corporal";
+
+export interface ExerciseData {
+  id: string;
+  name: string;
+  muscleGroup: MuscleGroup;
+  mechanic: MechanicType;
+  equipment: EquipmentType;
+  defaultSets: number;
+  defaultReps: string;
+}
+
 export interface PlannedExercise {
   id: string;
   name: string;
-  muscleGroup: string;
-  mechanic?: string;
-  equipment: string;
+  muscleGroup: MuscleGroup;
+  mechanic?: MechanicType;
+  equipment: EquipmentType;
   sets: number;
   defaultSets?: number;
 }
@@ -39,7 +71,7 @@ export interface PersonalRecord {
   id: string;
   exerciseId: string;
   exerciseName: string;
-  muscleGroup: string;
+  muscleGroup: MuscleGroup;
   weight: number;
   reps: number;
   date: string;

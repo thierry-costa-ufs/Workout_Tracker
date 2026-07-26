@@ -454,4 +454,23 @@ export const planningStyles = StyleSheet.create({
     fontWeight: "800",
     letterSpacing: 0.3,
   },
+  flex1: { flex: 1 },
+  prRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  fullWidthMaxHeight: { width: "100%", maxHeight: 280 },
+  fullWidth: { width: "100%" },
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1C1C1E",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    color: "#FFF",
+    fontSize: 14,
+    paddingVertical: 10,
+  },
 });

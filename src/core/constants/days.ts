@@ -31,6 +31,8 @@ export const MUSCLE_FILTERS = [
   "Tríceps",
   "Panturrilha",
   "Abdômen",
+  "Antebraço",
+  "Trapézio",
 ] as const;
 
 export type MuscleFilterType = (typeof MUSCLE_FILTERS)[number];
