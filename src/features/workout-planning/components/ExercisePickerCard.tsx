@@ -40,7 +40,9 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
             <Text
               style={[
                 styles.metaBadgeText,
-                { color: isComposto ? appTheme.colors.accent : appTheme.colors.textSecondary },
+                {
+                  color: isComposto ? appTheme.colors.textSecondary : appTheme.colors.textSecondary,
+                },
               ]}
             >
               {item.mechanic.toUpperCase()}
@@ -102,7 +104,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  prText: { color: appTheme.colors.accent, fontSize: 9, fontWeight: '800' },
+  prText: { color: appTheme.colors.textPrimary, fontSize: 9, fontWeight: '800' },
   addIconCircle: {
     width: 28,
     height: 28,

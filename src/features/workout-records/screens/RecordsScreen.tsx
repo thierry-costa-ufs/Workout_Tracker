@@ -532,7 +532,7 @@ export default function RecordsScreen() {
                           styles.mechanicBadgeText,
                           {
                             color: isComposto
-                              ? appTheme.colors.accent
+                              ? appTheme.colors.textSecondary
                               : appTheme.colors.textSecondary,
                           },
                         ]}
@@ -833,7 +833,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
   },
   metricValue: {
-    color: appTheme.colors.accent,
+    color: appTheme.colors.textPrimary,
     fontSize: 12,
     fontWeight: '900',
   },
@@ -853,7 +853,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   deltaBadgeText: {
-    color: appTheme.colors.accent,
+    color: appTheme.colors.textPrimary,
     fontSize: 10,
     fontWeight: '800',
   },
@@ -905,7 +905,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   currentBestBannerText: {
-    color: appTheme.colors.accent,
+    color: appTheme.colors.textPrimary,
     fontSize: 10,
     fontWeight: '700',
     flex: 1,

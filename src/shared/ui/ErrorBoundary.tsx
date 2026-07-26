@@ -44,7 +44,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
           <TouchableOpacity
             onPress={() => this.setState({ hasError: false })}
             style={{
-              backgroundColor: appTheme.colors.accent,
+              backgroundColor: appTheme.colors.textPrimary,
               paddingHorizontal: 24,
               paddingVertical: 12,
               borderRadius: 8,

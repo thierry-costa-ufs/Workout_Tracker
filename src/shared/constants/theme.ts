@@ -15,7 +15,7 @@ export const appTheme = {
     white: '#FFFFFF',
     gray: '#3A3A3D',
     muted: '#444444',
-    accent: '#FF9F0A',
+    accent: '#E5E5EA',
     danger: '#FF453A',
     success: '#34C759',
   },

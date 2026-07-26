@@ -38,7 +38,7 @@ export const exercisePickerStyles = StyleSheet.create({
     marginLeft: 8,
   },
   prText: {
-    color: appTheme.colors.accent,
+    color: appTheme.colors.textPrimary,
     fontSize: 9,
     fontWeight: '700',
   },

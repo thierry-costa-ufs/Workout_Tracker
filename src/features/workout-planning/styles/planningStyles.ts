@@ -70,7 +70,7 @@ export const planningStyles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
     minWidth: 128,
   },
-  blockChipActive: { borderColor: appTheme.colors.accent },
+  blockChipActive: { borderColor: appTheme.colors.borderStrong },
   blockAvatar: {
     width: 32,
     height: 32,
@@ -82,11 +82,11 @@ export const planningStyles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
   },
   blockAvatarActive: {
-    backgroundColor: 'rgba(255, 159, 10, 0.15)',
-    borderColor: appTheme.colors.accent,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderColor: appTheme.colors.borderStrong,
   },
   blockAvatarText: { color: appTheme.colors.textTertiary, fontSize: 13, fontWeight: '900' },
-  blockAvatarTextActive: { color: appTheme.colors.accent },
+  blockAvatarTextActive: { color: appTheme.colors.white },
   blockChipLabel: {
     color: appTheme.colors.textTertiary,
     fontSize: 12,
@@ -420,7 +420,7 @@ export const planningStyles = StyleSheet.create({
     gap: 4,
   },
   mainListPrText: {
-    color: appTheme.colors.accent,
+    color: appTheme.colors.textPrimary,
     fontSize: 9,
     fontWeight: '700',
   },

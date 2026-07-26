@@ -59,7 +59,7 @@ export const exerciseCardStyles = StyleSheet.create({
     paddingVertical: 4,
   },
   prBadgeText: {
-    color: appTheme.colors.accent,
+    color: appTheme.colors.textPrimary,
     fontSize: 11,
     fontWeight: '800',
   },
