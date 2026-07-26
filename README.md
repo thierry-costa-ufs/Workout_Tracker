@@ -3,6 +3,7 @@
 A React Native + Expo app for planning workouts, running training sessions, and tracking personal records in a minimal dark-mode interface.
 
 ## ✨ Current capabilities
+
 - Build and save workout templates by day of the week
 - Select an active routine for the current training flow
 - Review and edit exercise sets directly from the planning screen
@@ -11,6 +12,7 @@ A React Native + Expo app for planning workouts, running training sessions, and 
 - Use a dedicated timer screen for recovery and interval work
 
 ## 🧱 Project structure
+
 - src/app: Expo Router entry and tab layout
 - src/context: workout state and persistence with AsyncStorage
 - src/features/workout-dashboard: home/dashboard experience
@@ -21,6 +23,7 @@ A React Native + Expo app for planning workouts, running training sessions, and 
 - src/shared: shared UI and theme tokens
 
 ## 🛠️ Tech stack
+
 - React Native
 - Expo Router
 - TypeScript
@@ -29,6 +32,7 @@ A React Native + Expo app for planning workouts, running training sessions, and 
 - React Native Safe Area Context
 
 ## ▶️ Running the app
+
 1. Install dependencies:
    ```bash
    npm install
@@ -40,11 +44,14 @@ A React Native + Expo app for planning workouts, running training sessions, and 
 3. Open the app in Expo Go or an emulator.
 
 ## ✅ Verification
+
 The project has been verified with:
+
 - npm run lint
 - npx tsc --noEmit
 
 ## 🔜 Possible next steps
+
 - Refine the workout editing experience and validation
 - Add richer session analytics and progress history
 - Improve persistence reliability and data migration paths

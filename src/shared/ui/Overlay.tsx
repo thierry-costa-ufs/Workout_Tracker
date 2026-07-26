@@ -1,5 +1,5 @@
-import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import React, { useEffect, useRef, useState } from "react";
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
@@ -10,14 +10,14 @@ import {
   TouchableWithoutFeedback,
   View,
   ViewStyle,
-} from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { appTheme } from "@/shared/constants/theme";
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { appTheme } from '@/shared/constants/theme';
 
 interface OverlayProps {
   visible: boolean;
   onClose?: () => void;
-  animationType?: "fade" | "slide";
+  animationType?: 'fade' | 'slide';
   children: React.ReactNode;
   style?: ViewStyle;
 }
@@ -25,7 +25,7 @@ interface OverlayProps {
 export function Overlay({
   visible,
   onClose,
-  animationType = "fade",
+  animationType = 'fade',
   children,
   style,
 }: OverlayProps) {
@@ -33,9 +33,7 @@ export function Overlay({
   const tabBarHeight = useBottomTabBarHeight();
 
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(
-    new Animated.Value(Dimensions.get("window").height),
-  ).current;
+  const translateY = useRef(new Animated.Value(Dimensions.get('window').height)).current;
   const isRendered = useRef(false);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -45,14 +43,11 @@ export function Overlay({
   useEffect(() => {
     if (!visible) return;
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        Keyboard.dismiss();
-        onCloseRef.current?.();
-        return true;
-      },
-    );
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      Keyboard.dismiss();
+      onCloseRef.current?.();
+      return true;
+    });
 
     return () => backHandler.remove();
   }, [visible]);
@@ -60,10 +55,8 @@ export function Overlay({
   useEffect(() => {
     if (!visible) return;
 
-    const showEvent =
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent =
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
     const showSub = Keyboard.addListener(showEvent, (e) => {
       setKeyboardHeight(e.endCoordinates.height);
@@ -88,7 +81,7 @@ export function Overlay({
           duration: 250,
           useNativeDriver: true,
         }),
-        ...(animationType === "slide"
+        ...(animationType === 'slide'
           ? [
               Animated.spring(translateY, {
                 toValue: 0,
@@ -107,10 +100,10 @@ export function Overlay({
           duration: 200,
           useNativeDriver: true,
         }),
-        ...(animationType === "slide"
+        ...(animationType === 'slide'
           ? [
               Animated.timing(translateY, {
-                toValue: Dimensions.get("window").height,
+                toValue: Dimensions.get('window').height,
                 duration: 200,
                 useNativeDriver: true,
               }),
@@ -127,18 +120,16 @@ export function Overlay({
   const bottomPad = insets.bottom + tabBarHeight + 16;
 
   return (
-    <View style={styles.container} pointerEvents={visible ? "auto" : "none"}>
+    <View style={styles.container} pointerEvents={visible ? 'auto' : 'none'}>
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View style={[styles.backdrop, { opacity }]} />
       </TouchableWithoutFeedback>
 
-      <View style={{ flex: 1, justifyContent: "flex-end" }}>
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View
           style={[
             { paddingBottom: bottomPad, marginBottom: keyboardHeight },
-            animationType === "slide"
-              ? { transform: [{ translateY }] }
-              : { opacity },
+            animationType === 'slide' ? { transform: [{ translateY }] } : { opacity },
           ]}
         >
           <View style={[styles.sheet, style]}>{children}</View>
@@ -156,10 +147,10 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
   },
   sheet: {
-    width: "100%",
+    width: '100%',
     backgroundColor: appTheme.colors.surfaceElevated,
     borderRadius: 20,
     padding: 20,

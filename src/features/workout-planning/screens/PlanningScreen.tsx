@@ -1,31 +1,19 @@
-import { EXERCISES_LIST } from "@/core/constants/exercises";
-import {
-  MUSCLE_FILTERS,
-  MuscleFilterType,
-  DAYS_OF_WEEK,
-} from "@/core/constants/days";
-import { useTemplates, usePersonalRecords } from "@/context/WorkoutContext";
-import { AppScreen } from "@/core/ui/AppScreen";
-import { appTheme } from "@/shared/constants/theme";
-import { sharedScreenStyles } from "@/shared/styles/screenStyles";
-import { Overlay } from "@/shared/ui/Overlay";
-import { useTabBackHandler } from "@/shared/hooks/useTabBackHandler";
-import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import { useState } from "react";
-import {
-  Alert,
-  FlatList,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { ExercisePickerCard } from "../components/ExercisePickerCard";
-import { PlanListItem } from "../components/PlanListItem";
-import { usePlanningBlocks } from "../hooks/usePlanningBlocks";
-import { planningStyles as styles } from "../styles/planningStyles";
+import { EXERCISES_LIST } from '@/core/constants/exercises';
+import { MUSCLE_FILTERS, MuscleFilterType, DAYS_OF_WEEK } from '@/core/constants/days';
+import { useTemplates, usePersonalRecords } from '@/context/WorkoutContext';
+import { AppScreen } from '@/core/ui/AppScreen';
+import { appTheme } from '@/shared/constants/theme';
+import { sharedScreenStyles } from '@/shared/styles/screenStyles';
+import { Overlay } from '@/shared/ui/Overlay';
+import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { useState } from 'react';
+import { Alert, FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ExercisePickerCard } from '../components/ExercisePickerCard';
+import { PlanListItem } from '../components/PlanListItem';
+import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
+import { planningStyles as styles } from '../styles/planningStyles';
 
 export default function PlanningScreen() {
   useTabBackHandler();
@@ -56,22 +44,20 @@ export default function PlanningScreen() {
   const { deleteTemplate } = useTemplates();
   const { getExercisePR } = usePersonalRecords();
 
-  const [planningName, setPlanningName] = useState("");
+  const [planningName, setPlanningName] = useState('');
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
   const [isPlansModalVisible, setIsPlansModalVisible] = useState(false);
   const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
-  const [isDayAssignModalVisible, setIsDayAssignModalVisible] =
-    useState(false);
+  const [isDayAssignModalVisible, setIsDayAssignModalVisible] = useState(false);
   const [dayBeingAssigned, setDayBeingAssigned] = useState<string | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
-  const [renameValue, setRenameValue] = useState("");
-  const [selectedMuscleFilter, setSelectedMuscleFilter] =
-    useState<MuscleFilterType>("Todos");
-  const [exerciseSearch, setExerciseSearch] = useState("");
+  const [renameValue, setRenameValue] = useState('');
+  const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<MuscleFilterType>('Todos');
+  const [exerciseSearch, setExerciseSearch] = useState('');
 
   const handleSavePlanning = async () => {
     if (!planningName.trim()) {
-      Alert.alert("Erro", "Dê um nome ao seu plano de treino.");
+      Alert.alert('Erro', 'Dê um nome ao seu plano de treino.');
       return;
     }
 
@@ -82,10 +68,7 @@ export default function PlanningScreen() {
   };
 
   return (
-    <AppScreen
-      style={styles.mainContainer}
-      backgroundColor={appTheme.colors.background}
-    >
+    <AppScreen style={styles.mainContainer} backgroundColor={appTheme.colors.background}>
       <View style={sharedScreenStyles.pageHeader}>
         <View style={sharedScreenStyles.pageTitleBlock}>
           <Text style={sharedScreenStyles.pageTitle} numberOfLines={1}>
@@ -97,10 +80,7 @@ export default function PlanningScreen() {
             </Text>
           ) : (
             <Text
-              style={[
-                styles.activePlanBadge,
-                { color: appTheme.colors.textPrimary },
-              ]}
+              style={[styles.activePlanBadge, { color: appTheme.colors.textPrimary }]}
               numberOfLines={1}
             >
               Novo Planejamento Ativo
@@ -109,10 +89,7 @@ export default function PlanningScreen() {
         </View>
 
         <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.presetButton}
-            onPress={handleNewPlan}
-          >
+          <TouchableOpacity style={styles.presetButton} onPress={handleNewPlan}>
             <Ionicons name="refresh-outline" size={14} color="#FFF" />
             <Text style={styles.presetButtonText}>Limpar</Text>
           </TouchableOpacity>
@@ -127,10 +104,7 @@ export default function PlanningScreen() {
         </View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.contentBody}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView contentContainerStyle={styles.contentBody} showsVerticalScrollIndicator={false}>
         {/* Blocks row */}
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.splitTitle}>BLOCOS DE TREINO</Text>
@@ -146,49 +120,30 @@ export default function PlanningScreen() {
             return (
               <TouchableOpacity
                 key={block.id}
-                style={[
-                  styles.blockChip,
-                  isSelected && styles.blockChipActive,
-                ]}
+                style={[styles.blockChip, isSelected && styles.blockChipActive]}
                 onPress={() => setSelectedBlockId(block.id)}
               >
-                <View
-                  style={[
-                    styles.blockAvatar,
-                    isSelected && styles.blockAvatarActive,
-                  ]}
-                >
+                <View style={[styles.blockAvatar, isSelected && styles.blockAvatarActive]}>
                   <Text
-                    style={[
-                      styles.blockAvatarText,
-                      isSelected && styles.blockAvatarTextActive,
-                    ]}
+                    style={[styles.blockAvatarText, isSelected && styles.blockAvatarTextActive]}
                   >
                     {block.label.charAt(0)}
                   </Text>
                 </View>
                 <View>
                   <Text
-                    style={[
-                      styles.blockChipLabel,
-                      isSelected && styles.blockChipLabelActive,
-                    ]}
+                    style={[styles.blockChipLabel, isSelected && styles.blockChipLabelActive]}
                     numberOfLines={1}
                   >
                     {block.label}
                   </Text>
-                  <Text style={styles.blockChipMeta}>
-                    {block.exercises.length} exercícios
-                  </Text>
+                  <Text style={styles.blockChipMeta}>{block.exercises.length} exercícios</Text>
                 </View>
               </TouchableOpacity>
             );
           })}
 
-          <TouchableOpacity
-            style={styles.addBlockChip}
-            onPress={handleAddBlock}
-          >
+          <TouchableOpacity style={styles.addBlockChip} onPress={handleAddBlock}>
             <Ionicons name="add" size={20} color="#FFF" />
           </TouchableOpacity>
         </ScrollView>
@@ -198,9 +153,7 @@ export default function PlanningScreen() {
           <>
             <View style={styles.blockDetailHeader}>
               <View style={styles.flex1}>
-                <Text style={styles.selectedText}>
-                  {`BLOCO ${selectedBlock.label}`}
-                </Text>
+                <Text style={styles.selectedText}>{`BLOCO ${selectedBlock.label}`}</Text>
                 <Text style={styles.exerciseCount}>
                   {selectedBlock.exercises.length} EXERCÍCIOS
                 </Text>
@@ -220,11 +173,7 @@ export default function PlanningScreen() {
                 style={styles.iconGhostButton}
                 onPress={() => confirmDeleteBlock(selectedBlock.id)}
               >
-                <Ionicons
-                  name="trash-outline"
-                  size={16}
-                  color={appTheme.colors.danger}
-                />
+                <Ionicons name="trash-outline" size={16} color={appTheme.colors.danger} />
               </TouchableOpacity>
             </View>
 
@@ -240,27 +189,14 @@ export default function PlanningScreen() {
                 selectedBlock.exercises.map((exercise, index) => {
                   const mainListPR = getExercisePR(exercise.id);
                   return (
-                    <View
-                      key={`${exercise.id}-${index}`}
-                      style={styles.exerciseCard}
-                    >
+                    <View key={`${exercise.id}-${index}`} style={styles.exerciseCard}>
                       <View style={styles.cardInfo}>
-                        <Text style={styles.cardExerciseName}>
-                          {exercise.name}
-                        </Text>
-                        <View
-                          style={styles.prRow}
-                        >
-                          <Text style={styles.cardMuscleGroupMainList}>
-                            {exercise.muscleGroup}
-                          </Text>
+                        <Text style={styles.cardExerciseName}>{exercise.name}</Text>
+                        <View style={styles.prRow}>
+                          <Text style={styles.cardMuscleGroupMainList}>{exercise.muscleGroup}</Text>
                           {mainListPR && (
                             <View style={styles.mainListPrBadge}>
-                              <Ionicons
-                                name="trophy"
-                                size={9}
-                                color={appTheme.colors.accent}
-                              />
+                              <Ionicons name="trophy" size={9} color={appTheme.colors.accent} />
                               <Text style={styles.mainListPrText}>
                                 {String(mainListPR.weight)} kg
                               </Text>
@@ -273,35 +209,21 @@ export default function PlanningScreen() {
                         <TouchableOpacity
                           style={styles.stepperButton}
                           onPress={() =>
-                            handleUpdateSetsInBlock(
-                              selectedBlock.id,
-                              index,
-                              exercise.sets - 1,
-                            )
+                            handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets - 1)
                           }
                         >
-                          <Ionicons
-                            name="remove"
-                            size={14}
-                            color="#A2A2A7"
-                          />
+                          <Ionicons name="remove" size={14} color="#A2A2A7" />
                         </TouchableOpacity>
 
                         <View style={styles.stepperValueContainer}>
-                          <Text style={styles.stepperValue}>
-                            {exercise.sets}
-                          </Text>
+                          <Text style={styles.stepperValue}>{exercise.sets}</Text>
                           <Text style={styles.stepperLabel}>Séries</Text>
                         </View>
 
                         <TouchableOpacity
                           style={styles.stepperButton}
                           onPress={() =>
-                            handleUpdateSetsInBlock(
-                              selectedBlock.id,
-                              index,
-                              exercise.sets + 1,
-                            )
+                            handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets + 1)
                           }
                         >
                           <Ionicons name="add" size={14} color="#FFF" />
@@ -310,18 +232,9 @@ export default function PlanningScreen() {
 
                       <TouchableOpacity
                         style={styles.deleteCardButton}
-                        onPress={() =>
-                          handleRemoveExerciseFromBlock(
-                            selectedBlock.id,
-                            index,
-                          )
-                        }
+                        onPress={() => handleRemoveExerciseFromBlock(selectedBlock.id, index)}
                       >
-                        <Ionicons
-                          name="trash-outline"
-                          size={18}
-                          color={appTheme.colors.danger}
-                        />
+                        <Ionicons name="trash-outline" size={18} color={appTheme.colors.danger} />
                       </TouchableOpacity>
                     </View>
                   );
@@ -333,9 +246,7 @@ export default function PlanningScreen() {
                 onPress={() => setIsExerciseModalVisible(true)}
               >
                 <Ionicons name="add-circle-outline" size={16} color="#FFF" />
-                <Text style={styles.addExerciseInlineText}>
-                  ADICIONAR EXERCÍCIO
-                </Text>
+                <Text style={styles.addExerciseInlineText}>ADICIONAR EXERCÍCIO</Text>
               </TouchableOpacity>
             </View>
           </>
@@ -347,17 +258,14 @@ export default function PlanningScreen() {
         <View style={styles.sectionHeaderRow}>
           <Text style={styles.splitTitle}>DIVISÃO SEMANAL</Text>
           <Text style={styles.splitSummary}>
-            {trainingDaysCount} DIAS DE TREINO ·{restDaysCount} DIAS DE
-            DESCANSO
+            {trainingDaysCount} DIAS DE TREINO ·{restDaysCount} DIAS DE DESCANSO
           </Text>
         </View>
 
         <View style={styles.dayGrid}>
           {DAYS_OF_WEEK.map((day: { id: string; label: string }) => {
             const assignedBlockId = daySplit[day.id];
-            const assignedBlock = blocks.find(
-              (b) => b.id === assignedBlockId,
-            );
+            const assignedBlock = blocks.find((b) => b.id === assignedBlockId);
             return (
               <TouchableOpacity
                 key={day.id}
@@ -367,22 +275,15 @@ export default function PlanningScreen() {
                   setIsDayAssignModalVisible(true);
                 }}
               >
-                <Text style={styles.daySplitLabel}>
-                  {day.label.substring(0, 3).toUpperCase()}
-                </Text>
-                <View
-                  style={[
-                    styles.daySplitBadge,
-                    assignedBlock && styles.daySplitBadgeActive,
-                  ]}
-                >
+                <Text style={styles.daySplitLabel}>{day.label.substring(0, 3).toUpperCase()}</Text>
+                <View style={[styles.daySplitBadge, assignedBlock && styles.daySplitBadgeActive]}>
                   <Text
                     style={[
                       styles.daySplitBadgeText,
                       assignedBlock && styles.daySplitBadgeTextActive,
                     ]}
                   >
-                    {assignedBlock ? assignedBlock.label.charAt(0) : "—"}
+                    {assignedBlock ? assignedBlock.label.charAt(0) : '—'}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -392,13 +293,8 @@ export default function PlanningScreen() {
       </ScrollView>
 
       <View style={styles.footerActions}>
-        <TouchableOpacity
-          style={styles.saveMainButton}
-          onPress={() => setIsSaveModalVisible(true)}
-        >
-          <Text style={styles.saveMainButtonText}>
-            CONCLUIR PLANEJAMENTO
-          </Text>
+        <TouchableOpacity style={styles.saveMainButton} onPress={() => setIsSaveModalVisible(true)}>
+          <Text style={styles.saveMainButtonText}>CONCLUIR PLANEJAMENTO</Text>
         </TouchableOpacity>
       </View>
 
@@ -419,9 +315,7 @@ export default function PlanningScreen() {
         </View>
 
         {templates.length === 0 ? (
-          <Text style={styles.emptyPlansText}>
-            Nenhum modelo estruturado.
-          </Text>
+          <Text style={styles.emptyPlansText}>Nenhum modelo estruturado.</Text>
         ) : (
           <FlatList
             data={templates}
@@ -438,9 +332,7 @@ export default function PlanningScreen() {
                 }}
                 onDelete={async () => {
                   await deleteTemplate(item.id);
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Success,
-                  );
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 }}
               />
             )}
@@ -453,11 +345,11 @@ export default function PlanningScreen() {
         visible={isExerciseModalVisible}
         onClose={() => {
           setIsExerciseModalVisible(false);
-          setSelectedMuscleFilter("Todos");
-          setExerciseSearch("");
+          setSelectedMuscleFilter('Todos');
+          setExerciseSearch('');
         }}
         animationType="slide"
-        style={{ height: "85%" }}
+        style={{ height: '85%' }}
       >
         <View style={styles.modalHeader}>
           <View>
@@ -465,14 +357,14 @@ export default function PlanningScreen() {
             <Text style={styles.modalSubtitle}>
               {selectedBlock
                 ? `Injetando cargas no Bloco ${selectedBlock.label}`
-                : "Selecione um bloco primeiro"}
+                : 'Selecione um bloco primeiro'}
             </Text>
           </View>
           <TouchableOpacity
             style={styles.closeModalButton}
             onPress={() => {
               setIsExerciseModalVisible(false);
-              setSelectedMuscleFilter("Todos");
+              setSelectedMuscleFilter('Todos');
             }}
           >
             <Ionicons name="close" size={20} color="#000" />
@@ -487,17 +379,9 @@ export default function PlanningScreen() {
                 <TouchableOpacity
                   key={muscle}
                   onPress={() => setSelectedMuscleFilter(muscle)}
-                  style={[
-                    styles.filterChip,
-                    isSelected && styles.filterChipActive,
-                  ]}
+                  style={[styles.filterChip, isSelected && styles.filterChipActive]}
                 >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      isSelected && styles.filterChipTextActive,
-                    ]}
-                  >
+                  <Text style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>
                     {muscle}
                   </Text>
                 </TouchableOpacity>
@@ -521,12 +405,9 @@ export default function PlanningScreen() {
         <FlatList
           data={EXERCISES_LIST.filter(
             (exercise) =>
-              (selectedMuscleFilter === "Todos" ||
-                exercise.muscleGroup === selectedMuscleFilter) &&
-              (exerciseSearch === "" ||
-                exercise.name
-                  .toLowerCase()
-                  .includes(exerciseSearch.toLowerCase())),
+              (selectedMuscleFilter === 'Todos' || exercise.muscleGroup === selectedMuscleFilter) &&
+              (exerciseSearch === '' ||
+                exercise.name.toLowerCase().includes(exerciseSearch.toLowerCase())),
           )}
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
@@ -551,9 +432,7 @@ export default function PlanningScreen() {
 
         <TouchableOpacity
           style={styles.assignOption}
-          onPress={() =>
-            dayBeingAssigned && handleAssignDay(dayBeingAssigned, null)
-          }
+          onPress={() => dayBeingAssigned && handleAssignDay(dayBeingAssigned, null)}
         >
           <View style={styles.assignOptionBadge}>
             <Text style={styles.assignOptionBadgeText}>—</Text>
@@ -565,20 +444,10 @@ export default function PlanningScreen() {
           <TouchableOpacity
             key={block.id}
             style={styles.assignOption}
-            onPress={() =>
-              dayBeingAssigned &&
-              handleAssignDay(dayBeingAssigned, block.id)
-            }
+            onPress={() => dayBeingAssigned && handleAssignDay(dayBeingAssigned, block.id)}
           >
-            <View
-              style={[
-                styles.assignOptionBadge,
-                styles.blockAvatarActive,
-              ]}
-            >
-              <Text style={styles.blockAvatarTextActive}>
-                {block.label.charAt(0)}
-              </Text>
+            <View style={[styles.assignOptionBadge, styles.blockAvatarActive]}>
+              <Text style={styles.blockAvatarTextActive}>{block.label.charAt(0)}</Text>
             </View>
             <Text style={styles.assignOptionText}>
               {`BLOCO ${block.label} · ${block.exercises.length} EX.`}
@@ -586,9 +455,7 @@ export default function PlanningScreen() {
           </TouchableOpacity>
         ))}
 
-        <TouchableOpacity
-          onPress={() => setIsDayAssignModalVisible(false)}
-        >
+        <TouchableOpacity onPress={() => setIsDayAssignModalVisible(false)}>
           <Text style={styles.cancelText}>CANCELAR</Text>
         </TouchableOpacity>
       </Overlay>
@@ -638,10 +505,7 @@ export default function PlanningScreen() {
           value={planningName}
           onChangeText={setPlanningName}
         />
-        <TouchableOpacity
-          style={styles.confirmSaveButton}
-          onPress={handleSavePlanning}
-        >
+        <TouchableOpacity style={styles.confirmSaveButton} onPress={handleSavePlanning}>
           <Text style={styles.confirmSaveText}>ATIVAR AGORA</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsSaveModalVisible(false)}>

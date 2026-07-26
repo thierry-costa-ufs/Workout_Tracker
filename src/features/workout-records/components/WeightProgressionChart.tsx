@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
-import { Dimensions, StyleSheet, Text, View } from "react-native";
-import Svg, { Circle, Line, Polygon, Rect, Text as SvgText } from "react-native-svg";
-import { PersonalRecord } from "@/types/workout";
-import { appTheme } from "@/shared/constants/theme";
+import React, { useMemo } from 'react';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import Svg, { Circle, Line, Polygon, Rect, Text as SvgText } from 'react-native-svg';
+import { PersonalRecord } from '@/types/workout';
+import { appTheme } from '@/shared/constants/theme';
 
 interface WeightProgressionChartProps {
   records: PersonalRecord[];
@@ -10,10 +10,10 @@ interface WeightProgressionChartProps {
 
 const CHART_HEIGHT = 170;
 const PADDING = { top: 24, right: 20, bottom: 36, left: 44 };
-const CONTAINER_WIDTH = Dimensions.get("window").width - 64;
+const CONTAINER_WIDTH = Dimensions.get('window').width - 64;
 
 function parseDate(dateStr: string): Date {
-  const parts = dateStr.split("/");
+  const parts = dateStr.split('/');
   if (parts.length === 3) {
     return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
   }
@@ -21,19 +21,16 @@ function parseDate(dateStr: string): Date {
 }
 
 function formatDateShort(dateStr: string): string {
-  const parts = dateStr.split("/");
+  const parts = dateStr.split('/');
   if (parts.length === 3) {
     return `${parts[0]}/${parts[1]}`;
   }
   return dateStr;
 }
 
-export function WeightProgressionChart({
-  records,
-}: WeightProgressionChartProps) {
+export function WeightProgressionChart({ records }: WeightProgressionChartProps) {
   const sorted = useMemo(() => {
-    return [...records]
-      .sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+    return [...records].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
   }, [records]);
 
   const chartWidth = CONTAINER_WIDTH - PADDING.left - PADDING.right;
@@ -55,10 +52,7 @@ export function WeightProgressionChart({
     });
 
     const mapped = sorted.map((r, i) => {
-      const x =
-        sorted.length === 1
-          ? chartWidth / 2
-          : (i / (sorted.length - 1)) * chartWidth;
+      const x = sorted.length === 1 ? chartWidth / 2 : (i / (sorted.length - 1)) * chartWidth;
       const y = chartAreaHeight - ((r.weight - min) / range) * chartAreaHeight;
       return { x: x + PADDING.left, y: y + PADDING.top, record: r };
     });
@@ -68,7 +62,7 @@ export function WeightProgressionChart({
 
   if (sorted.length === 0) return null;
 
-  const linePoints = points.map((p) => `${p.x},${p.y}`).join(" ");
+  const linePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
 
   const gridLines = 4;
   const yLabels: number[] = [];
@@ -83,10 +77,7 @@ export function WeightProgressionChart({
     <View style={styles.container}>
       <Svg width={CONTAINER_WIDTH} height={CHART_HEIGHT}>
         {yLabels.map((val, i) => {
-          const y =
-            PADDING.top +
-            chartAreaHeight -
-            (i / gridLines) * chartAreaHeight;
+          const y = PADDING.top + chartAreaHeight - (i / gridLines) * chartAreaHeight;
           return (
             <React.Fragment key={`grid-${i}`}>
               <Line
@@ -137,26 +128,14 @@ export function WeightProgressionChart({
               cx={p.x}
               cy={p.y}
               r={i === bestIndex ? 5 : 3.5}
-              fill={i === bestIndex ? appTheme.colors.accent : "#1C1C1E"}
-              stroke={
-                i === bestIndex ? appTheme.colors.accent : appTheme.colors.textMuted
-              }
+              fill={i === bestIndex ? appTheme.colors.accent : '#1C1C1E'}
+              stroke={i === bestIndex ? appTheme.colors.accent : appTheme.colors.textMuted}
               strokeWidth={i === bestIndex ? 2 : 1.5}
             />
             {i === bestIndex && points.length > 1 && (
               <>
-                <Circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={9}
-                  fill="rgba(255, 159, 10, 0.15)"
-                />
-                <Circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={5}
-                  fill={appTheme.colors.accent}
-                />
+                <Circle cx={p.x} cy={p.y} r={9} fill="rgba(255, 159, 10, 0.15)" />
+                <Circle cx={p.x} cy={p.y} r={5} fill={appTheme.colors.accent} />
                 <SvgText
                   x={p.x}
                   y={p.y - 12}
@@ -191,30 +170,31 @@ export function WeightProgressionChart({
           );
         })}
 
-        {points.length > 1 && (() => {
-          const last = points[points.length - 1];
-          const prev = points[points.length - 2];
-          const diff = last.record.weight - prev.record.weight;
-          const isUp = diff >= 0;
-          const label = `${isUp ? "+" : ""}${diff.toFixed(1)}`;
-          const labelX = last.x;
-          const labelY = last.y - (last.y < PADDING.top + 30 ? -18 : 22);
+        {points.length > 1 &&
+          (() => {
+            const last = points[points.length - 1];
+            const prev = points[points.length - 2];
+            const diff = last.record.weight - prev.record.weight;
+            const isUp = diff >= 0;
+            const label = `${isUp ? '+' : ''}${diff.toFixed(1)}`;
+            const labelX = last.x;
+            const labelY = last.y - (last.y < PADDING.top + 30 ? -18 : 22);
 
-          return (
-            <SvgText
-              key="last-delta"
-              x={labelX}
-              y={labelY}
-              fontSize={8}
-              fill={isUp ? appTheme.colors.success : appTheme.colors.danger}
-              textAnchor="middle"
-              fontFamily="System"
-              fontWeight="700"
-            >
-              {label}
-            </SvgText>
-          );
-        })()}
+            return (
+              <SvgText
+                key="last-delta"
+                x={labelX}
+                y={labelY}
+                fontSize={8}
+                fill={isUp ? appTheme.colors.success : appTheme.colors.danger}
+                textAnchor="middle"
+                fontFamily="System"
+                fontWeight="700"
+              >
+                {label}
+              </SvgText>
+            );
+          })()}
       </Svg>
     </View>
   );
@@ -222,7 +202,7 @@ export function WeightProgressionChart({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#121212",
+    backgroundColor: '#121212',
     borderRadius: 12,
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,

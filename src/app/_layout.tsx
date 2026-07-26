@@ -1,6 +1,6 @@
-import { WorkoutProvider } from "@/context/WorkoutContext";
-import { Stack } from "expo-router";
-import React from "react";
+import { WorkoutProvider } from '@/context/WorkoutContext';
+import { Stack } from 'expo-router';
+import React from 'react';
 
 export default function RootLayout() {
   return (

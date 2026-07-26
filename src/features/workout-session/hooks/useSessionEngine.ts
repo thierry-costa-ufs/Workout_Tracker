@@ -1,6 +1,6 @@
-import { PlannedExercise } from "@/types/workout";
-import * as Haptics from "expo-haptics";
-import { useEffect, useMemo, useState } from "react";
+import { PlannedExercise } from '@/types/workout';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useMemo, useState } from 'react';
 
 interface UseSessionEngineProps {
   exercises: PlannedExercise[];
@@ -62,8 +62,7 @@ export function useSessionEngine({ exercises }: UseSessionEngineProps) {
       completedSets += setsArray.filter(Boolean).length;
     });
 
-    const percentage =
-      totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
+    const percentage = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
 
     return {
       totalSets,

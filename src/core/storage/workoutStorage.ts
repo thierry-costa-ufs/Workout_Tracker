@@ -1,14 +1,10 @@
-import {
-  PersonalRecord,
-  WorkoutSession,
-  WorkoutTemplate,
-} from "@/types/workout";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { PersonalRecord, WorkoutSession, WorkoutTemplate } from '@/types/workout';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY_WORKOUTS = "@gym_app:workouts_key";
-const STORAGE_KEY_TEMPLATES = "@gym_app:workout_templates";
-const STORAGE_KEY_ACTIVE = "@gym_app:active_template_id";
-const STORAGE_KEY_PRS = "@gym_app:personal_records";
+const STORAGE_KEY_WORKOUTS = '@gym_app:workouts_key';
+const STORAGE_KEY_TEMPLATES = '@gym_app:workout_templates';
+const STORAGE_KEY_ACTIVE = '@gym_app:active_template_id';
+const STORAGE_KEY_PRS = '@gym_app:personal_records';
 
 export interface WorkoutStorage {
   loadAll(): Promise<{
@@ -46,34 +42,23 @@ export function createWorkoutStorage(): WorkoutStorage {
 
       return {
         workouts:
-          vWorkouts.status === "fulfilled"
-            ? parseJsonArray<WorkoutSession>(vWorkouts.value)
-            : [],
+          vWorkouts.status === 'fulfilled' ? parseJsonArray<WorkoutSession>(vWorkouts.value) : [],
         templates:
-          vTemplates.status === "fulfilled"
+          vTemplates.status === 'fulfilled'
             ? parseJsonArray<WorkoutTemplate>(vTemplates.value)
             : [],
-        activeId:
-          vActiveId.status === "fulfilled" ? vActiveId.value || null : null,
+        activeId: vActiveId.status === 'fulfilled' ? vActiveId.value || null : null,
         personalRecords:
-          vPRs.status === "fulfilled"
-            ? parseJsonArray<PersonalRecord>(vPRs.value)
-            : [],
+          vPRs.status === 'fulfilled' ? parseJsonArray<PersonalRecord>(vPRs.value) : [],
       };
     },
 
     async saveWorkouts(workouts) {
-      await AsyncStorage.setItem(
-        STORAGE_KEY_WORKOUTS,
-        JSON.stringify(workouts),
-      );
+      await AsyncStorage.setItem(STORAGE_KEY_WORKOUTS, JSON.stringify(workouts));
     },
 
     async saveTemplates(templates) {
-      await AsyncStorage.setItem(
-        STORAGE_KEY_TEMPLATES,
-        JSON.stringify(templates),
-      );
+      await AsyncStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(templates));
     },
 
     async saveActiveId(id) {
@@ -85,10 +70,7 @@ export function createWorkoutStorage(): WorkoutStorage {
     },
 
     async savePersonalRecords(records) {
-      await AsyncStorage.setItem(
-        STORAGE_KEY_PRS,
-        JSON.stringify(records),
-      );
+      await AsyncStorage.setItem(STORAGE_KEY_PRS, JSON.stringify(records));
     },
   };
 }

@@ -1,6 +1,6 @@
-import type { WorkoutData } from "@/types/workout";
-import { PlannedExercise } from "@/types/workout";
-import { DAYS_OF_WEEK } from "@/core/constants/days";
+import type { WorkoutData } from '@/types/workout';
+import { PlannedExercise } from '@/types/workout';
+import { DAYS_OF_WEEK } from '@/core/constants/days';
 
 export interface WorkoutBlock {
   id: string;
@@ -8,7 +8,7 @@ export interface WorkoutBlock {
   exercises: PlannedExercise[];
 }
 
-const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
 export function createId(): string {
   return `blk_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -25,7 +25,7 @@ export function getNextLabel(blocks: WorkoutBlock[]): string {
 }
 
 function serializeExercises(list: PlannedExercise[] = []): string {
-  return list.map((e) => `${e.id}:${e.sets}`).join("|");
+  return list.map((e) => `${e.id}:${e.sets}`).join('|');
 }
 
 export function reconstructFromWorkoutData(data: WorkoutData): {
@@ -60,7 +60,7 @@ export function reconstructFromWorkoutData(data: WorkoutData): {
   });
 
   if (blocks.length === 0) {
-    blocks.push(createBlock("A"));
+    blocks.push(createBlock('A'));
   }
 
   return { blocks, daySplit };

@@ -1,8 +1,8 @@
-import { ExerciseCard } from "../components/ExerciseCard";
-import { TelemetryDisplay } from "../components/TelemetryDisplay";
-import { PlannedExercise, PersonalRecord } from "@/types/workout";
-import { ScrollView, Text, View } from "react-native";
-import { useSessionEngine } from "../hooks/useSessionEngine";
+import { ExerciseCard } from '../components/ExerciseCard';
+import { TelemetryDisplay } from '../components/TelemetryDisplay';
+import { PlannedExercise, PersonalRecord } from '@/types/workout';
+import { ScrollView, Text, View } from 'react-native';
+import { useSessionEngine } from '../hooks/useSessionEngine';
 
 interface WorkoutSessionViewProps {
   exercises: PlannedExercise[];
@@ -10,16 +10,17 @@ interface WorkoutSessionViewProps {
 }
 
 export function WorkoutSessionView({ exercises, personalRecords }: WorkoutSessionViewProps) {
-  const { progress, handleCheckNextSet, handleUndoLastSet, stats } =
-    useSessionEngine({ exercises });
+  const { progress, handleCheckNextSet, handleUndoLastSet, stats } = useSessionEngine({
+    exercises,
+  });
 
   const findPR = (exerciseId: string) =>
     personalRecords?.find((pr) => pr.exerciseId === exerciseId);
 
   if (!exercises || exercises.length === 0) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ color: "#8E8E93", fontSize: 14 }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text style={{ color: '#8E8E93', fontSize: 14 }}>
           Nenhum exercício planejado para hoje.
         </Text>
       </View>

@@ -1,9 +1,9 @@
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { PersonalRecord } from "@/types/workout";
-import { SetSegment } from "./SetSegment";
-import { exerciseCardStyles as styles } from "../styles/componentsStyles";
+import React from 'react';
+import { Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { PersonalRecord } from '@/types/workout';
+import { SetSegment } from './SetSegment';
+import { exerciseCardStyles as styles } from '../styles/componentsStyles';
 
 interface ExerciseCardProps {
   exercise: {
@@ -27,14 +27,10 @@ export const ExerciseCard = React.memo(function ExerciseCard({
 }: ExerciseCardProps) {
   return (
     <View style={styles.card}>
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onUndo}
-        style={styles.leftZone}
-      >
+      <TouchableOpacity activeOpacity={0.7} onPress={onUndo} style={styles.leftZone}>
         <View style={styles.headerRow}>
           <Text style={styles.name}>{exercise.name}</Text>
-          <Text style={styles.meta}>{exercise.muscleGroup || ""}</Text>
+          <Text style={styles.meta}>{exercise.muscleGroup || ''}</Text>
         </View>
 
         <View style={styles.setsRow}>
@@ -56,11 +52,7 @@ export const ExerciseCard = React.memo(function ExerciseCard({
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity
-        activeOpacity={0.7}
-        onPress={onPress}
-        style={styles.rightZone}
-      />
+      <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={styles.rightZone} />
     </View>
   );
 });

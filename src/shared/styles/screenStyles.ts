@@ -1,5 +1,5 @@
-import { appTheme } from "@/shared/constants/theme";
-import { StyleSheet } from "react-native";
+import { appTheme } from '@/shared/constants/theme';
+import { StyleSheet } from 'react-native';
 
 export const sharedScreenStyles = StyleSheet.create({
   container: {
@@ -7,9 +7,9 @@ export const sharedScreenStyles = StyleSheet.create({
     backgroundColor: appTheme.colors.background,
   },
   pageHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 16,
@@ -18,9 +18,9 @@ export const sharedScreenStyles = StyleSheet.create({
     borderColor: appTheme.colors.border,
   },
   pageHeaderCentered: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 24,
     paddingTop: 24,
     paddingBottom: 16,
@@ -34,27 +34,27 @@ export const sharedScreenStyles = StyleSheet.create({
   pageSubtitle: {
     color: appTheme.colors.textMuted,
     fontSize: 9,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 1.5,
     marginBottom: 4,
   },
   pageTitle: {
     color: appTheme.colors.textPrimary,
     fontSize: 26,
-    fontWeight: "900",
+    fontWeight: '900',
     letterSpacing: -1,
     marginBottom: 6,
   },
   sectionHeaderContainer: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 24,
     marginBottom: 16,
   },
   sectionTitleText: {
     color: appTheme.colors.textPrimary,
     fontSize: 11,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 1,
     marginRight: 10,
   },
@@ -65,24 +65,24 @@ export const sharedScreenStyles = StyleSheet.create({
   },
   emptyStateContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     padding: 24,
     backgroundColor: appTheme.colors.background,
   },
   emptyStateTitle: {
     color: appTheme.colors.textPrimary,
     fontSize: 14,
-    fontWeight: "800",
+    fontWeight: '800',
     letterSpacing: 0.5,
-    textAlign: "center",
+    textAlign: 'center',
     marginBottom: 8,
   },
   emptyStateText: {
     color: appTheme.colors.textSecondary,
     fontSize: 12,
     lineHeight: 18,
-    textAlign: "center",
+    textAlign: 'center',
   },
   cardSurface: {
     backgroundColor: appTheme.colors.surface,
@@ -98,6 +98,6 @@ export const sharedScreenStyles = StyleSheet.create({
   compactCard: {
     padding: 16,
     minHeight: 140,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
   },
 });

@@ -1,10 +1,10 @@
-import { appTheme } from "@/shared/constants/theme";
-import { sharedScreenStyles } from "@/shared/styles/screenStyles";
-import { AppScreen } from "@/core/ui/AppScreen";
-import { useTabBackHandler } from "@/shared/hooks/useTabBackHandler";
-import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import { useEffect, useRef, useState } from "react";
+import { appTheme } from '@/shared/constants/theme';
+import { sharedScreenStyles } from '@/shared/styles/screenStyles';
+import { AppScreen } from '@/core/ui/AppScreen';
+import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
+import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
   ScrollView,
@@ -13,9 +13,9 @@ import {
   TouchableOpacity,
   Vibration,
   View,
-} from "react-native";
+} from 'react-native';
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -27,21 +27,21 @@ interface Preset {
 }
 
 const TIMER_PRESETS: Preset[] = [
-  { id: "warmup", label: "AQUECIMENTO", duration: 45, icon: "flame-outline" },
+  { id: 'warmup', label: 'AQUECIMENTO', duration: 45, icon: 'flame-outline' },
   {
-    id: "feeder",
-    label: "PREPARO / FEEDER",
+    id: 'feeder',
+    label: 'PREPARO / FEEDER',
     duration: 90,
-    icon: "trending-up-outline",
+    icon: 'trending-up-outline',
   },
   {
-    id: "work",
-    label: "SÉRIE DE TRABALHO",
+    id: 'work',
+    label: 'SÉRIE DE TRABALHO',
     duration: 120,
-    icon: "barbell-outline",
+    icon: 'barbell-outline',
   },
-  { id: "power", label: "FORÇA / RPT", duration: 180, icon: "flash-outline" },
-  { id: "cardio", label: "CARDIO (HIIT)", duration: 30, icon: "heart-outline" },
+  { id: 'power', label: 'FORÇA / RPT', duration: 180, icon: 'flash-outline' },
+  { id: 'cardio', label: 'CARDIO (HIIT)', duration: 30, icon: 'heart-outline' },
 ];
 
 export default function TimerScreen() {
@@ -49,7 +49,7 @@ export default function TimerScreen() {
   const [secondsLeft, setSecondsLeft] = useState(90);
   const [totalDuration, setTotalDuration] = useState(90);
   const [isActive, setIsActive] = useState(false);
-  const [activePreset, setActivePreset] = useState("feeder");
+  const [activePreset, setActivePreset] = useState('feeder');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -102,29 +102,23 @@ export default function TimerScreen() {
     setTotalDuration(newTime);
     setSecondsLeft(newTime);
     setIsActive(false);
-    setActivePreset("");
+    setActivePreset('');
   };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progressPercent =
-    totalDuration > 0 ? (secondsLeft / totalDuration) * 100 : 0;
+  const progressPercent = totalDuration > 0 ? (secondsLeft / totalDuration) * 100 : 0;
 
   return (
-    <AppScreen
-      style={styles.mainContainer}
-      backgroundColor={appTheme.colors.background}
-    >
+    <AppScreen style={styles.mainContainer} backgroundColor={appTheme.colors.background}>
       <View style={sharedScreenStyles.pageHeader}>
         <View style={sharedScreenStyles.pageTitleBlock}>
           <Text style={sharedScreenStyles.pageTitle}>INTERVALO DE SÉRIE</Text>
-          <Text style={sharedScreenStyles.pageSubtitle}>
-            CRONOMETRAGEM E CADÊNCIA ESTRATÉGICA
-          </Text>
+          <Text style={sharedScreenStyles.pageSubtitle}>CRONOMETRAGEM E CADÊNCIA ESTRATÉGICA</Text>
         </View>
       </View>
 
@@ -133,54 +127,35 @@ export default function TimerScreen() {
           <Text style={styles.timerText}>{formatTime(secondsLeft)}</Text>
           <Text style={styles.activePresetLabel}>
             {activePreset
-              ? TIMER_PRESETS.find((preset) => preset.id === activePreset)
-                  ?.label
-              : "TEMPO CUSTOMIZADO"}
+              ? TIMER_PRESETS.find((preset) => preset.id === activePreset)?.label
+              : 'TEMPO CUSTOMIZADO'}
           </Text>
         </View>
 
         <View style={styles.progressTrack}>
-          <View
-            style={[styles.progressBar, { width: `${progressPercent}%` }]}
-          />
+          <View style={[styles.progressBar, { width: `${progressPercent}%` }]} />
         </View>
       </View>
 
       <View style={styles.adjustmentContainer}>
-        <TouchableOpacity
-          style={styles.adjustButton}
-          onPress={() => adjustTime(-15)}
-        >
+        <TouchableOpacity style={styles.adjustButton} onPress={() => adjustTime(-15)}>
           <Text style={styles.adjustButtonText}>-15s</Text>
         </TouchableOpacity>
 
         <View style={styles.mainControls}>
-          <TouchableOpacity
-            style={styles.controlCircleReset}
-            onPress={resetTimer}
-          >
+          <TouchableOpacity style={styles.controlCircleReset} onPress={resetTimer}>
             <Ionicons name="refresh" size={24} color="#FFF" />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[
-              styles.controlCirclePlay,
-              isActive && styles.controlCirclePause,
-            ]}
+            style={[styles.controlCirclePlay, isActive && styles.controlCirclePause]}
             onPress={toggleTimer}
           >
-            <Ionicons
-              name={isActive ? "pause" : "play"}
-              size={32}
-              color="#1C1C1E"
-            />
+            <Ionicons name={isActive ? 'pause' : 'play'} size={32} color="#1C1C1E" />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.adjustButton}
-          onPress={() => adjustTime(15)}
-        >
+        <TouchableOpacity style={styles.adjustButton} onPress={() => adjustTime(15)}>
           <Text style={styles.adjustButtonText}>+15s</Text>
         </TouchableOpacity>
       </View>
@@ -188,10 +163,7 @@ export default function TimerScreen() {
       <View style={styles.presetsSection}>
         <Text style={styles.sectionTitle}>MÉTODO DE DESCANSO</Text>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.presetsList}
-        >
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.presetsList}>
           {TIMER_PRESETS.map((preset) => {
             const isCurrent = activePreset === preset.id;
             return (
@@ -205,25 +177,15 @@ export default function TimerScreen() {
                 onPress={() => selectPreset(preset.id, preset.duration)}
               >
                 <View style={styles.presetLeftRow}>
-                  <View
-                    style={[
-                      styles.iconWrapper,
-                      isCurrent && styles.iconWrapperActive,
-                    ]}
-                  >
+                  <View style={[styles.iconWrapper, isCurrent && styles.iconWrapperActive]}>
                     <Ionicons
                       name={preset.icon}
                       size={16}
-                      color={isCurrent ? "#000" : appTheme.colors.textSecondary}
+                      color={isCurrent ? '#000' : appTheme.colors.textSecondary}
                     />
                   </View>
                   <View style={styles.presetInfo}>
-                    <Text
-                      style={[
-                        styles.presetLabel,
-                        isCurrent && styles.presetLabelActive,
-                      ]}
-                    >
+                    <Text style={[styles.presetLabel, isCurrent && styles.presetLabelActive]}>
                       {preset.label}
                     </Text>
                     <Text style={styles.presetSubtext}>FOCO TÉCNICO</Text>
@@ -231,18 +193,13 @@ export default function TimerScreen() {
                 </View>
 
                 <View style={styles.presetRightRow}>
-                  <Text
-                    style={[
-                      styles.presetTime,
-                      isCurrent && styles.presetTimeActive,
-                    ]}
-                  >
+                  <Text style={[styles.presetTime, isCurrent && styles.presetTimeActive]}>
                     {formatTime(preset.duration)}
                   </Text>
                   <Ionicons
-                    name={isCurrent ? "ellipse" : "chevron-forward-outline"}
+                    name={isCurrent ? 'ellipse' : 'chevron-forward-outline'}
                     size={12}
-                    color={isCurrent ? "#FFF" : "#2C2C2E"}
+                    color={isCurrent ? '#FFF' : '#2C2C2E'}
                   />
                 </View>
               </TouchableOpacity>
@@ -262,21 +219,21 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   headerTitle: {
-    color: "#FFF",
+    color: '#FFF',
     fontSize: 16,
-    fontWeight: "900",
+    fontWeight: '900',
     letterSpacing: 1,
   },
   headerSubtitle: {
     color: appTheme.colors.textMuted,
     fontSize: 10,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 4,
     letterSpacing: 0.5,
   },
   displayContainer: {
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 30,
   },
   outerRing: {
@@ -284,49 +241,49 @@ const styles = StyleSheet.create({
     height: width * 0.65,
     borderRadius: (width * 0.65) / 2,
     borderWidth: 1,
-    borderColor: "#1E1E1E",
-    backgroundColor: "#0A0A0A",
-    justifyContent: "center",
-    alignItems: "center",
+    borderColor: '#1E1E1E',
+    backgroundColor: '#0A0A0A',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   timerText: {
-    color: "#FFF",
+    color: '#FFF',
     fontSize: 54,
-    fontWeight: "300",
-    fontVariant: ["tabular-nums"],
+    fontWeight: '300',
+    fontVariant: ['tabular-nums'],
   },
   activePresetLabel: {
-    color: "#666",
+    color: '#666',
     fontSize: 10,
-    fontWeight: "700",
-    textTransform: "uppercase",
+    fontWeight: '700',
+    textTransform: 'uppercase',
     marginTop: 4,
     letterSpacing: 1,
   },
   progressTrack: {
     width: width * 0.6,
     height: 3,
-    backgroundColor: "#1A1A1A",
+    backgroundColor: '#1A1A1A',
     borderRadius: 2,
     marginTop: 25,
-    overflow: "hidden",
+    overflow: 'hidden',
   },
   progressBar: {
-    height: "100%",
+    height: '100%',
     backgroundColor: appTheme.colors.textPrimary,
     borderRadius: 2,
   },
   adjustmentContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 30,
     marginBottom: 25,
   },
   adjustButton: {
-    backgroundColor: "#121212",
+    backgroundColor: '#121212',
     borderWidth: 1,
-    borderColor: "#1E1E1E",
+    borderColor: '#1E1E1E',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
@@ -334,16 +291,16 @@ const styles = StyleSheet.create({
   adjustButtonText: {
     color: appTheme.colors.textSecondary,
     fontSize: 13,
-    fontWeight: "600",
+    fontWeight: '600',
   },
-  mainControls: { flexDirection: "row", alignItems: "center", gap: 16 },
+  mainControls: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   controlCircleReset: {
     width: 48,
     height: 48,
     borderRadius: 24,
     backgroundColor: appTheme.colors.surfaceElevated,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 0.5,
     borderColor: appTheme.colors.borderStrong,
   },
@@ -352,8 +309,8 @@ const styles = StyleSheet.create({
     height: 72,
     borderRadius: 36,
     backgroundColor: appTheme.colors.textPrimary,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   controlCirclePause: { backgroundColor: appTheme.colors.textPrimary },
   presetsSection: {
@@ -368,9 +325,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...sharedScreenStyles.sectionTitleText,
-    color: "#FFF",
+    color: '#FFF',
     fontSize: 12,
-    fontWeight: "900",
+    fontWeight: '900',
     letterSpacing: 1,
     marginBottom: 16,
     marginRight: 0,
@@ -380,49 +337,49 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 14,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 8,
     borderWidth: 1,
     borderColor: appTheme.colors.surfaceElevated,
-    backgroundColor: "#121212",
+    backgroundColor: '#121212',
   },
   presetCardActive: {
-    borderColor: "#FFF",
+    borderColor: '#FFF',
     backgroundColor: appTheme.colors.surfaceElevated,
   },
-  presetLeftRow: { flexDirection: "row", alignItems: "center" },
+  presetLeftRow: { flexDirection: 'row', alignItems: 'center' },
   iconWrapper: {
     width: 32,
     height: 32,
     borderRadius: 6,
     backgroundColor: appTheme.colors.surfaceElevated,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  iconWrapperActive: { backgroundColor: "#FFF" },
+  iconWrapperActive: { backgroundColor: '#FFF' },
   presetInfo: { marginLeft: 12 },
   presetLabel: {
     color: appTheme.colors.textSecondary,
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: '700',
     letterSpacing: 0.5,
   },
-  presetLabelActive: { color: "#FFF" },
+  presetLabelActive: { color: '#FFF' },
   presetSubtext: {
-    color: "#444",
+    color: '#444',
     fontSize: 9,
-    fontWeight: "700",
+    fontWeight: '700',
     marginTop: 2,
     letterSpacing: 0.5,
   },
-  presetRightRow: { flexDirection: "row", alignItems: "center", gap: 12 },
+  presetRightRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   presetTime: {
     color: appTheme.colors.textMuted,
     fontSize: 14,
-    fontWeight: "800",
-    fontVariant: ["tabular-nums"],
+    fontWeight: '800',
+    fontVariant: ['tabular-nums'],
   },
-  presetTimeActive: { color: "#FFF" },
+  presetTimeActive: { color: '#FFF' },
 });

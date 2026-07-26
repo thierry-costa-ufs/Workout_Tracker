@@ -4,20 +4,10 @@ import {
   WorkoutData,
   WorkoutSession,
   WorkoutTemplate,
-} from "@/types/workout";
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { Alert } from "react-native";
-import {
-  createWorkoutStorage,
-  WorkoutStorage,
-} from "@/core/storage/workoutStorage";
+} from '@/types/workout';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
+import { createWorkoutStorage, WorkoutStorage } from '@/core/storage/workoutStorage';
 
 // ─── Sessions Context ───────────────────────────────────────────────
 interface SessionsContextType {
@@ -27,26 +17,18 @@ interface SessionsContextType {
   loadData: () => Promise<void>;
 }
 
-const SessionsContext = createContext<SessionsContextType | undefined>(
-  undefined,
-);
+const SessionsContext = createContext<SessionsContextType | undefined>(undefined);
 
 // ─── Templates Context ──────────────────────────────────────────────
 interface TemplatesContextType {
   templates: WorkoutTemplate[];
   activeId: string | null;
-  saveTemplate: (
-    name: string,
-    data: WorkoutData,
-    id?: string,
-  ) => Promise<void>;
+  saveTemplate: (name: string, data: WorkoutData, id?: string) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
   selectActiveTemplate: (id: string) => Promise<void>;
 }
 
-const TemplatesContext = createContext<TemplatesContextType | undefined>(
-  undefined,
-);
+const TemplatesContext = createContext<TemplatesContextType | undefined>(undefined);
 
 // ─── Personal Records Context ───────────────────────────────────────
 interface PersonalRecordsContextType {
@@ -62,9 +44,7 @@ interface PersonalRecordsContextType {
   getExercisePR: (exerciseId: string) => PersonalRecord | undefined;
 }
 
-const PersonalRecordsContext = createContext<
-  PersonalRecordsContextType | undefined
->(undefined);
+const PersonalRecordsContext = createContext<PersonalRecordsContextType | undefined>(undefined);
 
 // ─── Provider ───────────────────────────────────────────────────────
 const storage: WorkoutStorage = createWorkoutStorage();
@@ -97,7 +77,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       await storage.saveWorkouts(value);
       setWorkouts(value);
     } catch {
-      Alert.alert("Erro", "Não foi possível salvar as sessões.");
+      Alert.alert('Erro', 'Não foi possível salvar as sessões.');
     }
   }, []);
 
@@ -109,9 +89,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       const exists = templates.some((t) => t.id === id);
 
       if (id && exists) {
-        updatedTemplates = templates.map((t) =>
-          t.id === id ? { ...t, name, data } : t,
-        );
+        updatedTemplates = templates.map((t) => (t.id === id ? { ...t, name, data } : t));
       } else {
         targetId = Date.now().toString();
         const newTemplate: WorkoutTemplate = {
@@ -133,7 +111,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         setTemplates(updatedTemplates);
         setActiveId(nextActiveId);
       } catch {
-        Alert.alert("Erro", "Não foi possível salvar o template.");
+        Alert.alert('Erro', 'Não foi possível salvar o template.');
       }
     },
     [templates, activeId],
@@ -152,7 +130,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         setTemplates(nextTemplates);
         if (isActiveDeleted) setActiveId(null);
       } catch {
-        Alert.alert("Erro", "Não foi possível excluir o template.");
+        Alert.alert('Erro', 'Não foi possível excluir o template.');
       }
     },
     [templates, activeId],
@@ -177,15 +155,13 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       reps: number,
     ) => {
       const newRecord: PersonalRecord = {
-        id:
-          Date.now().toString(36) +
-          Math.random().toString(36).substring(2, 5),
+        id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
         exerciseId,
         exerciseName,
         muscleGroup,
         weight,
         reps,
-        date: new Date().toLocaleDateString("pt-BR"),
+        date: new Date().toLocaleDateString('pt-BR'),
       };
 
       const updated = [newRecord, ...personalRecords];
@@ -194,7 +170,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         await storage.savePersonalRecords(updated);
         setPersonalRecords(updated);
       } catch {
-        Alert.alert("Erro", "Não foi possível salvar o recorde.");
+        Alert.alert('Erro', 'Não foi possível salvar o recorde.');
       }
     },
     [personalRecords],
@@ -208,7 +184,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         await storage.savePersonalRecords(updated);
         setPersonalRecords(updated);
       } catch {
-        Alert.alert("Erro", "Não foi possível excluir o recorde.");
+        Alert.alert('Erro', 'Não foi possível excluir o recorde.');
       }
     },
     [personalRecords],
@@ -261,24 +237,19 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 // ─── Hooks ──────────────────────────────────────────────────────────
 export function useSessions() {
   const ctx = useContext(SessionsContext);
-  if (!ctx)
-    throw new Error("useSessions must be used within a WorkoutProvider");
+  if (!ctx) throw new Error('useSessions must be used within a WorkoutProvider');
   return ctx;
 }
 
 export function useTemplates() {
   const ctx = useContext(TemplatesContext);
-  if (!ctx)
-    throw new Error("useTemplates must be used within a WorkoutProvider");
+  if (!ctx) throw new Error('useTemplates must be used within a WorkoutProvider');
   return ctx;
 }
 
 export function usePersonalRecords() {
   const ctx = useContext(PersonalRecordsContext);
-  if (!ctx)
-    throw new Error(
-      "usePersonalRecords must be used within a WorkoutProvider",
-    );
+  if (!ctx) throw new Error('usePersonalRecords must be used within a WorkoutProvider');
   return ctx;
 }
 
@@ -287,8 +258,7 @@ export function useWorkouts() {
   const { workouts, isLoading, storeData, loadData } = useSessions();
   const { templates, activeId, saveTemplate, deleteTemplate, selectActiveTemplate } =
     useTemplates();
-  const { personalRecords, savePR, deletePR, getExercisePR } =
-    usePersonalRecords();
+  const { personalRecords, savePR, deletePR, getExercisePR } = usePersonalRecords();
 
   return useMemo(
     () => ({

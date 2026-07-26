@@ -1,35 +1,23 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons } from '@expo/vector-icons';
 
-export type WorkoutDayKey =
-  | "dom"
-  | "seg"
-  | "ter"
-  | "qua"
-  | "qui"
-  | "sex"
-  | "sab";
+export type WorkoutDayKey = 'dom' | 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab';
 
 export type MuscleGroup =
-  | "Peito"
-  | "Costas"
-  | "Ombro"
-  | "Quadríceps"
-  | "Posterior"
-  | "Panturrilha"
-  | "Bíceps"
-  | "Tríceps"
-  | "Antebraço"
-  | "Trapézio"
-  | "Abdômen";
+  | 'Peito'
+  | 'Costas'
+  | 'Ombro'
+  | 'Quadríceps'
+  | 'Posterior'
+  | 'Panturrilha'
+  | 'Bíceps'
+  | 'Tríceps'
+  | 'Antebraço'
+  | 'Trapézio'
+  | 'Abdômen';
 
-export type MechanicType = "Composto" | "Isolado";
+export type MechanicType = 'Composto' | 'Isolado';
 
-export type EquipmentType =
-  | "Barra"
-  | "Halter"
-  | "Polia"
-  | "Máquina"
-  | "Peso Corporal";
+export type EquipmentType = 'Barra' | 'Halter' | 'Polia' | 'Máquina' | 'Peso Corporal';
 
 export interface ExerciseData {
   id: string;
