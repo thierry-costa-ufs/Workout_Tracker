@@ -1,70 +1,68 @@
 import {
-    PersonalRecord,
-    WorkoutData,
-    WorkoutSession,
-    WorkoutTemplate,
-} from "@/types/workout";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, {
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useState,
-} from "react";
+  MuscleGroup,
+  PersonalRecord,
+  WorkoutData,
+  WorkoutSession,
+  WorkoutTemplate,
+} from '@/types/workout';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
+import { createWorkoutStorage, WorkoutStorage } from '@/core/storage/workoutStorage';
 
-interface WorkoutContextType {
+// ─── Sessions Context ───────────────────────────────────────────────
+interface SessionsContextType {
   workouts: WorkoutSession[];
-  templates: WorkoutTemplate[];
-  personalRecords: PersonalRecord[];
-  activeId: string | null;
   isLoading: boolean;
   storeData: (value: WorkoutSession[]) => Promise<void>;
+  loadData: () => Promise<void>;
+}
+
+const SessionsContext = createContext<SessionsContextType | undefined>(undefined);
+
+// ─── Templates Context ──────────────────────────────────────────────
+interface TemplatesContextType {
+  templates: WorkoutTemplate[];
+  activeId: string | null;
   saveTemplate: (name: string, data: WorkoutData, id?: string) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
   selectActiveTemplate: (id: string) => Promise<void>;
+}
+
+const TemplatesContext = createContext<TemplatesContextType | undefined>(undefined);
+
+// ─── Personal Records Context ───────────────────────────────────────
+interface PersonalRecordsContextType {
+  personalRecords: PersonalRecord[];
   savePR: (
     exerciseId: string,
     exerciseName: string,
-    muscleGroup: string,
+    muscleGroup: MuscleGroup,
     weight: number,
     reps: number,
   ) => Promise<void>;
   deletePR: (id: string) => Promise<void>;
   getExercisePR: (exerciseId: string) => PersonalRecord | undefined;
-  loadData: () => Promise<void>;
 }
 
-const STORAGE_KEY_WORKOUTS = "@gym_app:workouts_key";
-const STORAGE_KEY_TEMPLATES = "@gym_app:workout_templates";
-const STORAGE_KEY_ACTIVE = "@gym_app:active_template_id";
-const STORAGE_KEY_PRS = "@gym_app:personal_records";
+const PersonalRecordsContext = createContext<PersonalRecordsContextType | undefined>(undefined);
 
-const WorkoutContext = createContext<WorkoutContextType | undefined>(undefined);
+// ─── Provider ───────────────────────────────────────────────────────
+const storage: WorkoutStorage = createWorkoutStorage();
 
 export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const [workouts, setWorkouts] = useState<WorkoutSession[]>([]);
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
-  const [activeId, setLoadingActiveId] = useState<string | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
-      const [vWorkouts, vTemplates, vActiveId, vPRs] = await Promise.all([
-        AsyncStorage.getItem(STORAGE_KEY_WORKOUTS),
-        AsyncStorage.getItem(STORAGE_KEY_TEMPLATES),
-        AsyncStorage.getItem(STORAGE_KEY_ACTIVE),
-        AsyncStorage.getItem(STORAGE_KEY_PRS),
-      ]);
-
-      if (vWorkouts) setWorkouts(JSON.parse(vWorkouts));
-      if (vTemplates) setTemplates(JSON.parse(vTemplates));
-      if (vActiveId) setLoadingActiveId(vActiveId);
-      if (vPRs) setPersonalRecords(JSON.parse(vPRs));
-    } catch (e) {
-      console.error("Erro ao carregar dados do AsyncStorage:", e);
+      const data = await storage.loadAll();
+      setWorkouts(data.workouts);
+      setTemplates(data.templates);
+      setActiveId(data.activeId);
+      setPersonalRecords(data.personalRecords);
     } finally {
       setIsLoading(false);
     }
@@ -76,92 +74,75 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
   const storeData = useCallback(async (value: WorkoutSession[]) => {
     try {
+      await storage.saveWorkouts(value);
       setWorkouts(value);
-      await AsyncStorage.setItem(STORAGE_KEY_WORKOUTS, JSON.stringify(value));
-    } catch (e) {
-      console.error("Erro ao salvar sessões:", e);
+    } catch {
+      Alert.alert('Erro', 'Não foi possível salvar as sessões.');
     }
   }, []);
 
   const saveTemplate = useCallback(
     async (name: string, data: WorkoutData, id?: string) => {
+      let targetId = id;
+      let updatedTemplates: WorkoutTemplate[];
+
+      const exists = templates.some((t) => t.id === id);
+
+      if (id && exists) {
+        updatedTemplates = templates.map((t) => (t.id === id ? { ...t, name, data } : t));
+      } else {
+        targetId = Date.now().toString();
+        const newTemplate: WorkoutTemplate = {
+          id: targetId,
+          name,
+          data,
+          createdAt: new Date().toISOString(),
+        };
+        updatedTemplates = [...templates, newTemplate];
+      }
+
+      const nextActiveId = activeId || targetId || null;
+
       try {
-        let updatedTemplates: WorkoutTemplate[];
-        let targetId = id;
-
-        setTemplates((prevTemplates) => {
-          const exists = prevTemplates.some((t) => t.id === id);
-          if (id && exists) {
-            updatedTemplates = prevTemplates.map((t) =>
-              t.id === id ? { ...t, name, data } : t,
-            );
-          } else {
-            targetId = Date.now().toString();
-            const newTemplate: WorkoutTemplate = {
-              id: targetId,
-              name,
-              data,
-              createdAt: new Date().toISOString(),
-            };
-            updatedTemplates = [...prevTemplates, newTemplate];
-          }
-          return updatedTemplates;
-        });
-
-        // CORREÇÃO CRÍTICA: Não force a troca do activeId se você estiver apenas editando um treino existente
-        // Só define como ativo automaticamente se o usuário não tiver nenhum treino ativo ainda.
-        setLoadingActiveId((currentActive) => {
-          const nextActive = currentActive || targetId || null;
-          AsyncStorage.setItem(STORAGE_KEY_ACTIVE, nextActive || "");
-          return nextActive;
-        });
-
-        // Aguarda a atualização do estado local refletir no storage de forma assíncrona estável
-        setTimeout(async () => {
-          await AsyncStorage.setItem(
-            STORAGE_KEY_TEMPLATES,
-            JSON.stringify(updatedTemplates),
-          );
-        }, 0);
-      } catch (error) {
-        console.error("Erro ao salvar/atualizar template:", error);
-        throw error;
+        await Promise.all([
+          storage.saveTemplates(updatedTemplates),
+          storage.saveActiveId(nextActiveId),
+        ]);
+        setTemplates(updatedTemplates);
+        setActiveId(nextActiveId);
+      } catch {
+        Alert.alert('Erro', 'Não foi possível salvar o template.');
       }
     },
-    [],
+    [templates, activeId],
   );
 
-  const deleteTemplate = useCallback(async (id: string) => {
-    try {
-      setTemplates((prev) => {
-        const updated = prev.filter((t) => t.id !== id);
-        AsyncStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(updated));
-        return updated;
-      });
+  const deleteTemplate = useCallback(
+    async (id: string) => {
+      const nextTemplates = templates.filter((t) => t.id !== id);
+      const isActiveDeleted = activeId === id;
 
-      setLoadingActiveId((current) => {
-        if (current === id) {
-          AsyncStorage.removeItem(STORAGE_KEY_ACTIVE);
-          return null;
-        }
-        return current;
-      });
-    } catch (e) {
-      console.error("Erro ao deletar template:", e);
-    }
-  }, []);
+      try {
+        await Promise.all([
+          storage.saveTemplates(nextTemplates),
+          isActiveDeleted ? storage.saveActiveId(null) : Promise.resolve(),
+        ]);
+        setTemplates(nextTemplates);
+        if (isActiveDeleted) setActiveId(null);
+      } catch {
+        Alert.alert('Erro', 'Não foi possível excluir o template.');
+      }
+    },
+    [templates, activeId],
+  );
 
   const selectActiveTemplate = useCallback(async (id: string) => {
-    try {
-      if (!id) {
-        setLoadingActiveId(null);
-        await AsyncStorage.removeItem(STORAGE_KEY_ACTIVE);
-      } else {
-        setLoadingActiveId(id);
-        await AsyncStorage.setItem(STORAGE_KEY_ACTIVE, id);
-      }
-    } catch (e) {
-      console.error("Erro ao selecionar template ativo:", e);
+    if (!id) {
+      setActiveId(null);
+      await storage.saveActiveId(null);
+    } else {
+      setActiveId(id);
+      await storage.saveActiveId(id);
     }
   }, []);
 
@@ -169,47 +150,45 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     async (
       exerciseId: string,
       exerciseName: string,
-      muscleGroup: string,
+      muscleGroup: MuscleGroup,
       weight: number,
       reps: number,
     ) => {
-      try {
-        const newRecord: PersonalRecord = {
-          id:
-            Date.now().toString(36) +
-            Math.random().toString(36).substring(2, 5),
-          exerciseId,
-          exerciseName,
-          muscleGroup,
-          weight,
-          reps,
-          date: new Date().toLocaleDateString("pt-BR"),
-        };
+      const newRecord: PersonalRecord = {
+        id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
+        exerciseId,
+        exerciseName,
+        muscleGroup,
+        weight,
+        reps,
+        date: new Date().toLocaleDateString('pt-BR'),
+      };
 
-        setPersonalRecords((prev) => {
-          const filtered = prev.filter((r) => r.exerciseId !== exerciseId);
-          const updated = [newRecord, ...filtered];
-          AsyncStorage.setItem(STORAGE_KEY_PRS, JSON.stringify(updated));
-          return updated;
-        });
-      } catch (e) {
-        console.error("Erro ao salvar PR:", e);
+      const updated = [newRecord, ...personalRecords];
+
+      try {
+        await storage.savePersonalRecords(updated);
+        setPersonalRecords(updated);
+      } catch {
+        Alert.alert('Erro', 'Não foi possível salvar o recorde.');
       }
     },
-    [],
+    [personalRecords],
   );
 
-  const deletePR = useCallback(async (id: string) => {
-    try {
-      setPersonalRecords((prev) => {
-        const updated = prev.filter((r) => r.id !== id);
-        AsyncStorage.setItem(STORAGE_KEY_PRS, JSON.stringify(updated));
-        return updated;
-      });
-    } catch (e) {
-      console.error("Erro ao remover PR:", e);
-    }
-  }, []);
+  const deletePR = useCallback(
+    async (id: string) => {
+      const updated = personalRecords.filter((r) => r.id !== id);
+
+      try {
+        await storage.savePersonalRecords(updated);
+        setPersonalRecords(updated);
+      } catch {
+        Alert.alert('Erro', 'Não foi possível excluir o recorde.');
+      }
+    },
+    [personalRecords],
+  );
 
   const getExercisePR = useCallback(
     (exerciseId: string) => {
@@ -218,53 +197,58 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     [personalRecords],
   );
 
-  // Memoriza o objeto do contexto para evitar renderizações inúteis abaixo
-  const contextValue = useMemo(
+  const sessionsValue = useMemo(
+    () => ({ workouts, isLoading, storeData, loadData }),
+    [workouts, isLoading, storeData, loadData],
+  );
+
+  const templatesValue = useMemo(
     () => ({
-      workouts,
       templates,
-      personalRecords,
       activeId,
-      isLoading,
-      storeData,
       saveTemplate,
       deleteTemplate,
       selectActiveTemplate,
-      savePR,
-      deletePR,
-      getExercisePR,
-      loadData,
     }),
-    [
-      workouts,
-      templates,
+    [templates, activeId, saveTemplate, deleteTemplate, selectActiveTemplate],
+  );
+
+  const prValue = useMemo(
+    () => ({
       personalRecords,
-      activeId,
-      isLoading,
-      storeData,
-      saveTemplate,
-      deleteTemplate,
-      selectActiveTemplate,
       savePR,
       deletePR,
       getExercisePR,
-      loadData,
-    ],
+    }),
+    [personalRecords, savePR, deletePR, getExercisePR],
   );
 
   return (
-    <WorkoutContext.Provider value={contextValue}>
-      {children}
-    </WorkoutContext.Provider>
+    <SessionsContext.Provider value={sessionsValue}>
+      <TemplatesContext.Provider value={templatesValue}>
+        <PersonalRecordsContext.Provider value={prValue}>
+          {children}
+        </PersonalRecordsContext.Provider>
+      </TemplatesContext.Provider>
+    </SessionsContext.Provider>
   );
 }
 
-export function useWorkouts() {
-  const context = useContext(WorkoutContext);
-  if (!context) {
-    throw new Error(
-      "useWorkouts deve ser utilizado dentro de um WorkoutProvider",
-    );
-  }
-  return context;
+// ─── Hooks ──────────────────────────────────────────────────────────
+export function useSessions() {
+  const ctx = useContext(SessionsContext);
+  if (!ctx) throw new Error('useSessions must be used within a WorkoutProvider');
+  return ctx;
+}
+
+export function useTemplates() {
+  const ctx = useContext(TemplatesContext);
+  if (!ctx) throw new Error('useTemplates must be used within a WorkoutProvider');
+  return ctx;
+}
+
+export function usePersonalRecords() {
+  const ctx = useContext(PersonalRecordsContext);
+  if (!ctx) throw new Error('usePersonalRecords must be used within a WorkoutProvider');
+  return ctx;
 }

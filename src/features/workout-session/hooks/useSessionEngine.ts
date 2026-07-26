@@ -1,19 +1,16 @@
-import { PlannedExercise } from "@/types/workout";
-import * as Haptics from "expo-haptics";
-import { useEffect, useMemo, useState } from "react";
+import { PlannedExercise } from '@/types/workout';
+import * as Haptics from 'expo-haptics';
+import { useEffect, useMemo, useState } from 'react';
 
-// Contrato de entrada do motor
 interface UseSessionEngineProps {
   exercises: PlannedExercise[];
 }
 
-// Estrutura do progresso: { "id-exercicio": [true, false, false] }
 export type SessionProgress = Record<string, boolean[]>;
 
 export function useSessionEngine({ exercises }: UseSessionEngineProps) {
   const [progress, setProgress] = useState<SessionProgress>({});
 
-  // Inicializa o progresso sempre que a lista de exercícios mudar (troca de dia ou de treino)
   useEffect(() => {
     const initialProgress: SessionProgress = {};
     exercises.forEach((ex) => {
@@ -22,39 +19,37 @@ export function useSessionEngine({ exercises }: UseSessionEngineProps) {
     setProgress(initialProgress);
   }, [exercises]);
 
-  // Avança uma série por vez (Clique Curto)
   const handleCheckNextSet = (exerciseId: string) => {
     setProgress((prev) => {
       const currentSets = prev[exerciseId];
       if (!currentSets) return prev;
 
-      // Encontra o primeiro índice que ainda é 'false'
       const nextIndex = currentSets.indexOf(false);
-
-      if (nextIndex === -1) return prev; // Todas as séries já foram feitas
+      if (nextIndex === -1) return prev;
 
       const updatedSets = [...currentSets];
       updatedSets[nextIndex] = true;
 
-      // Feedback tátil de sucesso/conclusão de etapa
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
       return { ...prev, [exerciseId]: updatedSets };
     });
   };
 
-  // Reseta todas as séries do exercício específico (Clique Longo)
-  const handleLongPressResetExercise = (exerciseId: string) => {
+  const handleUndoLastSet = (exerciseId: string) => {
     setProgress((prev) => {
       const currentSets = prev[exerciseId];
       if (!currentSets) return prev;
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      const lastCompleted = currentSets.lastIndexOf(true);
+      if (lastCompleted === -1) return prev;
 
-      return {
-        ...prev,
-        [exerciseId]: Array(currentSets.length).fill(false),
-      };
+      const updatedSets = [...currentSets];
+      updatedSets[lastCompleted] = false;
+
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+      return { ...prev, [exerciseId]: updatedSets };
     });
   };
 
@@ -67,8 +62,7 @@ export function useSessionEngine({ exercises }: UseSessionEngineProps) {
       completedSets += setsArray.filter(Boolean).length;
     });
 
-    const percentage =
-      totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
+    const percentage = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
 
     return {
       totalSets,
@@ -80,7 +74,7 @@ export function useSessionEngine({ exercises }: UseSessionEngineProps) {
   return {
     progress,
     handleCheckNextSet,
-    handleLongPressResetExercise,
+    handleUndoLastSet,
     stats,
   };
 }
