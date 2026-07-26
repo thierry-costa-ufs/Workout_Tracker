@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
-import Svg, { Circle, Line, Polygon, Rect, Text as SvgText } from 'react-native-svg';
+import { Dimensions, StyleSheet, View } from 'react-native';
+import Svg, { Circle, Line, Polygon, Text as SvgText } from 'react-native-svg';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
 

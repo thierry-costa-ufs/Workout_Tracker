@@ -1,5 +1,4 @@
-import { EXERCISES_LIST } from '@/core/constants/exercises';
-import { MUSCLE_FILTERS, MuscleFilterType, DAYS_OF_WEEK } from '@/core/constants/days';
+import { DAYS_OF_WEEK } from '@/core/constants/days';
 import { useTemplates, usePersonalRecords } from '@/context/WorkoutContext';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { appTheme } from '@/shared/constants/theme';
@@ -9,9 +8,9 @@ import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
-import { Alert, FlatList, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ExercisePickerCard } from '../components/ExercisePickerCard';
-import { PlanListItem } from '../components/PlanListItem';
+import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ExercisePickerModal } from '../components/ExercisePickerModal';
+import { PlansModal } from '../components/PlansModal';
 import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
 import { planningStyles as styles } from '../styles/planningStyles';
 
@@ -52,8 +51,6 @@ export default function PlanningScreen() {
   const [dayBeingAssigned, setDayBeingAssigned] = useState<string | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
   const [renameValue, setRenameValue] = useState('');
-  const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<MuscleFilterType>('Todos');
-  const [exerciseSearch, setExerciseSearch] = useState('');
 
   const handleSavePlanning = async () => {
     if (!planningName.trim()) {
@@ -299,128 +296,23 @@ export default function PlanningScreen() {
       </View>
 
       {/* Modal de Planos Salvos */}
-      <Overlay
+      <PlansModal
         visible={isPlansModalVisible}
         onClose={() => setIsPlansModalVisible(false)}
-        animationType="fade"
-      >
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>ROTINAS SALVAS</Text>
-          <TouchableOpacity
-            onPress={() => setIsPlansModalVisible(false)}
-            style={styles.closeModalHeaderBtn}
-          >
-            <Ionicons name="close" size={20} color="#FFF" />
-          </TouchableOpacity>
-        </View>
-
-        {templates.length === 0 ? (
-          <Text style={styles.emptyPlansText}>Nenhum modelo estruturado.</Text>
-        ) : (
-          <FlatList
-            data={templates}
-            extraData={[templates, activeId]}
-            keyExtractor={(item) => item.id}
-            style={styles.fullWidthMaxHeight}
-            renderItem={({ item }) => (
-              <PlanListItem
-                item={item}
-                isSelected={item.id === activeId}
-                onSelect={() => {
-                  selectActiveTemplate(item.id);
-                  setIsPlansModalVisible(false);
-                }}
-                onDelete={async () => {
-                  await deleteTemplate(item.id);
-                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                }}
-              />
-            )}
-          />
-        )}
-      </Overlay>
+        templates={templates}
+        activeId={activeId}
+        onSelectTemplate={selectActiveTemplate}
+        onDeleteTemplate={deleteTemplate}
+      />
 
       {/* Modal de Seleção de Exercícios */}
-      <Overlay
+      <ExercisePickerModal
         visible={isExerciseModalVisible}
-        onClose={() => {
-          setIsExerciseModalVisible(false);
-          setSelectedMuscleFilter('Todos');
-          setExerciseSearch('');
-        }}
-        animationType="slide"
-        style={{ height: '85%' }}
-      >
-        <View style={styles.modalHeader}>
-          <View>
-            <Text style={styles.modalTitle}>BIBLIOTECA</Text>
-            <Text style={styles.modalSubtitle}>
-              {selectedBlock
-                ? `Injetando cargas no Bloco ${selectedBlock.label}`
-                : 'Selecione um bloco primeiro'}
-            </Text>
-          </View>
-          <TouchableOpacity
-            style={styles.closeModalButton}
-            onPress={() => {
-              setIsExerciseModalVisible(false);
-              setSelectedMuscleFilter('Todos');
-            }}
-          >
-            <Ionicons name="close" size={20} color="#000" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.filterContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {MUSCLE_FILTERS.map((muscle) => {
-              const isSelected = selectedMuscleFilter === muscle;
-              return (
-                <TouchableOpacity
-                  key={muscle}
-                  onPress={() => setSelectedMuscleFilter(muscle)}
-                  style={[styles.filterChip, isSelected && styles.filterChipActive]}
-                >
-                  <Text style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}>
-                    {muscle}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={16} color="#636366" />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Buscar exercício..."
-            placeholderTextColor="#636366"
-            value={exerciseSearch}
-            onChangeText={setExerciseSearch}
-            autoCorrect={false}
-          />
-        </View>
-
-        <FlatList
-          data={EXERCISES_LIST.filter(
-            (exercise) =>
-              (selectedMuscleFilter === 'Todos' || exercise.muscleGroup === selectedMuscleFilter) &&
-              (exerciseSearch === '' ||
-                exercise.name.toLowerCase().includes(exerciseSearch.toLowerCase())),
-          )}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          style={styles.fullWidth}
-          renderItem={({ item }) => (
-            <ExercisePickerCard
-              item={item}
-              pr={getExercisePR(item.id)}
-              onAdd={() => handleAddExerciseToBlock(item)}
-            />
-          )}
-        />
-      </Overlay>
+        onClose={() => setIsExerciseModalVisible(false)}
+        selectedBlock={selectedBlock}
+        getExercisePR={getExercisePR}
+        onAddExercise={handleAddExerciseToBlock}
+      />
 
       {/* Modal de Atribuição de Dia */}
       <Overlay

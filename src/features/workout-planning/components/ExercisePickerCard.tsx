@@ -11,7 +11,11 @@ interface ExercisePickerCardProps {
   onAdd: () => void;
 }
 
-export function ExercisePickerCard({ item, pr, onAdd }: ExercisePickerCardProps) {
+export const ExercisePickerCard = React.memo(function ExercisePickerCard({
+  item,
+  pr,
+  onAdd,
+}: ExercisePickerCardProps) {
   const [isAdded, setIsAdded] = useState(false);
 
   const handlePress = () => {
@@ -64,7 +68,7 @@ export function ExercisePickerCard({ item, pr, onAdd }: ExercisePickerCardProps)
       </View>
     </TouchableOpacity>
   );
-}
+});
 
 const styles = StyleSheet.create({
   card: {
