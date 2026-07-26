@@ -175,22 +175,6 @@ export function usePlanningBlocks() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
-  const handleDistributeAcrossDays = useCallback(
-    (targetTrainingDays: number) => {
-      if (blocks.length === 0) return;
-      const count = Math.min(Math.max(targetTrainingDays, 1), DAYS_OF_WEEK.length);
-
-      const updated: Record<string, string | null> = {};
-      DAYS_OF_WEEK.forEach((day, index) => {
-        updated[day.id] = index < count ? blocks[index % blocks.length].id : null;
-      });
-
-      setDaySplit(updated);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    },
-    [blocks],
-  );
-
   return {
     blocks,
     daySplit,
@@ -211,7 +195,6 @@ export function usePlanningBlocks() {
     handleUpdateSetsInBlock,
     handleRemoveExerciseFromBlock,
     handleAssignDay,
-    handleDistributeAcrossDays,
     saveTemplate,
     selectActiveTemplate,
   };

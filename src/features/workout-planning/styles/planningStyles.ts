@@ -390,7 +390,6 @@ export const planningStyles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 2,
   },
-  closeModalButton: { backgroundColor: '#FFF', padding: 6, borderRadius: 8 },
   filterContainer: { flexDirection: 'row', marginBottom: 16, height: 34 },
   filterChip: {
     backgroundColor: '#121212',

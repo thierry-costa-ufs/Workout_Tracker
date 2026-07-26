@@ -704,25 +704,6 @@ export default function RecordsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: appTheme.colors.background },
-  header: {
-    ...sharedScreenStyles.pageHeader,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  headerTitle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  headerSubtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
-    textTransform: 'uppercase',
-  },
   addPresetButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -737,31 +718,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     fontSize: 11,
     letterSpacing: 0.5,
-  },
-
-  statsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    paddingHorizontal: 16,
-    marginTop: 12,
-    marginBottom: 14,
-  },
-  statChip: {
-    flex: 1,
-    backgroundColor: appTheme.colors.surfaceElevated,
-    borderRadius: 10,
-    paddingVertical: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-  },
-  statValue: { color: '#FFF', fontSize: 16, fontWeight: '900' },
-  statLabel: {
-    color: '#636366',
-    fontSize: 8,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    marginTop: 1,
   },
 
   searchBar: {
@@ -980,28 +936,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
   },
-  repPickRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginBottom: 20,
-  },
-  repPickChip: {
-    width: 38,
-    height: 34,
-    borderRadius: 8,
-    backgroundColor: '#121212',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-  },
-  repPickChipActive: {
-    backgroundColor: '#FFF',
-    borderColor: '#FFF',
-  },
-  repPickChipText: { color: '#A2A2A7', fontSize: 12, fontWeight: '800' },
-  repPickChipTextActive: { color: '#000' },
   confirmSaveButton: {
     backgroundColor: '#FFF',
     width: '100%',
@@ -1081,25 +1015,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     textAlign: 'center',
-  },
-  historyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#121212',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-  },
-  historyRowWeight: { color: '#FFF', fontSize: 13, fontWeight: '800' },
-  historyRowMeta: {
-    color: appTheme.colors.textMuted,
-    fontSize: 9,
-    fontWeight: '600',
-    marginTop: 3,
-    letterSpacing: 0.3,
   },
 
   historyStatsRow: {

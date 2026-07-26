@@ -16,11 +16,7 @@ export default function DashboardScreen() {
   const currentTemplate = templates.find((template) => template.id === activeId);
 
   const handleNavigation = (route: string) => {
-    try {
-      router.push(route as never);
-    } catch {
-      console.log(`Rota ${route} não encontrada.`);
-    }
+    router.push(route as never);
   };
 
   return (
@@ -118,21 +114,6 @@ export default function DashboardScreen() {
               <Text style={styles.cardDescription}>
                 Controle rígido de intervalos para uma maior noção de recuperação e tempo gasto.
               </Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.featureCard}
-            activeOpacity={0.7}
-            onPress={() => handleNavigation('/exercises')}
-          >
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardIndex}>04</Text>
-              <Feather name="book-open" size={16} color={appTheme.colors.textPrimary} />
-            </View>
-            <View style={styles.cardBody}>
-              <Text style={styles.cardTitle}>---</Text>
-              <Text style={styles.cardDescription}>---</Text>
             </View>
           </TouchableOpacity>
         </View>

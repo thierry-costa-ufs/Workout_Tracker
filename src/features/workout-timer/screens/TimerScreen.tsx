@@ -213,24 +213,6 @@ export default function TimerScreen() {
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: appTheme.colors.background },
-  header: {
-    ...sharedScreenStyles.pageHeader,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  headerTitle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  headerSubtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: 4,
-    letterSpacing: 0.5,
-  },
   displayContainer: {
     alignItems: 'center',
     justifyContent: 'center',

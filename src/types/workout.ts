@@ -1,5 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
-
 export type WorkoutDayKey = 'dom' | 'seg' | 'ter' | 'qua' | 'qui' | 'sex' | 'sab';
 
 export type MuscleGroup =
@@ -65,21 +63,8 @@ export interface PersonalRecord {
   date: string;
 }
 
-export interface ExerciseProgress {
-  [exerciseId: string]: boolean[];
-}
-
 export interface SessionStats {
   totalSets: number;
   completedSets: number;
   percentage: number;
-}
-
-export type IoniconsGlyphName = keyof typeof Ionicons.glyphMap;
-
-export interface TimerPreset {
-  id: string;
-  label: string;
-  duration: number;
-  icon: IoniconsGlyphName;
 }
