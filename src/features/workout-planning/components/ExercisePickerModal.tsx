@@ -12,7 +12,7 @@ import { planningStyles as styles } from '../styles/planningStyles';
 interface ExercisePickerModalProps {
   visible: boolean;
   onClose: () => void;
-  selectedBlock: { id: string; label: string } | undefined;
+  selectedBlock: { id: string; label: string } | null;
   getExercisePR: (id: string) => PersonalRecord | undefined;
   onAddExercise: (exercise: ExerciseData) => void;
 }

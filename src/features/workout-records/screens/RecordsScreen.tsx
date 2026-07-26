@@ -755,15 +755,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   filterChipActive: {
-    backgroundColor: appTheme.colors.textPrimary,
-    borderColor: appTheme.colors.textPrimary,
+    borderColor: appTheme.colors.white,
   },
   filterChipText: {
     color: appTheme.colors.textSecondary,
     fontSize: 11,
     fontWeight: '700',
   },
-  filterChipTextActive: { color: appTheme.colors.textInverse },
+  filterChipTextActive: { color: appTheme.colors.white },
   sortRow: {
     flexDirection: 'row',
     gap: 6,
@@ -780,8 +779,7 @@ const styles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
   },
   sortButtonActive: {
-    backgroundColor: 'rgba(255, 159, 10, 0.12)',
-    borderColor: appTheme.colors.accent,
+    borderColor: appTheme.colors.white,
   },
   sortButtonText: {
     color: appTheme.colors.textTertiary,
@@ -847,7 +845,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+    backgroundColor: 'rgba(229, 229, 234, 0.1)',
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -899,7 +897,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+    backgroundColor: 'rgba(229, 229, 234, 0.1)',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -975,7 +973,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  mechanicBadgeComposto: { backgroundColor: 'rgba(255, 159, 10, 0.1)' },
+  mechanicBadgeComposto: { backgroundColor: 'rgba(229, 229, 234, 0.1)' },
   mechanicBadgeIsolado: { backgroundColor: 'rgba(255, 255, 255, 0.05)' },
   mechanicBadgeText: { fontSize: 9, fontWeight: '800' },
   exerciseSelectionSub: {
@@ -1004,15 +1002,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   exerciseFilterChipActive: {
-    backgroundColor: appTheme.colors.textPrimary,
-    borderColor: appTheme.colors.textPrimary,
+    borderColor: appTheme.colors.white,
   },
   exerciseFilterChipText: {
     color: appTheme.colors.textSecondary,
     fontSize: 11,
     fontWeight: '700',
   },
-  exerciseFilterChipTextActive: { color: appTheme.colors.textInverse },
+  exerciseFilterChipTextActive: { color: appTheme.colors.white },
   emptyPlansText: {
     color: appTheme.colors.muted,
     paddingVertical: 20,
@@ -1060,7 +1057,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   historyCardBest: {
-    borderColor: 'rgba(255, 159, 10, 0.3)',
+    borderColor: 'rgba(229, 229, 234, 0.3)',
   },
   historyCardAccent: {
     position: 'absolute',

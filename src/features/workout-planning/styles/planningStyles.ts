@@ -70,7 +70,7 @@ export const planningStyles = StyleSheet.create({
     borderColor: appTheme.colors.borderStrong,
     minWidth: 128,
   },
-  blockChipActive: { borderColor: appTheme.colors.borderStrong },
+  blockChipActive: { borderColor: appTheme.colors.white },
   blockAvatar: {
     width: 32,
     height: 32,
@@ -401,19 +401,18 @@ export const planningStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   filterChipActive: {
-    backgroundColor: appTheme.colors.textPrimary,
-    borderColor: appTheme.colors.textPrimary,
+    borderColor: appTheme.colors.white,
   },
   filterChipText: {
     color: appTheme.colors.textSecondary,
     fontSize: 11,
     fontWeight: '700',
   },
-  filterChipTextActive: { color: appTheme.colors.textInverse },
+  filterChipTextActive: { color: appTheme.colors.white },
   mainListPrBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+    backgroundColor: 'rgba(229, 229, 234, 0.1)',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
