@@ -5,30 +5,19 @@ interface SetSegmentProps {
   isCompleted: boolean;
 }
 
-export const SetSegment = React.memo(function SetSegment({
-  isCompleted,
-}: SetSegmentProps) {
-  return (
-    <View
-      style={[
-        styles.segment,
-        isCompleted ? styles.completed : styles.incomplete,
-      ]}
-    />
-  );
+export const SetSegment = React.memo(function SetSegment({ isCompleted }: SetSegmentProps) {
+  return <View style={[styles.segment, isCompleted && styles.segmentCompleted]} />;
 });
 
 const styles = StyleSheet.create({
   segment: {
-    flex: 1,
-    height: 6,
-    borderRadius: 3,
-    marginHorizontal: 2,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#3A3A3D",
+    marginRight: 4,
   },
-  completed: {
+  segmentCompleted: {
     backgroundColor: "#E5E5EA",
-  },
-  incomplete: {
-    backgroundColor: "#2C2C2E",
   },
 });
