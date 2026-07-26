@@ -17,6 +17,17 @@ export const sharedScreenStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: appTheme.colors.border,
   },
+  pageHeaderCentered: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
+    backgroundColor: appTheme.colors.surface,
+    borderBottomWidth: 1,
+    borderColor: appTheme.colors.border,
+  },
   pageTitleBlock: {
     flex: 1,
   },
@@ -88,19 +99,5 @@ export const sharedScreenStyles = StyleSheet.create({
     padding: 16,
     minHeight: 140,
     justifyContent: "space-between",
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0, 0, 0, 0.85)",
-  },
-  modalSheet: {
-    width: "100%",
-    backgroundColor: appTheme.colors.surfaceElevated,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
   },
 });

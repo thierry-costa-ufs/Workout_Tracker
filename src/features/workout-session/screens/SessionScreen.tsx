@@ -1,15 +1,18 @@
 import { useWorkouts } from "@/context/WorkoutContext";
-import { DAY_LABELS, getWorkoutDayKeyForToday } from "@/lib/workout";
-import { appTheme } from "@/shared/constants/theme";
+import { DAY_LABELS, getWorkoutDayKeyForToday } from "@/core/constants/days";
+import { AppScreen } from "@/core/ui/AppScreen";
 import { sharedScreenStyles } from "@/shared/styles/screenStyles";
-import { AppScreen } from "@/shared/ui/AppScreen";
+import { useTabBackHandler } from "@/shared/hooks/useTabBackHandler";
 import { PlannedExercise } from "@/types/workout";
 import { useMemo } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
+import { appTheme } from "@/shared/constants/theme";
 import { WorkoutSessionView } from "../views/WorkoutSessionView";
+import { sessionStyles as styles } from "../styles/sessionStyles";
 
 export default function SessionScreen() {
-  const { templates, activeId, isLoading } = useWorkouts();
+  useTabBackHandler();
+  const { templates, activeId, isLoading, personalRecords } = useWorkouts();
   const activeTemplate = templates.find((template) => template.id === activeId);
   const currentDayKey = getWorkoutDayKeyForToday();
 
@@ -66,21 +69,8 @@ export default function SessionScreen() {
       </View>
 
       <View style={styles.contentBody}>
-        <WorkoutSessionView exercises={todayExercises} />
+        <WorkoutSessionView exercises={todayExercises} personalRecords={personalRecords} />
       </View>
     </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  daySubtitle: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 14,
-    fontWeight: "900",
-    letterSpacing: 1,
-  },
-  contentBody: {
-    flex: 1,
-    backgroundColor: appTheme.colors.background,
-  },
-});
