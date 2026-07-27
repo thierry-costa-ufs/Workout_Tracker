@@ -1,6 +1,3 @@
-import TimerScreen from '@/features/workout-timer/screens/TimerScreen';
-import React from 'react';
-
-export default function TimerTabScreen() {
-  return <TimerScreen />;
+export default function TabTimer() {
+  return null;
 }

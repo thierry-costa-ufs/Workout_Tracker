@@ -59,7 +59,7 @@ export const dashboardStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: appTheme.colors.textPrimary,
-    paddingVertical: 12,
+    paddingVertical: appTheme.spacing.sm,
     borderRadius: 8,
     gap: 8,
   } satisfies ViewStyle,
@@ -71,11 +71,11 @@ export const dashboardStyles = StyleSheet.create({
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    paddingHorizontal: 24,
-    gap: 12,
+    paddingHorizontal: appTheme.spacing.xl,
+    gap: appTheme.spacing.sm,
   } satisfies ViewStyle,
   featureCard: {
-    width: (width - 24 * 2 - 12) / 2,
+    width: (width - appTheme.spacing.xl * 2 - appTheme.spacing.sm) / 2,
     backgroundColor: appTheme.colors.surfaceElevated,
     overflow: 'hidden',
     borderRadius: 4,
@@ -86,13 +86,13 @@ export const dashboardStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: appTheme.spacing.lg,
+    paddingVertical: appTheme.spacing.sm,
     borderRadius: 4,
   } satisfies ViewStyle,
   cardBody: {
     paddingTop: 8,
-    padding: 12,
+    padding: appTheme.spacing.sm,
     height: 148,
   } satisfies ViewStyle,
   cardIndex: {
@@ -104,7 +104,7 @@ export const dashboardStyles = StyleSheet.create({
     color: appTheme.colors.textPrimary,
     fontSize: 13,
     fontWeight: '800',
-    marginBottom: 12,
+    marginBottom: appTheme.spacing.sm,
   } satisfies TextStyle,
   cardDescription: {
     color: appTheme.colors.textSecondary,
@@ -112,9 +112,9 @@ export const dashboardStyles = StyleSheet.create({
     lineHeight: 16,
   } satisfies TextStyle,
   footerBanner: {
-    marginHorizontal: 24,
-    marginTop: 24,
-    paddingVertical: 16,
+    marginHorizontal: appTheme.spacing.xl,
+    marginTop: appTheme.spacing.xl,
+    paddingVertical: appTheme.spacing.lg,
     alignItems: 'center',
     borderTopWidth: 1,
     borderColor: appTheme.colors.border,
@@ -125,4 +125,8 @@ export const dashboardStyles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: 1,
   } satisfies TextStyle,
+  menuBtn: {
+    padding: 8,
+    alignSelf: 'center',
+  } satisfies ViewStyle,
 });

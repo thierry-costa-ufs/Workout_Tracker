@@ -1,6 +1,5 @@
 import RecordsScreen from '@/features/workout-records/screens/RecordsScreen';
-import React from 'react';
 
-export default function RecordTabScreen() {
+export default function RecordRoute() {
   return <RecordsScreen />;
 }

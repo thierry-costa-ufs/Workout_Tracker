@@ -1,14 +1,18 @@
 import { EXERCISES_LIST } from '@/core/constants/exercises';
-import { MUSCLE_FILTERS } from '@/core/constants/days';
+import { MuscleFilterType } from '@/core/constants/days';
 import { usePersonalRecords } from '@/context/WorkoutContext';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { Overlay } from '@/shared/ui/Overlay';
-import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
+import { ExercisePickerModal } from '@/shared/ui/ExercisePickerModal';
+import { MuscleFilterChips } from '@/shared/ui/MuscleFilterChips';
+import { SearchBar } from '@/shared/ui/SearchBar';
+import { confirmDelete } from '@/shared/utils/confirmDelete';
 import { WeightProgressionChart } from '../components/WeightProgressionChart';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useMemo, useState } from 'react';
 import {
@@ -62,7 +66,7 @@ function getSecondBestRecord(group: RecordGroup) {
 }
 
 export default function RecordsScreen() {
-  useTabBackHandler();
+  const router = useRouter();
   const { personalRecords, savePR, deletePR } = usePersonalRecords();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -75,9 +79,8 @@ export default function RecordsScreen() {
   const [reps, setReps] = useState('');
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [muscleFilter, setMuscleFilter] = useState('Todos');
+  const [muscleFilter, setMuscleFilter] = useState<MuscleFilterType>('Todos');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
-  const [exerciseMuscleFilter, setExerciseMuscleFilter] = useState('Todos');
 
   const groups = useMemo(() => groupRecordsByExercise(personalRecords), [personalRecords]);
 
@@ -182,30 +185,22 @@ export default function RecordsScreen() {
   };
 
   const handleDeletePR = (id: string) => {
-    Alert.alert('Remover Recorde', 'Excluir permanentemente este PR?', [
-      { text: 'Cancelar', style: 'cancel' },
-      {
-        text: 'Excluir',
-        style: 'destructive',
-        onPress: async () => {
-          await deletePR(id);
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        },
-      },
-    ]);
+    confirmDelete('Remover Recorde', 'Excluir permanentemente este PR?', async () => {
+      await deletePR(id);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    });
   };
 
   return (
     <AppScreen style={styles.container} backgroundColor={appTheme.colors.background}>
-      <View style={sharedScreenStyles.pageHeaderCentered}>
-        <View style={sharedScreenStyles.pageTitleBlock}>
-          <Text style={sharedScreenStyles.pageTitle}>SEUS RECORDES</Text>
-          <Text style={sharedScreenStyles.pageSubtitle}>Mapeamento de Força</Text>
-        </View>
-        <TouchableOpacity style={styles.addPresetButton} onPress={() => setModalVisible(true)}>
-          <Ionicons name="add" size={14} color={appTheme.colors.textInverse} />
-          <Text style={styles.addPresetText}>NOVO PR</Text>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={24} color={appTheme.colors.textPrimary} />
         </TouchableOpacity>
+        <View style={styles.headerDivider} />
+        <View style={styles.headerCenter}>
+          <Text style={sharedScreenStyles.pageTitle}>RECORDES</Text>
+        </View>
       </View>
 
       {personalRecords.length === 0 ? (
@@ -215,45 +210,12 @@ export default function RecordsScreen() {
         </View>
       ) : (
         <>
-          <View style={styles.searchBar}>
-            <Ionicons name="search-outline" size={16} color={appTheme.colors.textSecondary} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Buscar exercício..."
-              placeholderTextColor={appTheme.colors.muted}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={16} color={appTheme.colors.muted} />
-              </TouchableOpacity>
-            )}
+          <View style={styles.searchBarContainer}>
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
           </View>
 
           <View style={styles.filterContainer}>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.filterRow}
-            >
-              {MUSCLE_FILTERS.map((item) => {
-                const isSelected = muscleFilter === item;
-                return (
-                  <TouchableOpacity
-                    key={item}
-                    onPress={() => setMuscleFilter(item)}
-                    style={[styles.filterChip, isSelected && styles.filterChipActive]}
-                  >
-                    <Text
-                      style={[styles.filterChipText, isSelected && styles.filterChipTextActive]}
-                    >
-                      {item.toUpperCase()}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
+            <MuscleFilterChips value={muscleFilter} onChange={setMuscleFilter} />
           </View>
 
           <View style={styles.sortRow}>
@@ -363,10 +325,11 @@ export default function RecordsScreen() {
           setWeight('');
           setReps('');
         }}
-        animationType="slide"
+        animationType="fade"
+        position="center"
       >
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>REGISTRAR MARCA</Text>
+        <View style={sharedScreenStyles.modalHeader}>
+          <Text style={sharedScreenStyles.modalTitle}>REGISTRAR MARCA</Text>
           <TouchableOpacity
             onPress={() => {
               setModalVisible(false);
@@ -379,37 +342,42 @@ export default function RecordsScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          style={styles.selectSelectable}
-          onPress={() => setExerciseModalVisible(true)}
-        >
-          <Text
-            style={[
-              styles.selectedExerciseText,
-              {
-                color: selectedExercise ? appTheme.colors.white : appTheme.colors.muted,
-              },
-            ]}
+        <View style={styles.prModalBody}>
+          <TouchableOpacity
+            style={styles.exerciseSelector}
+            onPress={() => setExerciseModalVisible(true)}
           >
-            {selectedExercise ? selectedExercise.name.toUpperCase() : 'SELECIONE O EXERCÍCIO'}
-          </Text>
-          <Ionicons name="chevron-down" size={16} color={appTheme.colors.textSecondary} />
-        </TouchableOpacity>
-
-        {currentBestRecord && (
-          <View style={styles.currentBestBanner}>
-            <Ionicons name="trophy" size={13} color={appTheme.colors.accent} />
-            <Text style={styles.currentBestBannerText}>
-              {`RECORDE ATUAL: ${currentBestRecord.weight} KG x ${currentBestRecord.reps} — supere isso`}
+            <Ionicons
+              name="fitness"
+              size={18}
+              color={selectedExercise ? appTheme.colors.white : appTheme.colors.muted}
+            />
+            <Text
+              style={[
+                styles.exerciseSelectorText,
+                {
+                  color: selectedExercise ? appTheme.colors.white : appTheme.colors.muted,
+                },
+              ]}
+            >
+              {selectedExercise ? selectedExercise.name.toUpperCase() : 'SELECIONE O EXERCÍCIO'}
             </Text>
-          </View>
-        )}
+            <Ionicons name="chevron-down" size={16} color={appTheme.colors.textSecondary} />
+          </TouchableOpacity>
 
-        <View style={styles.rowInputs}>
-          <View style={styles.flex13}>
-            <Text style={styles.inputLabel}>CARGA TOTAL (KG)</Text>
+          {currentBestRecord && (
+            <View style={styles.currentBestBanner}>
+              <Ionicons name="trophy" size={13} color={appTheme.colors.accent} />
+              <Text style={styles.currentBestBannerText}>
+                {`RECORDE ATUAL: ${currentBestRecord.weight} KG x ${currentBestRecord.reps} — supere isso`}
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.prInputGroup}>
+            <Text style={styles.prInputLabel}>CARGA TOTAL (KG)</Text>
             <TextInput
-              style={[styles.technicalInput, styles.flex1]}
+              style={styles.prInput}
               placeholder="0.0"
               placeholderTextColor={appTheme.colors.muted}
               keyboardType="numeric"
@@ -417,140 +385,44 @@ export default function RecordsScreen() {
               onChangeText={setWeight}
             />
           </View>
-          <View style={styles.flex1}>
-            <Text style={styles.inputLabel}>REPETIÇÕES MÁX.</Text>
-            <View style={styles.weightStepperRow}>
-              <TouchableOpacity
-                style={styles.weightStepperButton}
-                onPress={() => adjustReps(-REP_STEP)}
-              >
-                <Ionicons name="remove" size={14} color={appTheme.colors.textTertiary} />
+
+          <View style={styles.prInputGroup}>
+            <Text style={styles.prInputLabel}>REPETIÇÕES MÁXIMAS</Text>
+            <View style={styles.stepperRow}>
+              <TouchableOpacity style={styles.stepperBtn} onPress={() => adjustReps(-REP_STEP)}>
+                <Ionicons name="remove" size={16} color={appTheme.colors.textTertiary} />
               </TouchableOpacity>
               <TextInput
-                style={styles.technicalInput}
+                style={styles.stepperInput}
                 placeholder="0"
                 placeholderTextColor={appTheme.colors.muted}
                 keyboardType="numeric"
                 value={reps}
                 onChangeText={setReps}
               />
-              <TouchableOpacity
-                style={styles.weightStepperButton}
-                onPress={() => adjustReps(REP_STEP)}
-              >
-                <Ionicons name="add" size={14} color={appTheme.colors.white} />
+              <TouchableOpacity style={styles.stepperBtn} onPress={() => adjustReps(REP_STEP)}>
+                <Ionicons name="add" size={16} color={appTheme.colors.white} />
               </TouchableOpacity>
             </View>
           </View>
-        </View>
 
-        <TouchableOpacity style={styles.confirmSaveButton} onPress={handleSavePR}>
-          <Text style={styles.confirmSaveText}>SALVAR RECORDE</Text>
-        </TouchableOpacity>
+          <TouchableOpacity style={styles.saveRecordBtn} onPress={handleSavePR}>
+            <Text style={styles.saveRecordText}>SALVAR RECORDE</Text>
+          </TouchableOpacity>
+        </View>
       </Overlay>
 
       {/* Modal de Biblioteca de Exercícios */}
-      <Overlay
+      <ExercisePickerModal
         visible={exerciseModalVisible}
-        onClose={() => {
+        onClose={() => setExerciseModalVisible(false)}
+        selectedBlock={null}
+        getExercisePR={(id) => personalRecords.find((r) => r.exerciseId === id)}
+        onAddExercise={(exercise) => {
+          setSelectedExercise(exercise);
           setExerciseModalVisible(false);
-          setExerciseMuscleFilter('Todos');
         }}
-        animationType="slide"
-        style={{ height: '85%' }}
-      >
-        <View style={styles.modalHeader}>
-          <View>
-            <Text style={styles.modalTitle}>BIBLIOTECA</Text>
-            <Text style={styles.modalSubtitle}>SELECIONE O EXERCÍCIO PARA REGISTRAR</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.closeModalButton}
-            onPress={() => {
-              setExerciseModalVisible(false);
-              setExerciseMuscleFilter('Todos');
-            }}
-          >
-            <Ionicons name="close" size={20} color={appTheme.colors.textInverse} />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.exerciseFilterContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            {MUSCLE_FILTERS.map((muscle) => {
-              const isSelected = exerciseMuscleFilter === muscle;
-              return (
-                <TouchableOpacity
-                  key={muscle}
-                  onPress={() => setExerciseMuscleFilter(muscle)}
-                  style={[styles.exerciseFilterChip, isSelected && styles.exerciseFilterChipActive]}
-                >
-                  <Text
-                    style={[
-                      styles.exerciseFilterChipText,
-                      isSelected && styles.exerciseFilterChipTextActive,
-                    ]}
-                  >
-                    {muscle}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
-
-        <FlatList
-          data={EXERCISES_LIST.filter(
-            (exercise) =>
-              exerciseMuscleFilter === 'Todos' || exercise.muscleGroup === exerciseMuscleFilter,
-          )}
-          keyExtractor={(item) => item.id}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            const isComposto = item.mechanic === 'Composto';
-            return (
-              <TouchableOpacity
-                style={styles.exerciseSelectionRow}
-                onPress={() => {
-                  setSelectedExercise(item);
-                  setExerciseModalVisible(false);
-                  setExerciseMuscleFilter('Todos');
-                }}
-              >
-                <View style={styles.flex1}>
-                  <Text style={styles.exerciseSelectionText}>{item.name}</Text>
-
-                  <View style={styles.exerciseMetaRow}>
-                    <View
-                      style={[
-                        styles.mechanicBadge,
-                        isComposto ? styles.mechanicBadgeComposto : styles.mechanicBadgeIsolado,
-                      ]}
-                    >
-                      <Text
-                        style={[
-                          styles.mechanicBadgeText,
-                          {
-                            color: isComposto
-                              ? appTheme.colors.textSecondary
-                              : appTheme.colors.textSecondary,
-                          },
-                        ]}
-                      >
-                        {item.mechanic.toUpperCase()}
-                      </Text>
-                    </View>
-                    <Text style={styles.exerciseSelectionSub}>
-                      {item.equipment.toUpperCase()} • {item.muscleGroup.toUpperCase()}
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={16} color={appTheme.colors.borderLight} />
-              </TouchableOpacity>
-            );
-          }}
-        />
-      </Overlay>
+      />
 
       {/* Modal de Histórico do Exercício */}
       <Overlay
@@ -559,12 +431,12 @@ export default function RecordsScreen() {
         animationType="fade"
         style={{ height: '80%' }}
       >
-        <View style={styles.modalHeader}>
+        <View style={sharedScreenStyles.modalHeader}>
           <View>
-            <Text style={styles.modalTitle}>
+            <Text style={sharedScreenStyles.modalTitle}>
               {activeGroup ? activeGroup.exerciseName.toUpperCase() : ''}
             </Text>
-            <Text style={styles.modalSubtitle}>
+            <Text style={sharedScreenStyles.modalSubtitle}>
               {activeGroup ? activeGroup.muscleGroup.toUpperCase() : ''}
             </Text>
           </View>
@@ -702,67 +574,79 @@ export default function RecordsScreen() {
           </ScrollView>
         )}
       </Overlay>
+      <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
+        <Ionicons name="add" size={18} color={appTheme.colors.textInverse} />
+        <Text style={styles.fabText}>NOVO PR</Text>
+      </TouchableOpacity>
     </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: appTheme.colors.background },
-  addPresetButton: {
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: appTheme.spacing.xl,
+    paddingTop: appTheme.spacing.xl,
+    paddingBottom: appTheme.spacing.lg,
+    backgroundColor: appTheme.colors.surface,
+    borderBottomWidth: 1,
+    borderColor: appTheme.colors.border,
+  },
+  headerDivider: {
+    position: 'absolute',
+    left: appTheme.spacing.xl + 52,
+    top: appTheme.spacing.xl - 6,
+    bottom: appTheme.spacing.lg + 4,
+    width: 1,
+    height: 48,
+    backgroundColor: appTheme.colors.borderLight,
+  },
+  headerCenter: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    left: appTheme.spacing.xl - 4,
+    padding: 6,
+    top: appTheme.spacing.xl,
+  },
+  fab: {
+    position: 'absolute',
+    right: 24,
+    bottom: 100,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: appTheme.colors.white,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    gap: 4,
+    paddingVertical: 22,
+    paddingHorizontal: 26,
+    borderRadius: 28,
+    gap: 6,
+    shadowColor: appTheme.colors.textInverse,
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+    zIndex: 10,
   },
-  addPresetText: {
+  fabText: {
     color: appTheme.colors.textInverse,
     fontWeight: '900',
-    fontSize: 11,
+    fontSize: 12,
     letterSpacing: 0.5,
   },
 
-  searchBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: appTheme.colors.surfaceElevated,
+  searchBarContainer: {
     marginHorizontal: 16,
     marginBottom: 12,
     marginTop: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
   },
-  searchInput: { flex: 1, color: appTheme.colors.white, fontSize: 13, fontWeight: '600' },
   filterContainer: {
     marginBottom: 10,
+    paddingHorizontal: 16,
   },
-  filterRow: { paddingHorizontal: 16, gap: 6 },
-  filterChip: {
-    flexShrink: 0,
-    height: 36,
-    backgroundColor: appTheme.colors.background,
-    paddingHorizontal: 14,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  filterChipActive: {
-    borderColor: appTheme.colors.white,
-  },
-  filterChipText: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  filterChipTextActive: { color: appTheme.colors.white },
   sortRow: {
     flexDirection: 'row',
     gap: 6,
@@ -863,44 +747,31 @@ const styles = StyleSheet.create({
     marginLeft: 'auto',
   },
 
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+  prModalBody: {
+    gap: 16,
   },
-  modalTitle: {
-    color: appTheme.colors.white,
-    fontSize: 14,
-    fontWeight: '900',
-    letterSpacing: 1,
-  },
-  modalSubtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 10,
-    fontWeight: '700',
-    marginTop: 2,
-  },
-  selectSelectable: {
-    width: '100%',
+  exerciseSelector: {
     backgroundColor: appTheme.colors.background,
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 12,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
-    marginBottom: 12,
+  },
+  exerciseSelectorText: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: '700',
   },
   currentBestBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: 'rgba(229, 229, 234, 0.1)',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
+    backgroundColor: 'rgba(229, 229, 234, 0.08)',
+    borderRadius: 10,
+    padding: 14,
   },
   currentBestBannerText: {
     color: appTheme.colors.textPrimary,
@@ -908,108 +779,65 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     flex: 1,
   },
-  rowInputs: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  inputLabel: {
+  prInputGroup: {},
+  prInputLabel: {
     color: appTheme.colors.textSecondary,
-    fontSize: 9,
+    fontSize: 10,
     fontWeight: '800',
-    marginBottom: 6,
+    marginBottom: 8,
     letterSpacing: 0.5,
   },
-  technicalInput: {
+  prInput: {
     backgroundColor: appTheme.colors.background,
     color: appTheme.colors.white,
-    padding: 14,
-    borderRadius: 8,
-    fontSize: 16,
+    padding: 16,
+    borderRadius: 10,
+    fontSize: 18,
     fontWeight: '700',
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
     textAlign: 'center',
   },
-  weightStepperRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  weightStepperButton: {
+  stepperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  stepperBtn: {
     backgroundColor: appTheme.colors.surfaceElevated,
-    width: 36,
-    height: 48,
-    borderRadius: 8,
+    width: 44,
+    height: 44,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
   },
-  confirmSaveButton: {
-    backgroundColor: appTheme.colors.white,
-    width: '100%',
+  stepperInput: {
+    flex: 1,
+    backgroundColor: appTheme.colors.background,
+    color: appTheme.colors.white,
     padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
+    borderRadius: 10,
+    fontSize: 18,
+    fontWeight: '700',
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    textAlign: 'center',
   },
-  confirmSaveText: {
+  saveRecordBtn: {
+    backgroundColor: appTheme.colors.white,
+    paddingVertical: 18,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  saveRecordText: {
     color: appTheme.colors.textInverse,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  exerciseSelectionRow: {
-    backgroundColor: appTheme.colors.background,
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-  },
-  exerciseSelectionText: {
-    color: appTheme.colors.white,
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  exerciseMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  mechanicBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  mechanicBadgeComposto: { backgroundColor: 'rgba(229, 229, 234, 0.1)' },
-  mechanicBadgeIsolado: { backgroundColor: 'rgba(255, 255, 255, 0.05)' },
-  mechanicBadgeText: { fontSize: 9, fontWeight: '800' },
-  exerciseSelectionSub: {
-    color: appTheme.colors.textMuted,
-    fontSize: 9,
-    fontWeight: '700',
-  },
-  closeModalButton: {
-    backgroundColor: appTheme.colors.white,
-    padding: 6,
-    borderRadius: 8,
-  },
-  exerciseFilterContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  exerciseFilterChip: {
-    flexShrink: 0,
-    backgroundColor: appTheme.colors.background,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginRight: 6,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-    justifyContent: 'center',
-  },
-  exerciseFilterChipActive: {
-    borderColor: appTheme.colors.white,
-  },
-  exerciseFilterChipText: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  exerciseFilterChipTextActive: { color: appTheme.colors.white },
   emptyPlansText: {
     color: appTheme.colors.muted,
     paddingVertical: 20,
@@ -1116,9 +944,7 @@ const styles = StyleSheet.create({
   },
   groupCardBodyRow: { flex: 1, flexDirection: 'row' },
   flex1: { flex: 1 },
-  flex13: { flex: 1.3 },
   historyContent: { paddingBottom: 16 },
   historyCardList: { gap: 6 },
   trophyMargin: { marginLeft: 6 },
-  selectedExerciseText: { fontWeight: '600' },
 });

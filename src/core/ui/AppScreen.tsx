@@ -1,7 +1,6 @@
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React from 'react';
 import { StatusBar, StyleSheet, View, ViewStyle } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { appTheme } from '@/shared/constants/theme';
 
 interface AppScreenProps {
@@ -19,12 +18,13 @@ export function AppScreen({
   edges = ['top'],
   barStyle = 'light-content',
 }: AppScreenProps) {
-  const tabBarHeight = useBottomTabBarHeight();
+  const insets = useSafeAreaInsets();
+  const bottomPadding = insets.bottom + 64;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }, style]} edges={edges}>
       <StatusBar barStyle={barStyle} backgroundColor={backgroundColor} />
-      <View style={{ flex: 1, paddingBottom: tabBarHeight + 30 }}>{children}</View>
+      <View style={{ flex: 1, paddingBottom: bottomPadding }}>{children}</View>
     </SafeAreaView>
   );
 }

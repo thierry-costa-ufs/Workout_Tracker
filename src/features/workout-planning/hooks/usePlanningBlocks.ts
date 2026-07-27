@@ -1,5 +1,7 @@
 import { DAYS_OF_WEEK, createEmptyWorkoutData } from '@/core/constants/days';
 import { ExerciseData, WorkoutData } from '@/types/workout';
+import { useActiveTemplate } from '@/shared/hooks/useActiveTemplate';
+import { confirmDelete } from '@/shared/utils/confirmDelete';
 import * as Haptics from 'expo-haptics';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
@@ -13,12 +15,12 @@ import {
 
 export function usePlanningBlocks() {
   const { templates, activeId, saveTemplate, selectActiveTemplate } = useTemplates();
+  const currentActivePlan = useActiveTemplate();
 
   const [blocks, setBlocks] = useState<WorkoutBlock[]>([createBlock('A')]);
   const [daySplit, setDaySplit] = useState<Record<string, string | null>>({});
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(blocks[0]?.id ?? null);
 
-  const currentActivePlan = templates.find((template) => template.id === activeId);
   const selectedBlock = blocks.find((b) => b.id === selectedBlockId) || null;
   const trainingDaysCount = Object.values(daySplit).filter(Boolean).length;
   const restDaysCount = DAYS_OF_WEEK.length - trainingDaysCount;
@@ -90,14 +92,9 @@ export function usePlanningBlocks() {
         return;
       }
 
-      Alert.alert('Excluir bloco', 'Os dias vinculados a este bloco ficarão como descanso.', [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: () => handleDeleteBlock(blockId),
-        },
-      ]);
+      confirmDelete('Excluir bloco', 'Os dias vinculados a este bloco ficarão como descanso.', () =>
+        handleDeleteBlock(blockId),
+      );
     },
     [blocks.length, handleDeleteBlock],
   );

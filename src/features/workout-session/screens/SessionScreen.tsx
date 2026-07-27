@@ -1,8 +1,8 @@
-import { useSessions, useTemplates, usePersonalRecords } from '@/context/WorkoutContext';
+import { useSessions, usePersonalRecords } from '@/context/WorkoutContext';
 import { DAY_LABELS, getWorkoutDayKeyForToday } from '@/core/constants/days';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
-import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
+import { useActiveTemplate } from '@/shared/hooks/useActiveTemplate';
 import { PlannedExercise } from '@/types/workout';
 import { useMemo } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
@@ -11,11 +11,9 @@ import { WorkoutSessionView } from '../views/WorkoutSessionView';
 import { sessionStyles as styles } from '../styles/sessionStyles';
 
 export default function SessionScreen() {
-  useTabBackHandler();
-  const { templates, activeId } = useTemplates();
+  const activeTemplate = useActiveTemplate();
   const { isLoading } = useSessions();
   const { personalRecords } = usePersonalRecords();
-  const activeTemplate = templates.find((template) => template.id === activeId);
   const currentDayKey = getWorkoutDayKeyForToday();
 
   const todayExercises = useMemo(() => {

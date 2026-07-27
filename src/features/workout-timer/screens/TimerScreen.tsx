@@ -1,7 +1,6 @@
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { AppScreen } from '@/core/ui/AppScreen';
-import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
@@ -45,7 +44,6 @@ const TIMER_PRESETS: Preset[] = [
 ];
 
 export default function TimerScreen() {
-  useTabBackHandler();
   const [secondsLeft, setSecondsLeft] = useState(90);
   const [totalDuration, setTotalDuration] = useState(90);
   const [isActive, setIsActive] = useState(false);

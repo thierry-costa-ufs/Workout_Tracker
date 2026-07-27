@@ -1,4 +1,3 @@
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
@@ -13,11 +12,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appTheme } from '@/shared/constants/theme';
+import { Portal } from '@/shared/ui/Portal';
 
 interface OverlayProps {
   visible: boolean;
   onClose?: () => void;
   animationType?: 'fade' | 'slide';
+  position?: 'bottom' | 'center';
   children: React.ReactNode;
   style?: ViewStyle;
 }
@@ -26,11 +27,11 @@ export function Overlay({
   visible,
   onClose,
   animationType = 'fade',
+  position = 'bottom',
   children,
   style,
 }: OverlayProps) {
   const insets = useSafeAreaInsets();
-  const tabBarHeight = useBottomTabBarHeight();
 
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(Dimensions.get('window').height)).current;
@@ -117,25 +118,33 @@ export function Overlay({
 
   if (!visible && !isRendered.current) return null;
 
-  const bottomPad = insets.bottom + tabBarHeight + 16;
+  const bottomPad = insets.bottom + 80;
 
   return (
-    <View style={styles.container} pointerEvents={visible ? 'auto' : 'none'}>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <Animated.View style={[styles.backdrop, { opacity }]} />
-      </TouchableWithoutFeedback>
+    <Portal>
+      <View style={styles.container} pointerEvents={visible ? 'auto' : 'none'}>
+        <TouchableWithoutFeedback onPress={onClose}>
+          <Animated.View style={[styles.backdrop, { opacity }]} />
+        </TouchableWithoutFeedback>
 
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <Animated.View
-          style={[
-            { paddingBottom: bottomPad, marginBottom: keyboardHeight },
-            animationType === 'slide' ? { transform: [{ translateY }] } : { opacity },
-          ]}
+        <View
+          style={{
+            flex: 1,
+            justifyContent: position === 'center' ? 'center' : 'flex-end',
+            padding: position === 'center' ? 24 : 0,
+          }}
         >
-          <View style={[styles.sheet, style]}>{children}</View>
-        </Animated.View>
+          <Animated.View
+            style={[
+              { paddingBottom: bottomPad, marginBottom: keyboardHeight },
+              animationType === 'slide' ? { transform: [{ translateY }] } : { opacity },
+            ]}
+          >
+            <View style={[styles.sheet, style]}>{children}</View>
+          </Animated.View>
+        </View>
       </View>
-    </View>
+    </Portal>
   );
 }
 
@@ -150,10 +159,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.85)',
   },
   sheet: {
-    width: '100%',
     backgroundColor: appTheme.colors.surfaceElevated,
     borderRadius: 20,
     padding: 20,
+    marginHorizontal: 16,
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
   },

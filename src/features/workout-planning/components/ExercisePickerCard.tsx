@@ -1,5 +1,6 @@
 import { appTheme } from '@/shared/constants/theme';
 import { ExerciseData, PersonalRecord } from '@/types/workout';
+import { PrBadge } from '@/shared/ui/PrBadge';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -37,16 +38,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
         <Text style={styles.title}>{item.name}</Text>
         <View style={styles.metaBadgeContainer}>
           <View style={[styles.metaBadge, isComposto ? styles.badgeComposto : styles.badgeIsolado]}>
-            <Text
-              style={[
-                styles.metaBadgeText,
-                {
-                  color: isComposto ? appTheme.colors.textSecondary : appTheme.colors.textSecondary,
-                },
-              ]}
-            >
-              {item.mechanic.toUpperCase()}
-            </Text>
+            <Text style={styles.metaBadgeText}>{item.mechanic.toUpperCase()}</Text>
           </View>
           <Text style={styles.subtleTargetText}>
             {item.equipment.toUpperCase()} • {item.muscleGroup.toUpperCase()}
@@ -54,12 +46,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
         </View>
       </View>
 
-      {pr && (
-        <View style={styles.prBadge}>
-          <Ionicons name="trophy" size={10} color={appTheme.colors.accent} />
-          <Text style={styles.prText}>MAX: {String(pr.weight)}KG</Text>
-        </View>
-      )}
+      {pr && <PrBadge weight={pr.weight} variant="orange" />}
 
       <View style={[styles.addIconCircle, isAdded && styles.addIconCircleSuccess]}>
         <Ionicons
@@ -84,7 +71,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: appTheme.colors.white,
+    color: appTheme.colors.textPrimary,
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 6,
@@ -93,18 +80,8 @@ const styles = StyleSheet.create({
   metaBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   badgeComposto: { backgroundColor: 'rgba(255, 159, 10, 0.1)' },
   badgeIsolado: { backgroundColor: 'rgba(255, 255, 255, 0.05)' },
-  metaBadgeText: { fontSize: 9, fontWeight: '800' },
+  metaBadgeText: { color: appTheme.colors.textSecondary, fontSize: 9, fontWeight: '800' },
   subtleTargetText: { color: appTheme.colors.textMuted, fontSize: 9, fontWeight: '700' },
-  prBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(255, 159, 10, 0.1)',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  prText: { color: appTheme.colors.textPrimary, fontSize: 9, fontWeight: '800' },
   addIconCircle: {
     width: 28,
     height: 28,

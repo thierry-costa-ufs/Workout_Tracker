@@ -1,126 +1,193 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import { Tabs } from 'expo-router';
-import { Platform, StatusBar, StyleSheet } from 'react-native';
+import { usePathname } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
+import {
+  BackHandler,
+  Platform,
+  Pressable,
+  StatusBar,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from 'react-native';
+import { TabView, type SceneRendererProps } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TabNavigationProvider, useSwitchTab } from '@/shared/context/TabNavigationContext';
+import DashboardScreen from '@/features/workout-dashboard/screens/DashboardScreen';
+import SessionScreen from '@/features/workout-session/screens/SessionScreen';
+import TimerScreen from '@/features/workout-timer/screens/TimerScreen';
+import PlanningScreen from '@/features/workout-planning/screens/PlanningScreen';
 import { appTheme } from '@/shared/constants/theme';
+
+type Route = {
+  key: string;
+  title: string;
+  icon: keyof typeof Ionicons.glyphMap;
+};
+
+const TAB_ROUTES: Route[] = [
+  { key: 'index', title: 'INÍCIO', icon: 'home' },
+  { key: 'session', title: 'SESSÃO', icon: 'flash' },
+  { key: 'timer', title: 'PAUSA', icon: 'time' },
+  { key: 'planning', title: 'PLANO', icon: 'document-text' },
+];
+
+const SCENES: Record<string, React.FC> = {
+  index: DashboardScreen,
+  session: SessionScreen,
+  timer: TimerScreen,
+  planning: PlanningScreen,
+};
+
+function getIndexFromPathname(pathname: string): number {
+  if (pathname === '/(tabs)' || pathname === '/(tabs)/') return 0;
+  const idx = TAB_ROUTES.findIndex((r) => pathname === `/(tabs)/${r.key}`);
+  return idx >= 0 ? idx : 0;
+}
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  const [index, setIndex] = useState(() => getIndexFromPathname(pathname));
+
+  const handleIndexChange = (newIndex: number) => {
+    setIndex(newIndex);
+  };
+
+  const renderScene = ({ route }: SceneRendererProps & { route: { key: string } }) => {
+    const Screen = SCENES[route.key];
+    return Screen ? <Screen /> : null;
+  };
 
   return (
-    <>
-      <StatusBar barStyle="light-content" backgroundColor={appTheme.colors.textInverse} />
+    <TabNavigationProvider value={handleIndexChange}>
+      <View style={styles.root}>
+        <StatusBar barStyle="light-content" backgroundColor={appTheme.colors.textInverse} />
 
-      <Tabs
-        screenOptions={{
-          headerShown: false,
-          tabBarActiveTintColor: appTheme.colors.textPrimary,
-          tabBarInactiveTintColor: appTheme.colors.borderLight,
-          tabBarShowLabel: true,
-          tabBarLabelStyle: {
-            fontSize: 10,
-            fontWeight: '900',
-            letterSpacing: 0.8,
-            textTransform: 'uppercase',
-          },
-          tabBarItemStyle: { paddingTop: 12 },
-
-          tabBarBackground: () =>
-            Platform.OS === 'ios' ? (
-              <BlurView tint="dark" intensity={80} style={StyleSheet.absoluteFill} />
-            ) : null,
-
-          tabBarStyle: {
-            position: 'absolute',
-            left: 16,
-            right: 16,
-            bottom: insets.bottom + 4,
-            height: 64,
-            borderRadius: 24,
-            backgroundColor: appTheme.colors.surfaceElevated,
-            borderTopWidth: 1,
-            borderWidth: 2,
-            borderColor: appTheme.colors.border,
-            overflow: 'hidden',
-            elevation: 8,
-            shadowColor: appTheme.colors.textInverse,
-            shadowOpacity: 0.4,
-            shadowRadius: 12,
-            shadowOffset: { width: 0, height: 6 },
-          },
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'INÍCIO',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name="home"
-                size={focused ? 19 : 18}
-                color={focused ? appTheme.colors.textPrimary : color}
-              />
-            ),
-          }}
+        <TabView
+          navigationState={{ index, routes: TAB_ROUTES }}
+          renderScene={renderScene}
+          onIndexChange={handleIndexChange}
+          renderTabBar={() => null}
+          lazy
+          renderLazyPlaceholder={() => null}
+          pagerStyle={styles.pagerBg}
+          sceneContainerStyle={styles.sceneBg}
+          style={styles.pager}
         />
 
-        <Tabs.Screen
-          name="session"
-          options={{
-            title: 'SESSÃO',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name="flash"
-                size={focused ? 19 : 18}
-                color={focused ? appTheme.colors.textPrimary : color}
-              />
-            ),
-          }}
-        />
-
-        <Tabs.Screen
-          name="timer"
-          options={{
-            title: 'PAUSA',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name="time"
-                size={focused ? 19 : 18}
-                color={focused ? appTheme.colors.textPrimary : color}
-              />
-            ),
-          }}
-        />
-
-        <Tabs.Screen
-          name="planning"
-          options={{
-            title: 'PLANO',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name="document-text"
-                size={focused ? 19 : 18}
-                color={focused ? appTheme.colors.textPrimary : color}
-              />
-            ),
-          }}
-        />
-
-        <Tabs.Screen
-          name="record"
-          options={{
-            title: 'MARCO',
-            tabBarIcon: ({ color, focused }) => (
-              <Ionicons
-                name="ribbon"
-                size={focused ? 19 : 18}
-                color={focused ? appTheme.colors.textPrimary : color}
-              />
-            ),
-          }}
-        />
-      </Tabs>
-    </>
+        <View style={[styles.tabBar, { bottom: insets.bottom + 4 }]}>
+          {TAB_ROUTES.map((route) => {
+            const isActive = TAB_ROUTES[index]?.key === route.key;
+            return (
+              <Pressable
+                key={route.key}
+                style={styles.tabItem}
+                onPress={() => handleIndexChange(TAB_ROUTES.indexOf(route))}
+              >
+                <Ionicons
+                  name={route.icon}
+                  size={isActive ? 19 : 18}
+                  color={isActive ? appTheme.colors.textPrimary : appTheme.colors.borderLight}
+                />
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    { color: isActive ? appTheme.colors.textPrimary : appTheme.colors.borderLight },
+                  ]}
+                >
+                  {route.title}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+      <TabBackHandler currentIndex={index} />
+    </TabNavigationProvider>
   );
 }
+
+function TabBackHandler({ currentIndex }: { currentIndex: number }) {
+  const switchTab = useSwitchTab();
+  const pathname = usePathname();
+  const lastPress = useRef(0);
+
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (!pathname.startsWith('/(tabs)')) return false;
+
+      if (currentIndex === 0) {
+        const now = Date.now();
+        if (now - lastPress.current < 2000) {
+          BackHandler.exitApp();
+        } else {
+          lastPress.current = now;
+          ToastAndroid.show('Pressione novamente para sair', ToastAndroid.SHORT);
+        }
+      } else {
+        switchTab(0);
+      }
+
+      return true;
+    });
+
+    return () => backHandler.remove();
+  }, [currentIndex, switchTab, pathname]);
+
+  return null;
+}
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: appTheme.colors.background,
+  },
+  pager: {
+    flex: 1,
+  },
+  pagerBg: {
+    backgroundColor: appTheme.colors.background,
+  },
+  sceneBg: {
+    backgroundColor: appTheme.colors.background,
+  },
+  tabBar: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    height: 64,
+    borderRadius: 24,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderTopWidth: 1,
+    borderWidth: 2,
+    borderColor: appTheme.colors.border,
+    overflow: 'hidden',
+    zIndex: 1,
+    elevation: 8,
+    shadowColor: appTheme.colors.textInverse,
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 6 },
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 8,
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 12,
+  },
+  tabLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+    marginTop: 4,
+  },
+});

@@ -18,12 +18,15 @@ export const appTheme = {
     accent: '#E5E5EA',
     danger: '#FF453A',
     success: '#34C759',
+    prBadgeBackground: 'rgba(229, 229, 234, 0.1)',
+    prBadgeOrange: 'rgba(255, 159, 10, 0.1)',
   },
   spacing: {
     xs: 8,
     sm: 12,
-    md: 16,
-    lg: 24,
-    xl: 32,
+    md: 14,
+    lg: 16,
+    xl: 24,
+    xxl: 32,
   },
 } as const;

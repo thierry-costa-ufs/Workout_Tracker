@@ -4,18 +4,17 @@ import { AppScreen } from '@/core/ui/AppScreen';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { Overlay } from '@/shared/ui/Overlay';
-import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import { ExercisePickerModal } from '../components/ExercisePickerModal';
+import { ExercisePickerModal } from '@/shared/ui/ExercisePickerModal';
 import { PlansModal } from '../components/PlansModal';
 import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
 import { planningStyles as styles } from '../styles/planningStyles';
 
 export default function PlanningScreen() {
-  useTabBackHandler();
   const {
     blocks,
     daySplit,
@@ -69,7 +68,7 @@ export default function PlanningScreen() {
       <View style={sharedScreenStyles.pageHeader}>
         <View style={sharedScreenStyles.pageTitleBlock}>
           <Text style={sharedScreenStyles.pageTitle} numberOfLines={1}>
-            SUA ROTINA
+            ROTINA
           </Text>
           {currentActivePlan ? (
             <Text style={sharedScreenStyles.pageSubtitle} numberOfLines={1}>
@@ -107,43 +106,52 @@ export default function PlanningScreen() {
           <Text style={styles.splitTitle}>BLOCOS DE TREINO</Text>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.blockRow}
-        >
-          {blocks.map((block) => {
-            const isSelected = block.id === selectedBlockId;
-            return (
-              <TouchableOpacity
-                key={block.id}
-                style={[styles.blockChip, isSelected && styles.blockChipActive]}
-                onPress={() => setSelectedBlockId(block.id)}
-              >
-                <View style={[styles.blockAvatar, isSelected && styles.blockAvatarActive]}>
-                  <Text
-                    style={[styles.blockAvatarText, isSelected && styles.blockAvatarTextActive]}
-                  >
-                    {block.label.charAt(0)}
-                  </Text>
-                </View>
-                <View>
-                  <Text
-                    style={[styles.blockChipLabel, isSelected && styles.blockChipLabelActive]}
-                    numberOfLines={1}
-                  >
-                    {block.label}
-                  </Text>
-                  <Text style={styles.blockChipMeta}>{block.exercises.length} exercícios</Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
+        <View>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.blockRow}
+          >
+            {blocks.map((block) => {
+              const isSelected = block.id === selectedBlockId;
+              return (
+                <TouchableOpacity
+                  key={block.id}
+                  style={[styles.blockChip, isSelected && styles.blockChipActive]}
+                  onPress={() => setSelectedBlockId(block.id)}
+                >
+                  <View style={[styles.blockAvatar, isSelected && styles.blockAvatarActive]}>
+                    <Text
+                      style={[styles.blockAvatarText, isSelected && styles.blockAvatarTextActive]}
+                    >
+                      {block.label.charAt(0)}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text
+                      style={[styles.blockChipLabel, isSelected && styles.blockChipLabelActive]}
+                      numberOfLines={1}
+                    >
+                      {block.label}
+                    </Text>
+                    <Text style={styles.blockChipMeta}>{block.exercises.length} exercícios</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
 
-          <TouchableOpacity style={styles.addBlockChip} onPress={handleAddBlock}>
-            <Ionicons name="add" size={20} color={appTheme.colors.white} />
-          </TouchableOpacity>
-        </ScrollView>
+            <TouchableOpacity style={styles.addBlockChip} onPress={handleAddBlock}>
+              <Ionicons name="add" size={20} color={appTheme.colors.white} />
+            </TouchableOpacity>
+          </ScrollView>
+          <LinearGradient
+            pointerEvents="none"
+            colors={['transparent', appTheme.colors.background]}
+            start={{ x: 0.85, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 40 }}
+          />
+        </View>
 
         {/* Selected block detail */}
         {selectedBlock && (
@@ -170,7 +178,7 @@ export default function PlanningScreen() {
                 style={styles.iconGhostButton}
                 onPress={() => confirmDeleteBlock(selectedBlock.id)}
               >
-                <Ionicons name="trash-outline" size={16} color={appTheme.colors.danger} />
+                <Ionicons name="trash-outline" size={16} color={appTheme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
@@ -231,7 +239,11 @@ export default function PlanningScreen() {
                         style={styles.deleteCardButton}
                         onPress={() => handleRemoveExerciseFromBlock(selectedBlock.id, index)}
                       >
-                        <Ionicons name="trash-outline" size={18} color={appTheme.colors.danger} />
+                        <Ionicons
+                          name="trash-outline"
+                          size={18}
+                          color={appTheme.colors.textPrimary}
+                        />
                       </TouchableOpacity>
                     </View>
                   );

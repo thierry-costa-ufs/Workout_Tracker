@@ -1,22 +1,34 @@
-import { useTemplates } from '@/context/WorkoutContext';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
-import { useTabBackHandler } from '@/shared/hooks/useTabBackHandler';
+import { useActiveTemplate } from '@/shared/hooks/useActiveTemplate';
+import { useSidebarDrawer } from '@/shared/hooks/useSidebarDrawer';
+import { useSwitchTab } from '@/shared/context/TabNavigationContext';
+import { SidebarDrawer } from '@/shared/ui/SidebarDrawer';
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { dashboardStyles as styles } from '../styles/dashboardStyles';
 
 export default function DashboardScreen() {
-  useTabBackHandler();
   const router = useRouter();
-  const { activeId, templates } = useTemplates();
+  const switchTab = useSwitchTab();
+  const currentTemplate = useActiveTemplate();
+  const sidebar = useSidebarDrawer();
 
-  const currentTemplate = templates.find((template) => template.id === activeId);
-
-  const handleNavigation = (route: string) => {
-    router.push(route as never);
+  const handleSidebarNavigate = (route: string) => {
+    const tabMap: Record<string, number> = {
+      '/(tabs)': 0,
+      '/(tabs)/session': 1,
+      '/(tabs)/timer': 2,
+      '/(tabs)/planning': 3,
+    };
+    const idx = tabMap[route];
+    if (idx !== undefined) {
+      switchTab(idx);
+    } else {
+      router.push('/record' as never);
+    }
   };
 
   return (
@@ -30,6 +42,9 @@ export default function DashboardScreen() {
             </Text>
             <Text style={sharedScreenStyles.pageSubtitle}>DESAFIE A SUA NATUREZA</Text>
           </View>
+          <TouchableOpacity style={styles.menuBtn} onPress={sidebar.open}>
+            <Feather name="menu" size={22} color={appTheme.colors.textPrimary} />
+          </TouchableOpacity>
         </View>
 
         <View
@@ -50,7 +65,7 @@ export default function DashboardScreen() {
           <TouchableOpacity
             style={styles.primaryButton}
             activeOpacity={0.8}
-            onPress={() => handleNavigation('/session')}
+            onPress={() => switchTab(1)}
           >
             <Text style={styles.primaryButtonText}>INICIAR SESSÃO</Text>
             <Feather name="arrow-right" size={16} color={appTheme.colors.textInverse} />
@@ -66,7 +81,7 @@ export default function DashboardScreen() {
           <TouchableOpacity
             style={styles.featureCard}
             activeOpacity={0.7}
-            onPress={() => handleNavigation('/planning')}
+            onPress={() => switchTab(3)}
           >
             <View style={styles.cardHeader}>
               <Text style={styles.cardIndex}>01</Text>
@@ -85,7 +100,7 @@ export default function DashboardScreen() {
           <TouchableOpacity
             style={styles.featureCard}
             activeOpacity={0.7}
-            onPress={() => handleNavigation('/record')}
+            onPress={() => router.push('/record' as never)}
           >
             <View style={styles.cardHeader}>
               <Text style={styles.cardIndex}>02</Text>
@@ -103,7 +118,7 @@ export default function DashboardScreen() {
           <TouchableOpacity
             style={styles.featureCard}
             activeOpacity={0.7}
-            onPress={() => handleNavigation('/timer')}
+            onPress={() => switchTab(2)}
           >
             <View style={styles.cardHeader}>
               <Text style={styles.cardIndex}>03</Text>
@@ -122,6 +137,13 @@ export default function DashboardScreen() {
           <Text style={styles.footerText}>CONSISTÊNCIA // ATÉ A FALHA</Text>
         </View>
       </ScrollView>
+
+      <SidebarDrawer
+        visible={sidebar.visible}
+        onOpen={sidebar.open}
+        onClose={sidebar.close}
+        onNavigate={handleSidebarNavigate}
+      />
     </AppScreen>
   );
 }
