@@ -52,8 +52,8 @@ export function SidebarDrawer({
   const backdropOpacity = useSharedValue(0);
 
   useEffect(() => {
-    translateX.value = SIDEBAR_WIDTH;
-  }, [windowWidth, SIDEBAR_WIDTH, translateX]);
+    if (!visible) translateX.value = SIDEBAR_WIDTH;
+  }, [windowWidth, SIDEBAR_WIDTH, translateX, visible]);
 
   useEffect(() => {
     if (visible) {
