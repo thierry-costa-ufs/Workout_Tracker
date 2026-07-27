@@ -10,6 +10,13 @@ import { useRouter, usePathname } from 'expo-router';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { dashboardStyles as styles } from '../styles/dashboardStyles';
 
+function getActiveRoute(pathname: string): string {
+  if (pathname === '/record') return '/record';
+  if (pathname === '/(tabs)' || pathname === '/(tabs)/') return '/(tabs)';
+  if (pathname.startsWith('/(tabs)/')) return pathname;
+  return '/(tabs)';
+}
+
 export default function DashboardScreen() {
   const router = useRouter();
   const pathname = usePathname();
@@ -17,14 +24,7 @@ export default function DashboardScreen() {
   const currentTemplate = useActiveTemplate();
   const sidebar = useSidebarDrawer();
 
-  const currentRoute =
-    pathname === '/record'
-      ? '/record'
-      : pathname === '/(tabs)' || pathname === '/(tabs)/'
-        ? '/(tabs)'
-        : pathname.startsWith('/(tabs)/')
-          ? pathname
-          : '/(tabs)';
+  const currentRoute = getActiveRoute(pathname);
 
   const handleSidebarNavigate = (route: string) => {
     const tabMap: Record<string, number> = {

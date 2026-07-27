@@ -138,6 +138,7 @@ export default function RecordsScreen() {
   const currentBestRecord = currentBestGroup ? getBestRecord(currentBestGroup) : null;
 
   const adjustReps = (delta: number) => {
+    if (delta === 0) return;
     const current = parseFloat(reps.replace(',', '.')) || 0;
     const next = current + delta;
     if (next < 0) return;

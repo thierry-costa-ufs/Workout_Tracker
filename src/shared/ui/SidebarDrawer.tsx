@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useCallback } from 'react';
 
 const EDGE_THRESHOLD = 20;
+const BOTTOM_OFFSET = 80;
 
 interface SidebarItem {
   label: string;
@@ -49,6 +50,10 @@ export function SidebarDrawer({
   const SIDEBAR_WIDTH = windowWidth * 0.72;
   const translateX = useSharedValue(SIDEBAR_WIDTH);
   const backdropOpacity = useSharedValue(0);
+
+  useEffect(() => {
+    translateX.value = SIDEBAR_WIDTH;
+  }, [windowWidth, SIDEBAR_WIDTH, translateX]);
 
   useEffect(() => {
     if (visible) {
@@ -112,7 +117,7 @@ export function SidebarDrawer({
       {/* Right edge swipe-to-open handle */}
       {!visible && (
         <Pressable
-          style={[styles.edgeHandle, { top: insets.top, bottom: insets.bottom + 80 }]}
+          style={[styles.edgeHandle, { top: insets.top, bottom: insets.bottom + BOTTOM_OFFSET }]}
           onPress={onOpen}
         />
       )}
@@ -127,7 +132,9 @@ export function SidebarDrawer({
 
       {/* Panel */}
       <GestureDetector gesture={panelGesture}>
-        <Animated.View style={[styles.panel, { top: insets.top }, panelStyle]}>
+        <Animated.View
+          style={[styles.panel, { top: insets.top, width: SIDEBAR_WIDTH }, panelStyle]}
+        >
           <View style={styles.panelHeader}>
             <Feather name="activity" size={20} color={appTheme.colors.textPrimary} />
             <Text style={styles.panelBrand}>PRÁXIS</Text>
@@ -178,7 +185,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 0,
     bottom: 0,
-    width: SIDEBAR_WIDTH,
     backgroundColor: appTheme.colors.surface,
     borderLeftWidth: 1,
     borderColor: appTheme.colors.border,

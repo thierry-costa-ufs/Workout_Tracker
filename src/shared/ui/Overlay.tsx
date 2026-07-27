@@ -14,6 +14,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appTheme } from '@/shared/constants/theme';
 import { Portal } from '@/shared/ui/Portal';
 
+const BOTTOM_OFFSET = 80;
+
 interface OverlayProps {
   visible: boolean;
   onClose?: () => void;
@@ -41,6 +43,12 @@ export function Overlay({
   onCloseRef.current = onClose;
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    if (!isRendered.current) {
+      translateY.value = windowHeight;
+    }
+  }, [windowHeight, translateY]);
 
   useEffect(() => {
     if (!visible) return;
@@ -119,7 +127,7 @@ export function Overlay({
 
   if (!visible && !isRendered.current) return null;
 
-  const bottomPad = insets.bottom + 80;
+  const bottomPad = insets.bottom + BOTTOM_OFFSET;
 
   return (
     <Portal>
