@@ -139,8 +139,8 @@ export default function RecordsScreen() {
 
   const adjustReps = (delta: number) => {
     const current = parseFloat(reps.replace(',', '.')) || 0;
-    if (current + delta < 0) delta = 0;
     const next = current + delta;
+    if (next < 0) return;
     setReps(String(Number(next.toFixed(2))));
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
@@ -197,7 +197,6 @@ export default function RecordsScreen() {
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color={appTheme.colors.textPrimary} />
         </TouchableOpacity>
-        <View style={styles.headerDivider} />
         <View style={styles.headerCenter}>
           <Text style={sharedScreenStyles.pageTitle}>RECORDES</Text>
         </View>
@@ -593,15 +592,6 @@ const styles = StyleSheet.create({
     backgroundColor: appTheme.colors.surface,
     borderBottomWidth: 1,
     borderColor: appTheme.colors.border,
-  },
-  headerDivider: {
-    position: 'absolute',
-    left: appTheme.spacing.xl + 52,
-    top: appTheme.spacing.xl - 6,
-    bottom: appTheme.spacing.lg + 4,
-    width: 1,
-    height: 48,
-    backgroundColor: appTheme.colors.borderLight,
   },
   headerCenter: {
     flex: 1,

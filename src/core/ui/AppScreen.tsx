@@ -19,7 +19,7 @@ export function AppScreen({
   barStyle = 'light-content',
 }: AppScreenProps) {
   const insets = useSafeAreaInsets();
-  const bottomPadding = insets.bottom + 64;
+  const bottomPadding = insets.bottom + 68;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }, style]} edges={edges}>

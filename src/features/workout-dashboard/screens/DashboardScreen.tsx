@@ -6,15 +6,25 @@ import { useSidebarDrawer } from '@/shared/hooks/useSidebarDrawer';
 import { useSwitchTab } from '@/shared/context/TabNavigationContext';
 import { SidebarDrawer } from '@/shared/ui/SidebarDrawer';
 import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, usePathname } from 'expo-router';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { dashboardStyles as styles } from '../styles/dashboardStyles';
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const pathname = usePathname();
   const switchTab = useSwitchTab();
   const currentTemplate = useActiveTemplate();
   const sidebar = useSidebarDrawer();
+
+  const currentRoute =
+    pathname === '/record'
+      ? '/record'
+      : pathname === '/(tabs)' || pathname === '/(tabs)/'
+        ? '/(tabs)'
+        : pathname.startsWith('/(tabs)/')
+          ? pathname
+          : '/(tabs)';
 
   const handleSidebarNavigate = (route: string) => {
     const tabMap: Record<string, number> = {
@@ -26,7 +36,7 @@ export default function DashboardScreen() {
     const idx = tabMap[route];
     if (idx !== undefined) {
       switchTab(idx);
-    } else {
+    } else if (route === '/record') {
       router.push('/record' as never);
     }
   };
@@ -143,6 +153,7 @@ export default function DashboardScreen() {
         onOpen={sidebar.open}
         onClose={sidebar.close}
         onNavigate={handleSidebarNavigate}
+        currentRoute={currentRoute}
       />
     </AppScreen>
   );

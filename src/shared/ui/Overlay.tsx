@@ -2,13 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   BackHandler,
-  Dimensions,
   Keyboard,
   Platform,
   StyleSheet,
   TouchableWithoutFeedback,
   View,
   ViewStyle,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { appTheme } from '@/shared/constants/theme';
@@ -32,9 +32,10 @@ export function Overlay({
   style,
 }: OverlayProps) {
   const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
 
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(Dimensions.get('window').height)).current;
+  const translateY = useRef(new Animated.Value(windowHeight)).current;
   const isRendered = useRef(false);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -104,7 +105,7 @@ export function Overlay({
         ...(animationType === 'slide'
           ? [
               Animated.timing(translateY, {
-                toValue: Dimensions.get('window').height,
+                toValue: windowHeight,
                 duration: 200,
                 useNativeDriver: true,
               }),
@@ -114,7 +115,7 @@ export function Overlay({
         isRendered.current = false;
       });
     }
-  }, [visible, animationType, opacity, translateY]);
+  }, [visible, animationType, opacity, translateY, windowHeight]);
 
   if (!visible && !isRendered.current) return null;
 
@@ -136,7 +137,10 @@ export function Overlay({
         >
           <Animated.View
             style={[
-              { paddingBottom: bottomPad, marginBottom: keyboardHeight },
+              {
+                paddingBottom: bottomPad,
+                marginBottom: position === 'bottom' ? keyboardHeight : 0,
+              },
               animationType === 'slide' ? { transform: [{ translateY }] } : { opacity },
             ]}
           >

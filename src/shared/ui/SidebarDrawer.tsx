@@ -9,11 +9,10 @@ import Animated, {
   Easing,
   runOnJS,
 } from 'react-native-reanimated';
-import { BackHandler, Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { BackHandler, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useCallback } from 'react';
 
-const SIDEBAR_WIDTH = Dimensions.get('window').width * 0.72;
 const EDGE_THRESHOLD = 20;
 
 interface SidebarItem {
@@ -27,7 +26,7 @@ const MENU_ITEMS: SidebarItem[] = [
   { label: 'SESSÃO', icon: 'zap', route: '/(tabs)/session' },
   { label: 'PAUSA', icon: 'clock', route: '/(tabs)/timer' },
   { label: 'PLANO', icon: 'file-text', route: '/(tabs)/planning' },
-  { label: 'RECORDES', icon: 'bar-chart-2', route: '/(tabs)/record' },
+  { label: 'RECORDES', icon: 'bar-chart-2', route: '/record' },
 ];
 
 interface SidebarDrawerProps {
@@ -46,6 +45,8 @@ export function SidebarDrawer({
   currentRoute,
 }: SidebarDrawerProps) {
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
+  const SIDEBAR_WIDTH = windowWidth * 0.72;
   const translateX = useSharedValue(SIDEBAR_WIDTH);
   const backdropOpacity = useSharedValue(0);
 
@@ -60,7 +61,7 @@ export function SidebarDrawer({
       });
       backdropOpacity.value = withTiming(0, { duration: 220 });
     }
-  }, [visible, translateX, backdropOpacity]);
+  }, [visible, translateX, backdropOpacity, SIDEBAR_WIDTH]);
 
   useEffect(() => {
     const handler = BackHandler.addEventListener('hardwareBackPress', () => {
