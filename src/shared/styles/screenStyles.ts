@@ -17,17 +17,6 @@ export const sharedScreenStyles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: appTheme.colors.border,
   } satisfies ViewStyle,
-  pageHeaderCentered: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: appTheme.spacing.xl,
-    paddingTop: appTheme.spacing.xl,
-    paddingBottom: appTheme.spacing.lg,
-    backgroundColor: appTheme.colors.surface,
-    borderBottomWidth: 1,
-    borderColor: appTheme.colors.border,
-  } satisfies ViewStyle,
   pageTitleBlock: {
     flex: 1,
   } satisfies ViewStyle,
@@ -94,11 +83,6 @@ export const sharedScreenStyles = StyleSheet.create({
     marginTop: appTheme.spacing.xl,
     padding: appTheme.spacing.xl,
     marginBottom: 32,
-  } satisfies ViewStyle,
-  compactCard: {
-    padding: appTheme.spacing.lg,
-    minHeight: 140,
-    justifyContent: 'space-between',
   } satisfies ViewStyle,
   modalHeader: {
     flexDirection: 'row',

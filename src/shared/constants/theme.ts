@@ -19,7 +19,6 @@ export const appTheme = {
     danger: '#FF453A',
     success: '#34C759',
     prBadgeBackground: 'rgba(229, 229, 234, 0.1)',
-    prBadgeOrange: 'rgba(255, 159, 10, 0.1)',
   },
   spacing: {
     xs: 8,

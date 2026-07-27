@@ -46,7 +46,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
         </View>
       </View>
 
-      {pr && <PrBadge weight={pr.weight} variant="orange" />}
+      {pr && <PrBadge weight={pr.weight} />}
 
       <View style={[styles.addIconCircle, isAdded && styles.addIconCircleSuccess]}>
         <Ionicons
@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   },
   metaBadgeContainer: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   metaBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
-  badgeComposto: { backgroundColor: 'rgba(255, 159, 10, 0.1)' },
+  badgeComposto: { backgroundColor: appTheme.colors.prBadgeBackground },
   badgeIsolado: { backgroundColor: 'rgba(255, 255, 255, 0.05)' },
   metaBadgeText: { color: appTheme.colors.textSecondary, fontSize: 9, fontWeight: '800' },
   subtleTargetText: { color: appTheme.colors.textMuted, fontSize: 9, fontWeight: '700' },
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   cardFeedbackActive: { borderColor: appTheme.colors.textPrimary },
   addIconCircleSuccess: {
-    backgroundColor: 'rgba(255, 159, 10, 0.1)',
+    backgroundColor: appTheme.colors.prBadgeBackground,
     borderColor: appTheme.colors.textPrimary,
   },
 });

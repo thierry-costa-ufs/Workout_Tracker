@@ -1,8 +1,7 @@
 import { MUSCLE_FILTERS, MuscleFilterType } from '@/core/constants/days';
 import { appTheme } from '@/shared/constants/theme';
-import { filterChipStyles as styles } from '@/shared/styles/filterChipStyles';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface MuscleFilterChipsProps {
   value: MuscleFilterType;
@@ -23,9 +22,9 @@ export function MuscleFilterChips({ value, onChange }: MuscleFilterChipsProps) {
             <TouchableOpacity
               key={muscle}
               onPress={() => onChange(muscle)}
-              style={[styles.chip, isSelected && styles.chipActive]}
+              style={[s.chip, isSelected && s.chipActive]}
             >
-              <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>{muscle}</Text>
+              <Text style={[s.chipText, isSelected && s.chipTextActive]}>{muscle}</Text>
             </TouchableOpacity>
           );
         })}
@@ -40,3 +39,28 @@ export function MuscleFilterChips({ value, onChange }: MuscleFilterChipsProps) {
     </View>
   );
 }
+
+const s = StyleSheet.create({
+  chip: {
+    flexShrink: 0,
+    height: 36,
+    backgroundColor: appTheme.colors.background,
+    paddingHorizontal: 14,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  chipActive: {
+    borderColor: appTheme.colors.textPrimary,
+  },
+  chipText: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  chipTextActive: {
+    color: appTheme.colors.textPrimary,
+  },
+});

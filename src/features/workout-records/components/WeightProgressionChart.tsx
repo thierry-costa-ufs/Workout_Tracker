@@ -107,7 +107,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
         {points.length > 1 && (
           <Polygon
             points={`${PADDING.left},${PADDING.top + chartAreaHeight} ${linePoints} ${PADDING.left + chartWidth},${PADDING.top + chartAreaHeight}`}
-            fill="rgba(255, 159, 10, 0.06)"
+            fill={appTheme.colors.prBadgeBackground}
           />
         )}
 
@@ -134,7 +134,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
             />
             {i === bestIndex && points.length > 1 && (
               <>
-                <Circle cx={p.x} cy={p.y} r={9} fill="rgba(255, 159, 10, 0.15)" />
+                <Circle cx={p.x} cy={p.y} r={9} fill={appTheme.colors.prBadgeBackground} />
                 <Circle cx={p.x} cy={p.y} r={5} fill={appTheme.colors.accent} />
                 <SvgText
                   x={p.x}

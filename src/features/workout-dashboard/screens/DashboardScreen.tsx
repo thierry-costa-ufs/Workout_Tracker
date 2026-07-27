@@ -2,11 +2,11 @@ import { AppScreen } from '@/core/ui/AppScreen';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { useActiveTemplate } from '@/shared/hooks/useActiveTemplate';
-import { useSidebarDrawer } from '@/shared/hooks/useSidebarDrawer';
 import { useSwitchTab } from '@/shared/context/TabNavigationContext';
 import { SidebarDrawer } from '@/shared/ui/SidebarDrawer';
 import { Feather } from '@expo/vector-icons';
 import { useRouter, usePathname } from 'expo-router';
+import { useCallback, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { dashboardStyles as styles } from '../styles/dashboardStyles';
 
@@ -22,7 +22,9 @@ export default function DashboardScreen() {
   const pathname = usePathname();
   const switchTab = useSwitchTab();
   const currentTemplate = useActiveTemplate();
-  const sidebar = useSidebarDrawer();
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const openSidebar = useCallback(() => setSidebarVisible(true), []);
+  const closeSidebar = useCallback(() => setSidebarVisible(false), []);
 
   const currentRoute = getActiveRoute(pathname);
 
@@ -52,7 +54,7 @@ export default function DashboardScreen() {
             </Text>
             <Text style={sharedScreenStyles.pageSubtitle}>DESAFIE A SUA NATUREZA</Text>
           </View>
-          <TouchableOpacity style={styles.menuBtn} onPress={sidebar.open}>
+          <TouchableOpacity style={styles.menuBtn} onPress={openSidebar}>
             <Feather name="menu" size={22} color={appTheme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -149,9 +151,9 @@ export default function DashboardScreen() {
       </ScrollView>
 
       <SidebarDrawer
-        visible={sidebar.visible}
-        onOpen={sidebar.open}
-        onClose={sidebar.close}
+        visible={sidebarVisible}
+        onOpen={openSidebar}
+        onClose={closeSidebar}
         onNavigate={handleSidebarNavigate}
         currentRoute={currentRoute}
       />
