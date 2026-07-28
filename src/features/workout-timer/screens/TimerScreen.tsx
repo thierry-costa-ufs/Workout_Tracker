@@ -60,7 +60,6 @@ export default function TimerScreen() {
   const tick = useRef(() => {
     const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
     setSecondsLeft(remaining);
-    // updateTimerNotification is no-op, safe to call
     if (remaining <= 0) {
       clearInterval(intervalRef.current!);
       intervalRef.current = null;
