@@ -154,6 +154,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       weight: number,
       reps: number,
     ) => {
+      const now = new Date();
       const newRecord: PersonalRecord = {
         id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
         exerciseId,
@@ -161,10 +162,20 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         muscleGroup,
         weight,
         reps,
-        date: new Date().toLocaleDateString('pt-BR'),
+        date: now.toLocaleDateString('pt-BR'),
+        timestamp: now.toISOString(),
       };
 
-      const updated = [newRecord, ...personalRecords];
+      // ponytail: cap 500 records per exercise (~4.8MB total for 48 exercises)
+      const exerciseRecords = personalRecords.filter((r) => r.exerciseId === exerciseId);
+      const otherRecords = personalRecords.filter((r) => r.exerciseId !== exerciseId);
+      const capped =
+        exerciseRecords.length >= 500
+          ? [...exerciseRecords, newRecord]
+              .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
+              .slice(1)
+          : [newRecord, ...exerciseRecords];
+      const updated = [...otherRecords, ...capped];
 
       try {
         await storage.savePersonalRecords(updated);

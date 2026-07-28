@@ -1,23 +1,32 @@
 import React, { useMemo } from 'react';
 import { Dimensions, StyleSheet, View } from 'react-native';
-import Svg, { Circle, Line, Polygon, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
 
 interface WeightProgressionChartProps {
   records: PersonalRecord[];
+  mode?: 'weight' | '1rm';
 }
 
 const CHART_HEIGHT = 170;
 const PADDING = { top: 24, right: 20, bottom: 36, left: 44 };
-const CONTAINER_WIDTH = Dimensions.get('window').width - 64;
 
-function parseDate(dateStr: string): Date {
-  const parts = dateStr.split('/');
+function epley1RM(w: number, r: number) {
+  return w * (1 + r / 30);
+}
+
+function getDisplayValue(r: PersonalRecord, mode: 'weight' | '1rm') {
+  return mode === '1rm' ? epley1RM(r.weight, r.reps) : r.weight;
+}
+
+function parseRecordDate(r: PersonalRecord): Date {
+  if (r.timestamp) return new Date(r.timestamp);
+  const parts = r.date.split('/');
   if (parts.length === 3) {
     return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
   }
-  return new Date(dateStr);
+  return new Date(r.date);
 }
 
 function formatDateShort(dateStr: string): string {
@@ -28,46 +37,53 @@ function formatDateShort(dateStr: string): string {
   return dateStr;
 }
 
-export function WeightProgressionChart({ records }: WeightProgressionChartProps) {
+export function WeightProgressionChart({ records, mode = 'weight' }: WeightProgressionChartProps) {
   const sorted = useMemo(() => {
-    return [...records].sort((a, b) => parseDate(a.date).getTime() - parseDate(b.date).getTime());
+    return [...records].sort((a, b) => parseRecordDate(a).getTime() - parseRecordDate(b).getTime());
   }, [records]);
 
-  const chartWidth = CONTAINER_WIDTH - PADDING.left - PADDING.right;
+  const containerWidth = useMemo(() => Dimensions.get('window').width - 64, []);
+  const chartWidth = containerWidth - PADDING.left - PADDING.right;
   const chartAreaHeight = CHART_HEIGHT - PADDING.top - PADDING.bottom;
 
-  const { points, minWeight, maxWeight, bestIndex } = useMemo(() => {
+  const { points, minVal, maxVal, bestIndex } = useMemo(() => {
     if (sorted.length === 0) {
-      return { points: [], minWeight: 0, maxWeight: 100, bestIndex: -1 };
+      return { points: [], minVal: 0, maxVal: 100, bestIndex: -1 };
     }
 
-    const weights = sorted.map((r) => r.weight);
-    const min = Math.min(...weights);
-    const max = Math.max(...weights);
+    const values = sorted.map((r) => getDisplayValue(r, mode));
+    const min = Math.min(...values);
+    const max = Math.max(...values);
     const range = max - min || 1;
 
     let bestIdx = 0;
     sorted.forEach((r, i) => {
-      if (r.weight > sorted[bestIdx].weight) bestIdx = i;
+      if (getDisplayValue(r, mode) > getDisplayValue(sorted[bestIdx], mode)) bestIdx = i;
     });
 
     const mapped = sorted.map((r, i) => {
       const x = sorted.length === 1 ? chartWidth / 2 : (i / (sorted.length - 1)) * chartWidth;
-      const y = chartAreaHeight - ((r.weight - min) / range) * chartAreaHeight;
+      const val = getDisplayValue(r, mode);
+      const y = chartAreaHeight - ((val - min) / range) * chartAreaHeight;
       return { x: x + PADDING.left, y: y + PADDING.top, record: r };
     });
 
-    return { points: mapped, minWeight: min, maxWeight: max, bestIndex: bestIdx };
-  }, [sorted, chartWidth, chartAreaHeight]);
+    return { points: mapped, minVal: min, maxVal: max, bestIndex: bestIdx };
+  }, [sorted, chartWidth, chartAreaHeight, mode]);
 
   if (sorted.length === 0) return null;
 
-  const linePoints = points.map((p) => `${p.x},${p.y}`).join(' ');
+  const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+
+  const floorY = PADDING.top + chartAreaHeight;
+  const firstX = points[0].x;
+  const lastX = points[points.length - 1].x;
+  const areaPath = `${linePath} L${lastX},${floorY} L${firstX},${floorY} Z`;
 
   const gridLines = 4;
   const yLabels: number[] = [];
   for (let i = 0; i <= gridLines; i++) {
-    const val = minWeight + ((maxWeight - minWeight) * i) / gridLines;
+    const val = minVal + ((maxVal - minVal) * i) / gridLines;
     yLabels.push(Math.round(val * 10) / 10);
   }
 
@@ -75,7 +91,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
 
   return (
     <View style={styles.container}>
-      <Svg width={CONTAINER_WIDTH} height={CHART_HEIGHT}>
+      <Svg width={containerWidth} height={CHART_HEIGHT}>
         {yLabels.map((val, i) => {
           const y = PADDING.top + chartAreaHeight - (i / gridLines) * chartAreaHeight;
           return (
@@ -83,7 +99,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
               <Line
                 x1={PADDING.left}
                 y1={y}
-                x2={CONTAINER_WIDTH - PADDING.right}
+                x2={containerWidth - PADDING.right}
                 y2={y}
                 stroke={appTheme.colors.borderStrong}
                 strokeWidth={0.5}
@@ -104,16 +120,11 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
           );
         })}
 
-        {points.length > 1 && (
-          <Polygon
-            points={`${PADDING.left},${PADDING.top + chartAreaHeight} ${linePoints} ${PADDING.left + chartWidth},${PADDING.top + chartAreaHeight}`}
-            fill={appTheme.colors.prBadgeBackground}
-          />
-        )}
+        {points.length > 1 && <Path d={areaPath} fill={appTheme.colors.prBadgeBackground} />}
 
         {points.length > 1 && (
-          <Polygon
-            points={linePoints}
+          <Path
+            d={linePath}
             fill="none"
             stroke={appTheme.colors.accent}
             strokeWidth={2}
@@ -145,7 +156,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
                   fontFamily="System"
                   fontWeight="800"
                 >
-                  {`${p.record.weight} kg`}
+                  {`${getDisplayValue(p.record, mode).toFixed(1)} ${mode === '1rm' ? '1RM' : 'kg'}`}
                 </SvgText>
               </>
             )}
@@ -174,7 +185,7 @@ export function WeightProgressionChart({ records }: WeightProgressionChartProps)
           (() => {
             const last = points[points.length - 1];
             const prev = points[points.length - 2];
-            const diff = last.record.weight - prev.record.weight;
+            const diff = getDisplayValue(last.record, mode) - getDisplayValue(prev.record, mode);
             const isUp = diff >= 0;
             const label = `${isUp ? '+' : ''}${diff.toFixed(1)}`;
             const labelX = last.x;

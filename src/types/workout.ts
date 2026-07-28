@@ -61,6 +61,7 @@ export interface PersonalRecord {
   weight: number;
   reps: number;
   date: string;
+  timestamp: string;
 }
 
 export interface SessionStats {

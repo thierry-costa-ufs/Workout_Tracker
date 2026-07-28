@@ -81,6 +81,7 @@ export default function RecordsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [muscleFilter, setMuscleFilter] = useState<MuscleFilterType>('Todos');
   const [sortMode, setSortMode] = useState<SortMode>('recent');
+  const [chartMode, setChartMode] = useState<'weight' | '1rm'>('weight');
 
   const groups = useMemo(() => groupRecordsByExercise(personalRecords), [personalRecords]);
 
@@ -128,6 +129,13 @@ export default function RecordsScreen() {
   const historyEvolution = useMemo(() => {
     if (sortedHistory.length < 2) return 0;
     return sortedHistory[sortedHistory.length - 1].weight - sortedHistory[0].weight;
+  }, [sortedHistory]);
+
+  const historyAnalytics = useMemo(() => {
+    if (sortedHistory.length === 0) return null;
+    const avgWeight = sortedHistory.reduce((s, r) => s + r.weight, 0) / sortedHistory.length;
+    const avgReps = sortedHistory.reduce((s, r) => s + r.reps, 0) / sortedHistory.length;
+    return { avgWeight, avgReps };
   }, [sortedHistory]);
 
   const currentBestGroup = selectedExercise
@@ -274,6 +282,7 @@ export default function RecordsScreen() {
                           <Text style={styles.prMeta}>
                             {item.muscleGroup.toUpperCase()} • {item.records.length}{' '}
                             {item.records.length === 1 ? 'REGISTRO' : 'REGISTROS'}
+                            {item.records.length > 400 && ' ⚠️'}
                           </Text>
                         </View>
 
@@ -501,7 +510,47 @@ export default function RecordsScreen() {
               </View>
             </View>
 
-            {sortedHistory.length > 1 && <WeightProgressionChart records={sortedHistory} />}
+            {sortedHistory.length > 1 && (
+              <View style={styles.chartToggleRow}>
+                {(['weight', '1rm'] as const).map((m) => (
+                  <TouchableOpacity
+                    key={m}
+                    style={[styles.chartToggleBtn, chartMode === m && styles.chartToggleBtnActive]}
+                    onPress={() => setChartMode(m)}
+                  >
+                    <Text
+                      style={[
+                        styles.chartToggleText,
+                        chartMode === m && styles.chartToggleTextActive,
+                      ]}
+                    >
+                      {m === 'weight' ? 'PESO' : '1RM'}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+
+            {sortedHistory.length > 1 && (
+              <WeightProgressionChart records={sortedHistory} mode={chartMode} />
+            )}
+
+            {historyAnalytics && (
+              <View style={styles.historyStatsRow}>
+                <View style={styles.historyStatBadge}>
+                  <Ionicons name="scale-outline" size={13} color={appTheme.colors.textSecondary} />
+                  <Text style={styles.historyStatValue}>
+                    {historyAnalytics.avgWeight.toFixed(1)}
+                  </Text>
+                  <Text style={styles.historyStatLabel}>MÉDIA KG</Text>
+                </View>
+                <View style={styles.historyStatBadge}>
+                  <Ionicons name="repeat-outline" size={13} color={appTheme.colors.textSecondary} />
+                  <Text style={styles.historyStatValue}>{historyAnalytics.avgReps.toFixed(1)}</Text>
+                  <Text style={styles.historyStatLabel}>MÉDIA REPS</Text>
+                </View>
+              </View>
+            )}
 
             <View style={styles.historyCardList}>
               {[...sortedHistory].reverse().map((item, idx) => {
@@ -519,6 +568,14 @@ export default function RecordsScreen() {
                     {isBest && <View style={styles.historyCardAccent} />}
                     <View style={styles.flex1}>
                       <Text style={styles.historyCardDate}>{item.date}</Text>
+                      {item.timestamp && (
+                        <Text style={styles.historyCardDate}>
+                          {new Date(item.timestamp).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </Text>
+                      )}
                       <View style={styles.historyCardWeightRow}>
                         <Text style={styles.historyCardWeight}>{item.weight}</Text>
                         <Text style={styles.historyCardUnit}>KG</Text>
@@ -940,4 +997,28 @@ const styles = StyleSheet.create({
   historyContent: { paddingBottom: 16 },
   historyCardList: { gap: 6 },
   trophyMargin: { marginLeft: 6 },
+  chartToggleRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 10,
+  },
+  chartToggleBtn: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+  },
+  chartToggleBtnActive: {
+    borderColor: appTheme.colors.white,
+  },
+  chartToggleText: {
+    color: appTheme.colors.textTertiary,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.4,
+  },
+  chartToggleTextActive: { color: appTheme.colors.accent },
 });
