@@ -378,6 +378,8 @@ export default function PlanningScreen() {
           value={renameValue}
           onChangeText={setRenameValue}
           autoCapitalize="characters"
+          maxLength={20}
+          blurOnSubmit
         />
         <TouchableOpacity
           style={styles.confirmSaveButton}
@@ -408,6 +410,8 @@ export default function PlanningScreen() {
           placeholderTextColor={appTheme.colors.muted}
           value={planningName}
           onChangeText={setPlanningName}
+          maxLength={40}
+          blurOnSubmit
         />
         <TouchableOpacity style={styles.confirmSaveButton} onPress={handleSavePlanning}>
           <Text style={styles.confirmSaveText}>ATIVAR AGORA</Text>

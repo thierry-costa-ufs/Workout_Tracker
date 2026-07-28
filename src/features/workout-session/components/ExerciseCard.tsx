@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
@@ -28,7 +28,7 @@ export const ExerciseCard = React.memo(function ExerciseCard({
 }: ExerciseCardProps) {
   return (
     <View style={styles.card}>
-      <TouchableOpacity activeOpacity={0.7} onPress={onUndo} style={styles.leftZone}>
+      <Pressable hitSlop={8} onPress={onUndo} style={styles.leftZone}>
         <View style={styles.headerRow}>
           <Text style={styles.name}>{exercise.name}</Text>
           <Text style={styles.meta}>{exercise.muscleGroup || ''}</Text>
@@ -51,9 +51,9 @@ export const ExerciseCard = React.memo(function ExerciseCard({
             <Text style={styles.prDate}>{personalRecord.date}</Text>
           </View>
         )}
-      </TouchableOpacity>
+      </Pressable>
 
-      <TouchableOpacity activeOpacity={0.7} onPress={onPress} style={styles.rightZone} />
+      <Pressable hitSlop={8} onPress={onPress} style={styles.rightZone} />
     </View>
   );
 });

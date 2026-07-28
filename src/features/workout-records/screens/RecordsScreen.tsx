@@ -383,6 +383,8 @@ export default function RecordsScreen() {
               keyboardType="numeric"
               value={weight}
               onChangeText={setWeight}
+              maxLength={6}
+              blurOnSubmit
             />
           </View>
 
@@ -399,6 +401,8 @@ export default function RecordsScreen() {
                 keyboardType="numeric"
                 value={reps}
                 onChangeText={setReps}
+                maxLength={4}
+                blurOnSubmit
               />
               <TouchableOpacity style={styles.stepperBtn} onPress={() => adjustReps(REP_STEP)}>
                 <Ionicons name="add" size={16} color={appTheme.colors.white} />

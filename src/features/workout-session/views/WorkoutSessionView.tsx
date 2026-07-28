@@ -2,6 +2,7 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { TelemetryDisplay } from '../components/TelemetryDisplay';
 import { PlannedExercise, PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
+import { useCallback } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { useSessionEngine } from '../hooks/useSessionEngine';
 
@@ -15,8 +16,11 @@ export function WorkoutSessionView({ exercises, personalRecords }: WorkoutSessio
     exercises,
   });
 
-  const findPR = (exerciseId: string) =>
-    personalRecords?.find((pr) => pr.exerciseId === exerciseId);
+  // ponytail: progressSets refs already stable — functional updater in hook preserves untouched arrays
+  const findPR = useCallback(
+    (exerciseId: string) => personalRecords?.find((pr) => pr.exerciseId === exerciseId),
+    [personalRecords],
+  );
 
   if (!exercises || exercises.length === 0) {
     return (
