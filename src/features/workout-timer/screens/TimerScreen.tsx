@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import {
+  AppState,
   Dimensions,
   ScrollView,
   StyleSheet,
@@ -13,6 +14,7 @@ import {
   Vibration,
   View,
 } from 'react-native';
+import { requestTimerPermission } from '../utils/notificationTimer';
 
 const { width } = Dimensions.get('window');
 
@@ -49,40 +51,66 @@ export default function TimerScreen() {
   const [isActive, setIsActive] = useState(false);
   const [activePreset, setActivePreset] = useState('feeder');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const endTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    requestTimerPermission();
+  }, []);
+
+  const tick = useRef(() => {
+    const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
+    setSecondsLeft(remaining);
+    // updateTimerNotification is no-op, safe to call
+    if (remaining <= 0) {
+      clearInterval(intervalRef.current!);
+      intervalRef.current = null;
+      endTimeRef.current = 0;
+      setIsActive(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Vibration.vibrate([0, 500, 200, 500]);
+    }
+  }).current;
 
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
     intervalRef.current = null;
 
     if (isActive && secondsLeft > 0) {
-      intervalRef.current = setInterval(() => {
-        setSecondsLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(intervalRef.current!);
-            intervalRef.current = null;
-            setIsActive(false);
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            Vibration.vibrate([0, 500, 200, 500]);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      endTimeRef.current = Date.now() + secondsLeft * 1000;
+      intervalRef.current = setInterval(tick, 1000);
     }
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isActive]); // eslint-disable-line react-hooks/exhaustive-deps -- secondsLeft only used inside functional updater
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active' && isActive && endTimeRef.current > 0) {
+        tick();
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        intervalRef.current = setInterval(tick, 1000);
+      }
+    });
+    return () => sub.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive]);
 
   const toggleTimer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsActive((prev) => !prev);
+    setIsActive((prev) => {
+      if (prev) clearTimerNotification();
+      return !prev;
+    });
   };
 
   const resetTimer = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setIsActive(false);
+    endTimeRef.current = 0;
+    clearTimerNotification();
     setSecondsLeft(totalDuration);
   };
 
