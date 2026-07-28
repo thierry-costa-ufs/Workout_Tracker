@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
 import { SetSegment } from './SetSegment';
@@ -28,6 +29,17 @@ export const ExerciseCard = React.memo(function ExerciseCard({
 }: ExerciseCardProps) {
   return (
     <View style={styles.card}>
+      <LinearGradient
+        colors={[appTheme.colors.zoneGradStart, appTheme.colors.zoneGradEnd]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.undoZone}
+      >
+        <Pressable hitSlop={12} onPress={onUndo} style={styles.zonePressable}>
+          <Ionicons name="remove" size={20} color={appTheme.colors.textSecondary} />
+        </Pressable>
+      </LinearGradient>
+
       <Pressable hitSlop={8} onPress={onUndo} style={styles.leftZone}>
         <View style={styles.headerRow}>
           <Text style={styles.name}>{exercise.name}</Text>
@@ -53,7 +65,16 @@ export const ExerciseCard = React.memo(function ExerciseCard({
         )}
       </Pressable>
 
-      <Pressable hitSlop={8} onPress={onPress} style={styles.rightZone} />
+      <LinearGradient
+        colors={[appTheme.colors.zoneGradEnd, appTheme.colors.zoneGradStart]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={styles.completeZone}
+      >
+        <Pressable hitSlop={12} onPress={onPress} style={styles.zonePressable}>
+          <Ionicons name="add" size={22} color={appTheme.colors.textSecondary} />
+        </Pressable>
+      </LinearGradient>
     </View>
   );
 });

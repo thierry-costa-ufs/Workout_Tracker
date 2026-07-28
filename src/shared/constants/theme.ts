@@ -19,6 +19,8 @@ export const appTheme = {
     danger: '#FF453A',
     success: '#34C759',
     prBadgeBackground: 'rgba(229, 229, 234, 0.1)',
+    zoneGradStart: '#2E2E32',
+    zoneGradEnd: '#3A3A3D',
   },
   spacing: {
     xs: 8,

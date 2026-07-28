@@ -68,6 +68,21 @@ export const exerciseCardStyles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '600',
   } satisfies TextStyle,
+  undoZone: {
+    width: 44,
+    borderTopLeftRadius: 12,
+    borderBottomLeftRadius: 12,
+  } satisfies ViewStyle,
+  completeZone: {
+    width: 48,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+  } satisfies ViewStyle,
+  zonePressable: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  } satisfies ViewStyle,
 });
 
 export const setSegmentStyles = StyleSheet.create({
