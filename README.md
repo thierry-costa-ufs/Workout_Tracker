@@ -13,38 +13,10 @@ React Native + Expo app for planning workouts, running training sessions, and tr
 - Swipe between tabs with animated tab view
 - Hamburger menu + sidebar drawer on home screen
 - Portal-based modals stacking above tab bar
-- Shared UI components (filter chips, search bar, exercise picker, PR badge)
-
-## Project Structure
-
-```
-src/
-  app/              Expo Router entry, tab layout, record screen
-  context/          Workout state and persistence (AsyncStorage)
-  core/
-    constants/      Day definitions, muscle groups, exercise data
-    storage/        AsyncStorage helpers
-    ui/             AppScreen shell with safe area + tab bar padding
-  features/
-    workout-dashboard/     Home/dashboard experience
-    workout-planning/      Routine planning flow
-    workout-records/       Personal records management
-    workout-session/       Session tracking UI
-    workout-timer/         Interval/timer screen
-  shared/
-    constants/      Theme tokens (colors, spacing)
-    context/        TabNavigationContext, PortalContext
-    hooks/          useActiveTemplate, useSidebarDrawer
-    styles/         Shared screen, filter chip, PR badge styles
-    ui/             MuscleFilterChips, SearchBar, ExercisePickerModal,
-                    SidebarDrawer, Overlay, Portal, PrBadge
-    utils/          confirmDelete helper
-  types/            TypeScript interfaces (workout.ts)
-```
 
 ## Tech Stack
 
-**Core:** React Native 0.81, Expo 54, TypeScript 5.9, React 19.1
+**Core:** React Native 0.81, Expo 54, TypeScript 5.9 (strict), React 19.1
 
 **Navigation:** Expo Router 6, React Navigation 7, react-native-tab-view 4, react-native-pager-view
 
@@ -63,6 +35,12 @@ npx expo start
 
 Open in Expo Go or emulator.
 
+## Docs
+
+- [ARCHITECTURE](docs/ARCHITECTURE.md) — entry/provider chain, routes, layers, state, data flow
+- [DEVELOPMENT](docs/DEVELOPMENT.md) — setup, scripts, pre-commit pipeline, verification, git workflow
+- [CODE_STYLE](docs/CODE_STYLE.md) — Prettier/ESLint config, TS conventions, naming, UI patterns
+
 ## Development
 
 ```bash
@@ -70,6 +48,4 @@ npm run lint        # expo lint
 npm run format      # prettier --write .
 ```
 
-**Commit format:** Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.), subject ≤ 50 chars.
-
-**Branch strategy:** Feature branches off `main`, conventional commit messages.
+Commits follow Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.), subject ≤ 50 chars.
