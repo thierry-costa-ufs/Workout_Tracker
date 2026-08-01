@@ -146,7 +146,7 @@ export function SidebarDrawer({ visible, onClose, onNavigate, currentRoute }: Si
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: appTheme.colors.scrimLight,
     zIndex: 9998,
     elevation: 10,
   },

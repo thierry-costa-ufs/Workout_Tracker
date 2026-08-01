@@ -173,10 +173,7 @@ export default function TimerScreen() {
             <Ionicons name="refresh" size={24} color={appTheme.colors.white} />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[styles.controlCirclePlay, isActive && styles.controlCirclePause]}
-            onPress={toggleTimer}
-          >
+          <TouchableOpacity style={styles.controlCirclePlay} onPress={toggleTimer}>
             <Ionicons
               name={isActive ? 'pause' : 'play'}
               size={32}
@@ -326,7 +323,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  controlCirclePause: { backgroundColor: appTheme.colors.textPrimary },
   presetsSection: {
     flex: 1,
     backgroundColor: appTheme.colors.background,

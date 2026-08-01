@@ -59,8 +59,9 @@ function groupRecordsByExercise(records: PersonalRecord[]): RecordGroup[] {
 }
 
 function getSecondBestRecord(group: RecordGroup) {
-  const sorted = [...group.records].sort((a, b) => b.weight - a.weight);
-  return sorted[1] ?? null;
+  const best = getBestPersonalRecord(group.records);
+  if (!best) return null;
+  return getBestPersonalRecord(group.records.filter((r) => r.weight < best.weight)) ?? null;
 }
 
 export default function RecordsScreen() {
@@ -598,7 +599,7 @@ export default function RecordsScreen() {
                           styles.historyDeltaBadge,
                           {
                             backgroundColor:
-                              delta > 0 ? 'rgba(52, 199, 89, 0.12)' : 'rgba(255, 69, 58, 0.12)',
+                              delta > 0 ? appTheme.colors.successSoft : appTheme.colors.dangerSoft,
                           },
                         ]}
                       >
@@ -779,7 +780,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(229, 229, 234, 0.1)',
+    backgroundColor: appTheme.colors.prBadgeBackground,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 6,
@@ -790,7 +791,7 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
   deleteButton: {
-    backgroundColor: 'rgba(255, 69, 58, 0.12)',
+    backgroundColor: appTheme.colors.dangerSoft,
     borderRadius: 6,
     paddingVertical: 10,
     paddingHorizontal: 10,
@@ -990,7 +991,7 @@ const styles = StyleSheet.create({
   historyDeleteBtn: {
     padding: 7,
     borderRadius: 6,
-    backgroundColor: 'rgba(255, 69, 58, 0.1)',
+    backgroundColor: appTheme.colors.dangerSoft,
   },
   groupCardBodyRow: { flex: 1, flexDirection: 'row' },
   flex1: { flex: 1 },
