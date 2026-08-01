@@ -1,5 +1,6 @@
 import { DAYS_OF_WEEK } from '@/core/constants/days';
-import { useTemplates, usePersonalRecords } from '@/context/WorkoutContext';
+import { useTemplates } from '@/context/TemplatesContext';
+import { usePersonalRecords } from '@/context/PersonalRecordsContext';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';

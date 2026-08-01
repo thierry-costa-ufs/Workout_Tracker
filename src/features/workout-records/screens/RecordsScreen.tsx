@@ -1,6 +1,6 @@
 import { EXERCISES_LIST } from '@/core/constants/exercises';
 import { MuscleFilterType } from '@/core/constants/days';
-import { usePersonalRecords } from '@/context/WorkoutContext';
+import { usePersonalRecords } from '@/context/PersonalRecordsContext';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
@@ -10,11 +10,12 @@ import { MuscleFilterChips } from '@/shared/ui/MuscleFilterChips';
 import { SearchBar } from '@/shared/ui/SearchBar';
 import { confirmDelete } from '@/shared/utils/confirmDelete';
 import { WeightProgressionChart } from '../components/WeightProgressionChart';
+import { parseRecordDate } from '../utils/chartMath';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
-import { MAX_PER_EXERCISE } from '@/core/utils/capPersonalRecords';
+import { MAX_PER_EXERCISE, getBestPersonalRecord } from '@/core/utils/capPersonalRecords';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -57,10 +58,6 @@ function groupRecordsByExercise(records: PersonalRecord[]): RecordGroup[] {
   return Array.from(map.values());
 }
 
-function getBestRecord(group: RecordGroup) {
-  return group.records.reduce((best, r) => (r.weight > best.weight ? r : best), group.records[0]);
-}
-
 function getSecondBestRecord(group: RecordGroup) {
   const sorted = [...group.records].sort((a, b) => b.weight - a.weight);
   return sorted[1] ?? null;
@@ -68,7 +65,7 @@ function getSecondBestRecord(group: RecordGroup) {
 
 export default function RecordsScreen() {
   const router = useRouter();
-  const { personalRecords, savePR, deletePR } = usePersonalRecords();
+  const { personalRecords, savePR, deletePR, getExercisePR } = usePersonalRecords();
 
   const [modalVisible, setModalVisible] = useState(false);
   const [exerciseModalVisible, setExerciseModalVisible] = useState(false);
@@ -99,7 +96,11 @@ export default function RecordsScreen() {
     }
 
     if (sortMode === 'heaviest') {
-      list = [...list].sort((a, b) => getBestRecord(b).weight - getBestRecord(a).weight);
+      list = [...list].sort(
+        (a, b) =>
+          (getBestPersonalRecord(b.records)?.weight ?? 0) -
+          (getBestPersonalRecord(a.records)?.weight ?? 0),
+      );
     } else if (sortMode === 'az') {
       list = [...list].sort((a, b) => a.exerciseName.localeCompare(b.exerciseName));
     }
@@ -111,19 +112,13 @@ export default function RecordsScreen() {
 
   const sortedHistory = useMemo(() => {
     if (!activeGroup) return [];
-    return [...activeGroup.records].sort((a, b) => {
-      const parseD = (d: string) => {
-        const p = d.split('/');
-        return p.length === 3
-          ? new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0])).getTime()
-          : new Date(d).getTime();
-      };
-      return parseD(a.date) - parseD(b.date);
-    });
+    return [...activeGroup.records].sort(
+      (a, b) => parseRecordDate(a).getTime() - parseRecordDate(b).getTime(),
+    );
   }, [activeGroup]);
 
   const historyBest = useMemo(
-    () => (activeGroup ? getBestRecord(activeGroup) : null),
+    () => (activeGroup ? (getBestPersonalRecord(activeGroup.records) ?? null) : null),
     [activeGroup],
   );
 
@@ -144,7 +139,9 @@ export default function RecordsScreen() {
         (g) => g.exerciseName.trim().toLowerCase() === selectedExercise.name.trim().toLowerCase(),
       )
     : null;
-  const currentBestRecord = currentBestGroup ? getBestRecord(currentBestGroup) : null;
+  const currentBestRecord = currentBestGroup
+    ? (getBestPersonalRecord(currentBestGroup.records) ?? null)
+    : null;
 
   const adjustReps = (delta: number) => {
     if (delta === 0) return;
@@ -267,7 +264,7 @@ export default function RecordsScreen() {
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => {
-                const best = getBestRecord(item);
+                const best = getBestPersonalRecord(item.records) ?? item.records[0];
                 const secondBest = getSecondBestRecord(item);
                 const delta = secondBest ? best.weight - secondBest.weight : 0;
 
@@ -436,7 +433,7 @@ export default function RecordsScreen() {
         visible={exerciseModalVisible}
         onClose={() => setExerciseModalVisible(false)}
         selectedBlock={null}
-        getExercisePR={(id) => personalRecords.find((r) => r.exerciseId === id)}
+        getExercisePR={getExercisePR}
         onAddExercise={(exercise) => {
           setSelectedExercise(exercise);
           setExerciseModalVisible(false);

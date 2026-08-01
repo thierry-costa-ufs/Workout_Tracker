@@ -1,4 +1,5 @@
-import { WorkoutProvider } from '@/context/WorkoutContext';
+import { TemplatesProvider } from '@/context/TemplatesContext';
+import { PersonalRecordsProvider } from '@/context/PersonalRecordsContext';
 import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
 import { ModalPortalProvider } from '@/shared/context/PortalContext';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -10,19 +11,21 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: appTheme.colors.background }}>
       <ModalPortalProvider>
-        <WorkoutProvider>
-          <ErrorBoundary>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: appTheme.colors.background },
-              }}
-            >
-              <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
-              <Stack.Screen name="record" options={{ animation: 'none' }} />
-            </Stack>
-          </ErrorBoundary>
-        </WorkoutProvider>
+        <TemplatesProvider>
+          <PersonalRecordsProvider>
+            <ErrorBoundary>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: appTheme.colors.background },
+                }}
+              >
+                <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
+                <Stack.Screen name="record" options={{ animation: 'none' }} />
+              </Stack>
+            </ErrorBoundary>
+          </PersonalRecordsProvider>
+        </TemplatesProvider>
       </ModalPortalProvider>
     </GestureHandlerRootView>
   );

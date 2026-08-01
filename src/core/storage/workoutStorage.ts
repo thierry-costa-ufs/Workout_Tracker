@@ -7,11 +7,9 @@ const STORAGE_KEY_ACTIVE = '@gym_app:active_template_id';
 const STORAGE_KEY_PRS = '@gym_app:personal_records';
 
 export interface WorkoutStorage {
-  loadAll(): Promise<{
-    templates: WorkoutTemplate[];
-    activeId: string | null;
-    personalRecords: PersonalRecord[];
-  }>;
+  loadTemplates(): Promise<WorkoutTemplate[]>;
+  loadActiveId(): Promise<string | null>;
+  loadPersonalRecords(): Promise<PersonalRecord[]>;
 
   saveTemplates(templates: WorkoutTemplate[]): Promise<void>;
   saveActiveId(id: string | null): Promise<void>;
@@ -28,42 +26,35 @@ function parseJsonArray<T>(raw: string | null): T[] {
   }
 }
 
-export function createWorkoutStorage(): WorkoutStorage {
-  return {
-    async loadAll() {
-      const [vTemplates, vActiveId, vPRs] = await Promise.allSettled([
-        AsyncStorage.getItem(STORAGE_KEY_TEMPLATES),
-        AsyncStorage.getItem(STORAGE_KEY_ACTIVE),
-        AsyncStorage.getItem(STORAGE_KEY_PRS),
-      ]);
+export const workoutStorage: WorkoutStorage = {
+  async loadTemplates() {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY_TEMPLATES);
+    return filterValid(parseJsonArray<WorkoutTemplate>(raw), isWorkoutTemplate);
+  },
 
-      return {
-        templates:
-          vTemplates.status === 'fulfilled'
-            ? filterValid(parseJsonArray<WorkoutTemplate>(vTemplates.value), isWorkoutTemplate)
-            : [],
-        activeId: vActiveId.status === 'fulfilled' ? vActiveId.value || null : null,
-        personalRecords:
-          vPRs.status === 'fulfilled'
-            ? filterValid(parseJsonArray<PersonalRecord>(vPRs.value), isPersonalRecord)
-            : [],
-      };
-    },
+  async loadActiveId() {
+    const value = await AsyncStorage.getItem(STORAGE_KEY_ACTIVE);
+    return value || null;
+  },
 
-    async saveTemplates(templates) {
-      await AsyncStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(templates));
-    },
+  async loadPersonalRecords() {
+    const raw = await AsyncStorage.getItem(STORAGE_KEY_PRS);
+    return filterValid(parseJsonArray<PersonalRecord>(raw), isPersonalRecord);
+  },
 
-    async saveActiveId(id) {
-      if (id) {
-        await AsyncStorage.setItem(STORAGE_KEY_ACTIVE, id);
-      } else {
-        await AsyncStorage.removeItem(STORAGE_KEY_ACTIVE);
-      }
-    },
+  async saveTemplates(templates) {
+    await AsyncStorage.setItem(STORAGE_KEY_TEMPLATES, JSON.stringify(templates));
+  },
 
-    async savePersonalRecords(records) {
-      await AsyncStorage.setItem(STORAGE_KEY_PRS, JSON.stringify(records));
-    },
-  };
-}
+  async saveActiveId(id) {
+    if (id) {
+      await AsyncStorage.setItem(STORAGE_KEY_ACTIVE, id);
+    } else {
+      await AsyncStorage.removeItem(STORAGE_KEY_ACTIVE);
+    }
+  },
+
+  async savePersonalRecords(records) {
+    await AsyncStorage.setItem(STORAGE_KEY_PRS, JSON.stringify(records));
+  },
+};

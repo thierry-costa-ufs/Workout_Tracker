@@ -1,4 +1,5 @@
-import { useTemplates, usePersonalRecords } from '@/context/WorkoutContext';
+import { useTemplates } from '@/context/TemplatesContext';
+import { usePersonalRecords } from '@/context/PersonalRecordsContext';
 import { DAY_LABELS, getWorkoutDayKeyForToday } from '@/core/constants/days';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';

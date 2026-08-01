@@ -1,4 +1,4 @@
-import { useTemplates } from '@/context/WorkoutContext';
+import { useTemplates } from '@/context/TemplatesContext';
 import { useMemo } from 'react';
 
 export function useActiveTemplate() {

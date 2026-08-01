@@ -5,7 +5,7 @@ import { confirmDelete } from '@/shared/utils/confirmDelete';
 import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
-import { useTemplates } from '@/context/WorkoutContext';
+import { useTemplates } from '@/context/TemplatesContext';
 import {
   WorkoutBlock,
   createBlock,
@@ -44,7 +44,7 @@ export function usePlanningBlocks() {
   }, [activeId, currentActivePlan]);
 
   const handleNewPlan = useCallback(() => {
-    selectActiveTemplate('');
+    selectActiveTemplate(null);
     const freshBlock = createBlock('A');
     setBlocks([freshBlock]);
     setDaySplit({});
