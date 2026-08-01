@@ -559,12 +559,9 @@ export default function RecordsScreen() {
             )}
 
             <View style={styles.historyCardList}>
-              {[...sortedHistory].reverse().map((item, idx) => {
+              {[...sortedHistory].reverse().map((item, idx, rev) => {
                 const isBest = item.id === historyBest?.id;
-                const delta =
-                  idx < sortedHistory.length - 1
-                    ? item.weight - sortedHistory[sortedHistory.length - 2 - idx].weight
-                    : null;
+                const delta = idx < rev.length - 1 ? item.weight - rev[idx + 1].weight : null;
 
                 return (
                   <View

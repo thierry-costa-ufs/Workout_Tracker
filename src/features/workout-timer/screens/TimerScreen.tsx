@@ -49,12 +49,11 @@ const TIMER_PRESETS: Preset[] = [
 
 export default function TimerScreen() {
   const [secondsLeft, setSecondsLeft] = useState(90);
-  const [totalDuration, setTotalDuration] = useState(90);
   const [isActive, setIsActive] = useState(false);
   const [activePreset, setActivePreset] = useState('feeder');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endTimeRef = useRef<number>(0);
-  const totalDurationRef = useRef(totalDuration);
+  const totalDurationRef = useRef(90);
 
   const notifyFinish = () => {
     hapticNotify();
@@ -119,7 +118,6 @@ export default function TimerScreen() {
     setIsActive(false);
     totalDurationRef.current = duration;
     setActivePreset(id);
-    setTotalDuration(duration);
     setSecondsLeft(duration);
   };
 
@@ -127,7 +125,6 @@ export default function TimerScreen() {
     hapticLight();
     const newTime = Math.max(MIN_TIMER_SECONDS, totalDurationRef.current + amount);
     totalDurationRef.current = newTime;
-    setTotalDuration(newTime);
     setSecondsLeft(newTime);
     setIsActive(false);
     setActivePreset('');
@@ -139,7 +136,8 @@ export default function TimerScreen() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progressPercent = totalDuration > 0 ? (secondsLeft / totalDuration) * 100 : 0;
+  const progressPercent =
+    totalDurationRef.current > 0 ? (secondsLeft / totalDurationRef.current) * 100 : 0;
 
   return (
     <AppScreen style={styles.mainContainer} backgroundColor={appTheme.colors.background}>

@@ -3,7 +3,6 @@ import { DAY_LABELS, getWorkoutDayKeyForToday } from '@/core/constants/days';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { useActiveTemplate } from '@/shared/hooks/useActiveTemplate';
-import { PlannedExercise } from '@/types/workout';
 import { useMemo } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import { appTheme } from '@/shared/constants/theme';
@@ -18,18 +17,10 @@ export default function SessionScreen() {
 
   const todayExercises = useMemo(() => {
     if (!activeTemplate) {
-      return [] as PlannedExercise[];
+      return [];
     }
 
-    const rawExercises = activeTemplate.data[currentDayKey] || [];
-    return rawExercises.map((exercise) => ({
-      id: exercise.id,
-      name: exercise.name,
-      muscleGroup: exercise.muscleGroup,
-      sets: exercise.sets,
-      equipment: exercise.equipment,
-      mechanic: exercise.mechanic,
-    })) as PlannedExercise[];
+    return activeTemplate.data[currentDayKey] || [];
   }, [activeTemplate, currentDayKey]);
 
   if (isLoading) {
@@ -65,7 +56,7 @@ export default function SessionScreen() {
         <WorkoutSessionView
           exercises={todayExercises}
           personalRecords={personalRecords}
-          templateId={activeTemplate?.id ?? null}
+          templateId={activeTemplate.id}
           dayKey={currentDayKey}
         />
       </View>
