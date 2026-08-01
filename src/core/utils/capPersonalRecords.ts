@@ -1,11 +1,13 @@
 import { PersonalRecord } from '@/types/workout';
 
+export const MAX_PER_EXERCISE = 500;
+
 // ponytail: cap 500 records per exercise (~4.8MB total for 48 exercises).
 // Newest-first so history lists read in insertion order; best record computed separately.
 export function capPersonalRecords(
   existing: PersonalRecord[],
   newRecord: PersonalRecord,
-  maxPerExercise = 500,
+  maxPerExercise = MAX_PER_EXERCISE,
 ): PersonalRecord[] {
   const exerciseRecords = existing.filter((r) => r.exerciseId === newRecord.exerciseId);
   const otherRecords = existing.filter((r) => r.exerciseId !== newRecord.exerciseId);

@@ -256,7 +256,7 @@ export const EXERCISES_LIST: ExerciseData[] = [
   },
   {
     id: 'q2',
-    name: 'Leg Press 45Â°',
+    name: 'Leg Press 45°',
     muscleGroup: 'Quadríceps',
     mechanic: 'Composto',
     equipment: 'Máquina',
@@ -306,7 +306,7 @@ export const EXERCISES_LIST: ExerciseData[] = [
   },
   {
     id: 'po3',
-    name: 'Cadeira RomanÄƒ',
+    name: 'Cadeira Romană',
     muscleGroup: 'Posterior',
     mechanic: 'Composto',
     equipment: 'Máquina',

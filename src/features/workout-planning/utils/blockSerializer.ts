@@ -1,5 +1,4 @@
-import type { BlockStructure, WorkoutData, WorkoutDayKey } from '@/types/workout';
-import { PlannedExercise } from '@/types/workout';
+import type { BlockStructure, WorkoutData, WorkoutDayKey, PlannedExercise } from '@/types/workout';
 import { DAYS_OF_WEEK } from '@/core/constants/days';
 
 export interface WorkoutBlock {

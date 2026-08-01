@@ -14,6 +14,7 @@ import { AppScreen } from '@/core/ui/AppScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
+import { MAX_PER_EXERCISE } from '@/core/utils/capPersonalRecords';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -287,7 +288,7 @@ export default function RecordsScreen() {
                           <Text style={styles.prMeta}>
                             {item.muscleGroup.toUpperCase()} • {item.records.length}{' '}
                             {item.records.length === 1 ? 'REGISTRO' : 'REGISTROS'}
-                            {item.records.length >= 500 && ' ⚠️'}
+                            {item.records.length >= MAX_PER_EXERCISE && ' ⚠️'}
                           </Text>
                         </View>
 

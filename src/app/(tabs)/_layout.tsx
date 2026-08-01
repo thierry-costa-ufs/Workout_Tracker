@@ -26,6 +26,8 @@ import TimerScreen from '@/features/workout-timer/screens/TimerScreen';
 import PlanningScreen from '@/features/workout-planning/screens/PlanningScreen';
 import { appTheme } from '@/shared/constants/theme';
 
+const EXIT_CONFIRM_WINDOW_MS = 2000;
+
 type Route = {
   key: string;
   title: string;
@@ -127,7 +129,7 @@ function TabBackHandler({ currentIndex }: { currentIndex: number }) {
 
       if (currentIndex === 0) {
         const now = Date.now();
-        if (now - lastPress.current < 2000) {
+        if (now - lastPress.current < EXIT_CONFIRM_WINDOW_MS) {
           BackHandler.exitApp();
         } else {
           lastPress.current = now;

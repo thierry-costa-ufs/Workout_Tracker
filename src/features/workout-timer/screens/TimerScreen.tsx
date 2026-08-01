@@ -18,6 +18,8 @@ import {
 
 const { width } = Dimensions.get('window');
 
+const MIN_TIMER_SECONDS = 15;
+
 type IconName = keyof typeof Ionicons.glyphMap;
 
 interface Preset {
@@ -123,7 +125,7 @@ export default function TimerScreen() {
 
   const adjustTime = (amount: number) => {
     hapticLight();
-    const newTime = Math.max(15, totalDurationRef.current + amount);
+    const newTime = Math.max(MIN_TIMER_SECONDS, totalDurationRef.current + amount);
     totalDurationRef.current = newTime;
     setTotalDuration(newTime);
     setSecondsLeft(newTime);
