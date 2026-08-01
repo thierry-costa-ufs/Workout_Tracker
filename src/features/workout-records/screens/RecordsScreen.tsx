@@ -161,10 +161,10 @@ export default function RecordsScreen() {
       return;
     }
 
-    const parsedWeight = parseFloat(weight.replace(',', '.'));
+    const parsedWeight = Number(weight.trim().replace(',', '.'));
     const parsedReps = parseInt(reps, 10);
 
-    if (isNaN(parsedWeight) || isNaN(parsedReps)) {
+    if (!Number.isFinite(parsedWeight) || parsedWeight <= 0 || isNaN(parsedReps)) {
       Alert.alert('Erro', 'Insira valores numéricos válidos.');
       return;
     }

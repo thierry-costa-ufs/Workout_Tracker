@@ -1,6 +1,7 @@
 import { PlannedExercise, WorkoutDayKey } from '@/types/workout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hapticLight, hapticMedium } from '@/core/utils/haptics';
+import { isSessionProgress } from '@/core/validation/guards';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseSessionEngineProps {
@@ -73,7 +74,12 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
           progress?: SessionProgress | null;
         };
 
-        if (stored.progress && stored.dayKey === dayKey && stored.date === getToday()) {
+        if (
+          stored.progress &&
+          isSessionProgress(stored.progress) &&
+          stored.dayKey === dayKey &&
+          stored.date === getToday()
+        ) {
           // ponytail: merge so plan edits mid-day never leave missing exercise keys
           setProgress(mergeProgress(stored.progress, exercises));
         }
@@ -95,7 +101,7 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
     AsyncStorage.setItem(
       progressKey(templateId),
       JSON.stringify({ dayKey, date: getToday(), progress }),
-    ).catch(() => {});
+    ).catch((error) => console.warn('Failed to persist session progress', error));
   }, [progress, hydrated, templateId, dayKey]);
 
   const handleCheckNextSet = (exerciseId: string) => {

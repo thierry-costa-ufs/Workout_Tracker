@@ -1,5 +1,6 @@
 import { PersonalRecord, WorkoutTemplate } from '@/types/workout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { filterValid, isPersonalRecord, isWorkoutTemplate } from '@/core/validation/guards';
 
 const STORAGE_KEY_TEMPLATES = '@gym_app:workout_templates';
 const STORAGE_KEY_ACTIVE = '@gym_app:active_template_id';
@@ -39,11 +40,13 @@ export function createWorkoutStorage(): WorkoutStorage {
       return {
         templates:
           vTemplates.status === 'fulfilled'
-            ? parseJsonArray<WorkoutTemplate>(vTemplates.value)
+            ? filterValid(parseJsonArray<WorkoutTemplate>(vTemplates.value), isWorkoutTemplate)
             : [],
         activeId: vActiveId.status === 'fulfilled' ? vActiveId.value || null : null,
         personalRecords:
-          vPRs.status === 'fulfilled' ? parseJsonArray<PersonalRecord>(vPRs.value) : [],
+          vPRs.status === 'fulfilled'
+            ? filterValid(parseJsonArray<PersonalRecord>(vPRs.value), isPersonalRecord)
+            : [],
       };
     },
 

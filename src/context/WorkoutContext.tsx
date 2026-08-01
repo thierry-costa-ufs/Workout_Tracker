@@ -5,7 +5,15 @@ import {
   WorkoutData,
   WorkoutTemplate,
 } from '@/types/workout';
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Alert } from 'react-native';
 import { createWorkoutStorage, WorkoutStorage } from '@/core/storage/workoutStorage';
 import { capPersonalRecords, getBestPersonalRecord } from '@/core/utils/capPersonalRecords';
@@ -52,10 +60,14 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const templatesRef = useRef<WorkoutTemplate[]>([]);
+  const prRef = useRef<PersonalRecord[]>([]);
 
   const loadData = useCallback(async () => {
     try {
       const data = await storage.loadAll();
+      templatesRef.current = data.templates;
+      prRef.current = data.personalRecords;
       setTemplates(data.templates);
       setActiveId(data.activeId);
       setPersonalRecords(data.personalRecords);
@@ -71,12 +83,13 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const saveTemplate = useCallback(
     async (name: string, data: WorkoutData, id?: string, blockStructure?: BlockStructure) => {
       let targetId = id;
+      const current = templatesRef.current;
       let updatedTemplates: WorkoutTemplate[];
 
-      const exists = templates.some((t) => t.id === id);
+      const exists = current.some((t) => t.id === id);
 
       if (id && exists) {
-        updatedTemplates = templates.map((t) =>
+        updatedTemplates = current.map((t) =>
           t.id === id
             ? { ...t, name, data, blockStructure: blockStructure ?? t.blockStructure }
             : t,
@@ -90,53 +103,71 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
           blockStructure,
           createdAt: new Date().toISOString(),
         };
-        updatedTemplates = [...templates, newTemplate];
+        updatedTemplates = [...current, newTemplate];
       }
 
       const nextActiveId = exists ? activeId || id || null : targetId || null;
+
+      // ponytail: optimistic ref so a rapid double-save can't clobber; a failed write reverts to the pre-save snapshot
+      templatesRef.current = updatedTemplates;
+      setTemplates(updatedTemplates);
 
       try {
         await Promise.all([
           storage.saveTemplates(updatedTemplates),
           storage.saveActiveId(nextActiveId),
         ]);
-        setTemplates(updatedTemplates);
-        setActiveId(nextActiveId);
       } catch {
+        templatesRef.current = current;
+        setTemplates(current);
         Alert.alert('Erro', 'Não foi possível salvar o template.');
       }
     },
-    [templates, activeId],
+    [activeId],
   );
 
   const deleteTemplate = useCallback(
     async (id: string) => {
-      const nextTemplates = templates.filter((t) => t.id !== id);
+      const current = templatesRef.current;
+      const nextTemplates = current.filter((t) => t.id !== id);
       const isActiveDeleted = activeId === id;
+
+      templatesRef.current = nextTemplates;
+      setTemplates(nextTemplates);
 
       try {
         await Promise.all([
           storage.saveTemplates(nextTemplates),
           isActiveDeleted ? storage.saveActiveId(null) : Promise.resolve(),
         ]);
-        setTemplates(nextTemplates);
         if (isActiveDeleted) setActiveId(null);
       } catch {
+        templatesRef.current = current;
+        setTemplates(current);
         Alert.alert('Erro', 'Não foi possível excluir o template.');
       }
     },
-    [templates, activeId],
+    [activeId],
   );
 
-  const selectActiveTemplate = useCallback(async (id: string) => {
-    if (!id) {
-      setActiveId(null);
-      await storage.saveActiveId(null);
-    } else {
-      setActiveId(id);
-      await storage.saveActiveId(id);
-    }
-  }, []);
+  const selectActiveTemplate = useCallback(
+    async (id: string) => {
+      const previous = activeId;
+      try {
+        if (!id) {
+          setActiveId(null);
+          await storage.saveActiveId(null);
+        } else {
+          setActiveId(id);
+          await storage.saveActiveId(id);
+        }
+      } catch {
+        setActiveId(previous);
+        Alert.alert('Erro', 'Não foi possível salvar o template ativo.');
+      }
+    },
+    [activeId],
+  );
 
   const savePR = useCallback(
     async (
@@ -159,31 +190,38 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       };
 
       // ponytail: cap 500 records per exercise (~4.8MB total for 48 exercises)
-      const updated = capPersonalRecords(personalRecords, newRecord);
+      const current = prRef.current;
+      const updated = capPersonalRecords(current, newRecord);
+
+      prRef.current = updated;
+      setPersonalRecords(updated);
 
       try {
         await storage.savePersonalRecords(updated);
-        setPersonalRecords(updated);
       } catch {
+        prRef.current = current;
+        setPersonalRecords(current);
         Alert.alert('Erro', 'Não foi possível salvar o recorde.');
       }
     },
-    [personalRecords],
+    [],
   );
 
-  const deletePR = useCallback(
-    async (id: string) => {
-      const updated = personalRecords.filter((r) => r.id !== id);
+  const deletePR = useCallback(async (id: string) => {
+    const current = prRef.current;
+    const updated = current.filter((r) => r.id !== id);
 
-      try {
-        await storage.savePersonalRecords(updated);
-        setPersonalRecords(updated);
-      } catch {
-        Alert.alert('Erro', 'Não foi possível excluir o recorde.');
-      }
-    },
-    [personalRecords],
-  );
+    prRef.current = updated;
+    setPersonalRecords(updated);
+
+    try {
+      await storage.savePersonalRecords(updated);
+    } catch {
+      prRef.current = current;
+      setPersonalRecords(current);
+      Alert.alert('Erro', 'Não foi possível excluir o recorde.');
+    }
+  }, []);
 
   const getExercisePR = useCallback(
     (exerciseId: string) => {

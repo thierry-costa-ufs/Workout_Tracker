@@ -94,7 +94,7 @@ export default function PlanningScreen() {
   const doSave = async (bl: WorkoutBlock[], sp: Record<string, string | null>) => {
     const workoutData = buildWorkoutDataFromBlocks(bl, sp);
     await saveTemplate(
-      planningName,
+      planningName.trim(),
       workoutData,
       activeId || undefined,
       buildBlockStructure(bl, sp),
