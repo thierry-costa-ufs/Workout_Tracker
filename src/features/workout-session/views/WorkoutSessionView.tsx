@@ -2,9 +2,8 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { TelemetryDisplay } from '../components/TelemetryDisplay';
 import { PlannedExercise, PersonalRecord, WorkoutDayKey } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
 import { useCallback } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSessionEngine } from '../hooks/useSessionEngine';
 
 interface WorkoutSessionViewProps {
@@ -57,10 +56,8 @@ export function WorkoutSessionView({
           completed={stats.completedSets}
           total={stats.totalSets}
           percentage={stats.percentage}
+          onReset={handleReset}
         />
-        <Pressable hitSlop={12} onPress={handleReset}>
-          <Ionicons name="refresh-outline" size={20} color={appTheme.colors.textTertiary} />
-        </Pressable>
       </View>
 
       <ScrollView
@@ -84,9 +81,6 @@ export function WorkoutSessionView({
 
 const styles = StyleSheet.create({
   telemetryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingBottom: 4,
+    paddingBottom: 12,
   },
 });

@@ -101,13 +101,62 @@ export const setSegmentStyles = StyleSheet.create({
 export const telemetryStyles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 4,
-    paddingBottom: 12,
+    backgroundColor: appTheme.colors.surfaceElevated,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    borderRadius: 12,
+    overflow: 'hidden',
   } satisfies ViewStyle,
-  text: {
+  content: {
+    flex: 1,
+    padding: 14,
+  } satisfies ViewStyle,
+  label: {
+    color: appTheme.colors.textMuted,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1.5,
+    marginBottom: 8,
+  } satisfies TextStyle,
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 12,
+  } satisfies ViewStyle,
+  setsText: {
     color: appTheme.colors.textSecondary,
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    fontVariant: ['tabular-nums'],
   } satisfies TextStyle,
+  percentageText: {
+    color: appTheme.colors.textPrimary,
+    fontSize: 18,
+    fontWeight: '900',
+    fontVariant: ['tabular-nums'],
+  } satisfies TextStyle,
+  progressTrack: {
+    height: 3,
+    backgroundColor: appTheme.colors.surfaceDark,
+    borderRadius: 2,
+    overflow: 'hidden',
+  } satisfies ViewStyle,
+  progressFill: {
+    height: '100%',
+    backgroundColor: appTheme.colors.textPrimary,
+    borderRadius: 2,
+  } satisfies ViewStyle,
+  resetZone: {
+    width: 52,
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderLeftWidth: 1,
+    borderLeftColor: appTheme.colors.border,
+  } satisfies ViewStyle,
+  resetZonePressed: {
+    backgroundColor: 'rgba(229, 229, 234, 0.06)',
+  } satisfies ViewStyle,
 });

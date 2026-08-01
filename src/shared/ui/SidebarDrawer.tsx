@@ -13,9 +13,6 @@ import { BackHandler, Pressable, StyleSheet, Text, View, useWindowDimensions } f
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useCallback } from 'react';
 
-const EDGE_THRESHOLD = 20;
-const BOTTOM_OFFSET = 80;
-
 interface SidebarItem {
   label: string;
   icon: keyof typeof Feather.glyphMap;
@@ -32,19 +29,12 @@ const MENU_ITEMS: SidebarItem[] = [
 
 interface SidebarDrawerProps {
   visible: boolean;
-  onOpen: () => void;
   onClose: () => void;
   onNavigate: (route: string) => void;
   currentRoute?: string;
 }
 
-export function SidebarDrawer({
-  visible,
-  onOpen,
-  onClose,
-  onNavigate,
-  currentRoute,
-}: SidebarDrawerProps) {
+export function SidebarDrawer({ visible, onClose, onNavigate, currentRoute }: SidebarDrawerProps) {
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const SIDEBAR_WIDTH = windowWidth * 0.72;
@@ -114,14 +104,6 @@ export function SidebarDrawer({
 
   return (
     <Portal>
-      {/* Right edge swipe-to-open handle */}
-      {!visible && (
-        <Pressable
-          style={[styles.edgeHandle, { top: insets.top, bottom: insets.bottom + BOTTOM_OFFSET }]}
-          onPress={onOpen}
-        />
-      )}
-
       {/* Backdrop */}
       <Animated.View
         style={[styles.backdrop, backdropStyle]}
@@ -168,13 +150,6 @@ export function SidebarDrawer({
 }
 
 const styles = StyleSheet.create({
-  edgeHandle: {
-    position: 'absolute',
-    right: 0,
-    width: EDGE_THRESHOLD,
-    zIndex: 9998,
-    elevation: 10,
-  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',

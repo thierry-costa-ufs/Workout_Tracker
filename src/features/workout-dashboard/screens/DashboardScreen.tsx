@@ -152,7 +152,6 @@ export default function DashboardScreen() {
 
       <SidebarDrawer
         visible={sidebarVisible}
-        onOpen={openSidebar}
         onClose={closeSidebar}
         onNavigate={handleSidebarNavigate}
         currentRoute={currentRoute}
