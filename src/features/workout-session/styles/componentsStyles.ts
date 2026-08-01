@@ -15,9 +15,6 @@ export const exerciseCardStyles = StyleSheet.create({
     flex: 1,
     padding: 14,
   } satisfies ViewStyle,
-  rightZone: {
-    width: 48,
-  } satisfies ViewStyle,
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -49,25 +46,6 @@ export const exerciseCardStyles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: appTheme.colors.border,
   } satisfies ViewStyle,
-  prBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: appTheme.colors.prBadgeBackground,
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  } satisfies ViewStyle,
-  prBadgeText: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 11,
-    fontWeight: '800',
-  } satisfies TextStyle,
-  prDate: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '600',
-  } satisfies TextStyle,
   undoZone: {
     width: 44,
     borderTopLeftRadius: 12,

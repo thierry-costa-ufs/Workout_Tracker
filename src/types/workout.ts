@@ -51,13 +51,6 @@ export interface WorkoutTemplate {
   blockStructure?: BlockStructure;
 }
 
-export interface WorkoutSession {
-  id: string;
-  date: string;
-  templateId?: string;
-  data: WorkoutData;
-}
-
 export interface PersonalRecord {
   id: string;
   exerciseId: string;
@@ -67,10 +60,4 @@ export interface PersonalRecord {
   reps: number;
   date: string;
   timestamp: string;
-}
-
-export interface SessionStats {
-  totalSets: number;
-  completedSets: number;
-  percentage: number;
 }

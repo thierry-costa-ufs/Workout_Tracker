@@ -7,25 +7,6 @@ export const dashboardStyles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 40,
   } satisfies ViewStyle,
-  header: {
-    paddingTop: 28,
-  } satisfies ViewStyle,
-  titleBlock: {
-    flex: 1,
-  } satisfies ViewStyle,
-  brandSubtitle: {
-    color: appTheme.colors.textMuted,
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 1.5,
-    marginBottom: 2,
-  } satisfies TextStyle,
-  brandTitle: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 26,
-    fontWeight: '900',
-    letterSpacing: -1,
-  } satisfies TextStyle,
   mainHeroCard: {
     backgroundColor: appTheme.colors.surface,
   } satisfies ViewStyle,

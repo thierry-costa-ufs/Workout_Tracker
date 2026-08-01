@@ -3,20 +3,6 @@ import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 
 export const planningStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: appTheme.colors.background } satisfies ViewStyle,
-  topHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: appTheme.spacing.lg,
-    paddingVertical: appTheme.spacing.lg,
-    backgroundColor: appTheme.colors.background,
-  } satisfies ViewStyle,
-  headerTitle: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 1,
-  } satisfies TextStyle,
   activePlanBadge: {
     color: appTheme.colors.textSecondary,
     fontSize: 11,
@@ -249,22 +235,6 @@ export const planningStyles = StyleSheet.create({
     backgroundColor: appTheme.colors.borderStrong,
     marginTop: 24,
   } satisfies ViewStyle,
-  presetRow: { gap: 8, paddingBottom: 4 } satisfies ViewStyle,
-  presetDayButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: appTheme.colors.textPrimary,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-  } satisfies ViewStyle,
-  presetDayButtonText: {
-    color: appTheme.colors.textInverse,
-    fontSize: 11,
-    fontWeight: '900',
-    letterSpacing: 0.3,
-  } satisfies TextStyle,
   dayGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -442,39 +412,6 @@ export const planningStyles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 2,
   } satisfies TextStyle,
-  filterContainer: { flexDirection: 'row', marginBottom: 16, height: 34 } satisfies ViewStyle,
-  filterChip: {
-    backgroundColor: appTheme.colors.background,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    marginRight: 6,
-    borderWidth: 1,
-    borderColor: appTheme.colors.borderStrong,
-    justifyContent: 'center',
-  } satisfies ViewStyle,
-  filterChipActive: {
-    borderColor: appTheme.colors.textPrimary,
-  } satisfies ViewStyle,
-  filterChipText: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '700',
-  } satisfies TextStyle,
-  filterChipTextActive: { color: appTheme.colors.textPrimary } satisfies TextStyle,
-  mainListPrBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: appTheme.colors.prBadgeBackground,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    gap: 4,
-  } satisfies ViewStyle,
-  mainListPrText: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 9,
-    fontWeight: '700',
-  } satisfies TextStyle,
   assignOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -511,20 +448,4 @@ export const planningStyles = StyleSheet.create({
   flex1: { flex: 1 } satisfies ViewStyle,
   prRow: { flexDirection: 'row', alignItems: 'center', gap: 8 } satisfies ViewStyle,
   fullWidthMaxHeight: { width: '100%', maxHeight: 280 } satisfies ViewStyle,
-  fullWidth: { width: '100%' } satisfies ViewStyle,
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: appTheme.colors.surfaceElevated,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-    gap: 8,
-  } satisfies ViewStyle,
-  searchInput: {
-    flex: 1,
-    color: appTheme.colors.textPrimary,
-    fontSize: 14,
-    paddingVertical: 10,
-  } satisfies TextStyle,
 });
