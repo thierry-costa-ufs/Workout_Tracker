@@ -12,6 +12,8 @@ import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'reac
 import { ExercisePickerModal } from '@/shared/ui/ExercisePickerModal';
 import { PlansModal } from '../components/PlansModal';
 import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
+import { buildBlockStructure, findDuplicateBlockSignatures } from '../utils/blockSerializer';
+import type { WorkoutBlock } from '../utils/blockSerializer';
 import { planningStyles as styles } from '../styles/planningStyles';
 
 export default function PlanningScreen() {
@@ -34,6 +36,7 @@ export default function PlanningScreen() {
     handleUpdateSetsInBlock,
     handleRemoveExerciseFromBlock,
     handleAssignDay,
+    mergeDuplicateBlocks,
     buildWorkoutDataFromBlocks,
     saveTemplate,
     selectActiveTemplate,
@@ -57,10 +60,39 @@ export default function PlanningScreen() {
       return;
     }
 
-    const workoutData = buildWorkoutDataFromBlocks();
-    await saveTemplate(planningName, workoutData, activeId || undefined);
-    setIsSaveModalVisible(false);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    const doSave = async (bl: WorkoutBlock[], sp: Record<string, string | null>) => {
+      const workoutData = buildWorkoutDataFromBlocks(bl, sp);
+      await saveTemplate(
+        planningName,
+        workoutData,
+        activeId || undefined,
+        buildBlockStructure(bl, sp),
+      );
+      setIsSaveModalVisible(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    };
+
+    const duplicates = findDuplicateBlockSignatures(blocks);
+    if (duplicates.length > 0) {
+      Alert.alert(
+        'Blocos idênticos',
+        'Existem blocos com os mesmos exercícios. Juntar em um só bloco?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Manter separados', onPress: () => doSave(blocks, daySplit) },
+          {
+            text: 'Juntar',
+            onPress: () => {
+              const merged = mergeDuplicateBlocks();
+              doSave(merged.blocks, merged.daySplit);
+            },
+          },
+        ],
+      );
+      return;
+    }
+
+    await doSave(blocks, daySplit);
   };
 
   return (

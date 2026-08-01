@@ -9,7 +9,9 @@ import { useTemplates } from '@/context/WorkoutContext';
 import {
   WorkoutBlock,
   createBlock,
+  findDuplicateBlockSignatures,
   getNextLabel,
+  reconstructFromBlockStructure,
   reconstructFromWorkoutData,
 } from '../utils/blockSerializer';
 
@@ -27,9 +29,9 @@ export function usePlanningBlocks() {
 
   useEffect(() => {
     if (activeId && currentActivePlan?.data) {
-      const { blocks: rebuiltBlocks, daySplit: rebuiltSplit } = reconstructFromWorkoutData(
-        currentActivePlan.data,
-      );
+      const { blocks: rebuiltBlocks, daySplit: rebuiltSplit } = currentActivePlan.blockStructure
+        ? reconstructFromBlockStructure(currentActivePlan.blockStructure, currentActivePlan.data)
+        : reconstructFromWorkoutData(currentActivePlan.data);
       setBlocks(rebuiltBlocks);
       setDaySplit(rebuiltSplit);
       setSelectedBlockId(rebuiltBlocks[0]?.id ?? null);
@@ -50,15 +52,18 @@ export function usePlanningBlocks() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
   }, [selectActiveTemplate]);
 
-  const buildWorkoutDataFromBlocks = useCallback((): WorkoutData => {
-    const data = createEmptyWorkoutData();
-    DAYS_OF_WEEK.forEach((day) => {
-      const blockId = daySplit[day.id];
-      const block = blocks.find((b) => b.id === blockId);
-      data[day.id] = block ? block.exercises : [];
-    });
-    return data;
-  }, [blocks, daySplit]);
+  const buildWorkoutDataFromBlocks = useCallback(
+    (bl: WorkoutBlock[], sp: Record<string, string | null>): WorkoutData => {
+      const data = createEmptyWorkoutData();
+      DAYS_OF_WEEK.forEach((day) => {
+        const blockId = sp[day.id];
+        const block = bl.find((b) => b.id === blockId);
+        data[day.id] = block ? block.exercises : [];
+      });
+      return data;
+    },
+    [],
+  );
 
   const handleAddBlock = useCallback(() => {
     const newBlock = createBlock(getNextLabel(blocks));
@@ -172,6 +177,33 @@ export function usePlanningBlocks() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   }, []);
 
+  const mergeDuplicateBlocks = useCallback(() => {
+    const groups = findDuplicateBlockSignatures(blocks);
+    const dropToKeep = new Map<string, string>();
+    groups.forEach((group) => {
+      const survivorId = group[0].id;
+      group.slice(1).forEach((block) => dropToKeep.set(block.id, survivorId));
+    });
+
+    const mergedBlocks = blocks.filter((b) => !dropToKeep.has(b.id));
+    const mergedDaySplit = { ...daySplit };
+    Object.keys(mergedDaySplit).forEach((dayId) => {
+      const blockId = mergedDaySplit[dayId];
+      if (blockId && dropToKeep.has(blockId)) {
+        mergedDaySplit[dayId] = dropToKeep.get(blockId) ?? blockId;
+      }
+    });
+
+    setBlocks(mergedBlocks);
+    setDaySplit(mergedDaySplit);
+    setSelectedBlockId((prev) =>
+      prev && dropToKeep.has(prev) ? (dropToKeep.get(prev) ?? null) : prev,
+    );
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    return { blocks: mergedBlocks, daySplit: mergedDaySplit };
+  }, [blocks, daySplit]);
+
   return {
     blocks,
     daySplit,
@@ -192,6 +224,7 @@ export function usePlanningBlocks() {
     handleUpdateSetsInBlock,
     handleRemoveExerciseFromBlock,
     handleAssignDay,
+    mergeDuplicateBlocks,
     saveTemplate,
     selectActiveTemplate,
   };

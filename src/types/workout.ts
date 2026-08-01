@@ -39,11 +39,17 @@ export interface PlannedExercise {
 
 export type WorkoutData = Record<WorkoutDayKey, PlannedExercise[]>;
 
+export interface BlockStructure {
+  blocks: { id: string; label: string }[];
+  dayIds: Record<WorkoutDayKey, string | null>;
+}
+
 export interface WorkoutTemplate {
   id: string;
   name: string;
   createdAt: string;
   data: WorkoutData;
+  blockStructure?: BlockStructure;
 }
 
 export interface WorkoutSession {

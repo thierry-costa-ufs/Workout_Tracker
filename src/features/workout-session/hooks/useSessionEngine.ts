@@ -1,23 +1,79 @@
-import { PlannedExercise } from '@/types/workout';
+import { PlannedExercise, WorkoutDayKey } from '@/types/workout';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface UseSessionEngineProps {
   exercises: PlannedExercise[];
+  templateId: string | null;
+  dayKey: WorkoutDayKey;
 }
 
 export type SessionProgress = Record<string, boolean[]>;
 
-export function useSessionEngine({ exercises }: UseSessionEngineProps) {
+const progressKey = (templateId: string) => `@gym_app:session_progress:${templateId}`;
+
+function getToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+function buildEmptyProgress(exercises: PlannedExercise[]): SessionProgress {
+  const progress: SessionProgress = {};
+  exercises.forEach((ex) => {
+    progress[ex.id] = Array(ex.sets).fill(false);
+  });
+  return progress;
+}
+
+export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEngineProps) {
   const [progress, setProgress] = useState<SessionProgress>({});
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    const initialProgress: SessionProgress = {};
-    exercises.forEach((ex) => {
-      initialProgress[ex.id] = Array(ex.sets).fill(false);
-    });
-    setProgress(initialProgress);
+    setProgress(buildEmptyProgress(exercises));
   }, [exercises]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        if (!templateId) return;
+
+        const raw = await AsyncStorage.getItem(progressKey(templateId));
+        if (cancelled || !raw) return;
+
+        const stored = JSON.parse(raw) as {
+          dayKey?: string | null;
+          date?: string | null;
+          progress?: SessionProgress | null;
+        };
+
+        if (stored.progress && stored.dayKey === dayKey && stored.date === getToday()) {
+          setProgress(stored.progress);
+        }
+      } catch {
+        // ponytail: corrupt or missing progress = fresh session
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [templateId, dayKey]);
+
+  useEffect(() => {
+    if (!hydrated || !templateId) return;
+    AsyncStorage.setItem(
+      progressKey(templateId),
+      JSON.stringify({ dayKey, date: getToday(), progress }),
+    ).catch(() => {});
+  }, [progress, hydrated, templateId, dayKey]);
 
   const handleCheckNextSet = (exerciseId: string) => {
     setProgress((prev) => {
@@ -53,6 +109,11 @@ export function useSessionEngine({ exercises }: UseSessionEngineProps) {
     });
   };
 
+  const resetProgress = useCallback(() => {
+    setProgress(buildEmptyProgress(exercises));
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  }, [exercises]);
+
   const stats = useMemo(() => {
     let totalSets = 0;
     let completedSets = 0;
@@ -75,6 +136,7 @@ export function useSessionEngine({ exercises }: UseSessionEngineProps) {
     progress,
     handleCheckNextSet,
     handleUndoLastSet,
+    resetProgress,
     stats,
   };
 }

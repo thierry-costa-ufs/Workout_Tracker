@@ -1,4 +1,5 @@
 import {
+  BlockStructure,
   MuscleGroup,
   PersonalRecord,
   WorkoutData,
@@ -23,7 +24,12 @@ const SessionsContext = createContext<SessionsContextType | undefined>(undefined
 interface TemplatesContextType {
   templates: WorkoutTemplate[];
   activeId: string | null;
-  saveTemplate: (name: string, data: WorkoutData, id?: string) => Promise<void>;
+  saveTemplate: (
+    name: string,
+    data: WorkoutData,
+    id?: string,
+    blockStructure?: BlockStructure,
+  ) => Promise<void>;
   deleteTemplate: (id: string) => Promise<void>;
   selectActiveTemplate: (id: string) => Promise<void>;
 }
@@ -82,20 +88,25 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const saveTemplate = useCallback(
-    async (name: string, data: WorkoutData, id?: string) => {
+    async (name: string, data: WorkoutData, id?: string, blockStructure?: BlockStructure) => {
       let targetId = id;
       let updatedTemplates: WorkoutTemplate[];
 
       const exists = templates.some((t) => t.id === id);
 
       if (id && exists) {
-        updatedTemplates = templates.map((t) => (t.id === id ? { ...t, name, data } : t));
+        updatedTemplates = templates.map((t) =>
+          t.id === id
+            ? { ...t, name, data, blockStructure: blockStructure ?? t.blockStructure }
+            : t,
+        );
       } else {
         targetId = Date.now().toString();
         const newTemplate: WorkoutTemplate = {
           id: targetId,
           name,
           data,
+          blockStructure,
           createdAt: new Date().toISOString(),
         };
         updatedTemplates = [...templates, newTemplate];

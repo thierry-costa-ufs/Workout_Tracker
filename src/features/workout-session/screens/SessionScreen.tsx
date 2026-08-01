@@ -62,7 +62,12 @@ export default function SessionScreen() {
       </View>
 
       <View style={styles.contentBody}>
-        <WorkoutSessionView exercises={todayExercises} personalRecords={personalRecords} />
+        <WorkoutSessionView
+          exercises={todayExercises}
+          personalRecords={personalRecords}
+          templateId={activeTemplate?.id ?? null}
+          dayKey={currentDayKey}
+        />
       </View>
     </AppScreen>
   );
