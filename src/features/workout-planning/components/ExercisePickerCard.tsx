@@ -1,10 +1,10 @@
 import { appTheme } from '@/shared/constants/theme';
 import { ExerciseData, PersonalRecord } from '@/types/workout';
 import { PrBadge } from '@/shared/ui/PrBadge';
+import { hapticNotify } from '@/core/utils/haptics';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import * as Haptics from 'expo-haptics';
 
 interface ExercisePickerCardProps {
   item: ExerciseData;
@@ -20,7 +20,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
   const [isAdded, setIsAdded] = useState(false);
 
   const handlePress = () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotify();
     onAdd();
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 600);

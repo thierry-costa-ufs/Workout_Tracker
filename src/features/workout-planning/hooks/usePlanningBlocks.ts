@@ -2,7 +2,7 @@ import { DAYS_OF_WEEK, createEmptyWorkoutData } from '@/core/constants/days';
 import { ExerciseData, WorkoutData } from '@/types/workout';
 import { useActiveTemplate } from '@/shared/hooks/useActiveTemplate';
 import { confirmDelete } from '@/shared/utils/confirmDelete';
-import * as Haptics from 'expo-haptics';
+import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useTemplates } from '@/context/WorkoutContext';
@@ -49,7 +49,7 @@ export function usePlanningBlocks() {
     setBlocks([freshBlock]);
     setDaySplit({});
     setSelectedBlockId(freshBlock.id);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticMedium();
   }, [selectActiveTemplate]);
 
   const buildWorkoutDataFromBlocks = useCallback(
@@ -69,7 +69,7 @@ export function usePlanningBlocks() {
     const newBlock = createBlock(getNextLabel(blocks));
     setBlocks((prev) => [...prev, newBlock]);
     setSelectedBlockId(newBlock.id);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticMedium();
   }, [blocks]);
 
   const handleDeleteBlock = useCallback((blockId: string) => {
@@ -87,7 +87,7 @@ export function usePlanningBlocks() {
     });
 
     setSelectedBlockId((prev) => (prev === blockId ? null : prev));
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotify();
   }, []);
 
   const confirmDeleteBlock = useCallback(
@@ -146,7 +146,7 @@ export function usePlanningBlocks() {
 
   const handleUpdateSetsInBlock = useCallback((blockId: string, index: number, newSets: number) => {
     if (newSets < 1) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticLight();
 
     setBlocks((prev) =>
       prev.map((block) => {
@@ -160,7 +160,7 @@ export function usePlanningBlocks() {
   }, []);
 
   const handleRemoveExerciseFromBlock = useCallback((blockId: string, index: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticMedium();
     setBlocks((prev) =>
       prev.map((block) => {
         if (block.id !== blockId) return block;
@@ -174,7 +174,7 @@ export function usePlanningBlocks() {
 
   const handleAssignDay = useCallback((dayId: string, blockId: string | null) => {
     setDaySplit((prev) => ({ ...prev, [dayId]: blockId }));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticLight();
   }, []);
 
   const mergeDuplicateBlocks = useCallback(() => {
@@ -199,7 +199,7 @@ export function usePlanningBlocks() {
     setSelectedBlockId((prev) =>
       prev && dropToKeep.has(prev) ? (dropToKeep.get(prev) ?? null) : prev,
     );
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    hapticNotify();
 
     return { blocks: mergedBlocks, daySplit: mergedDaySplit };
   }, [blocks, daySplit]);

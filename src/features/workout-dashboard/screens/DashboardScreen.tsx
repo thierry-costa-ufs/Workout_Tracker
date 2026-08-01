@@ -29,16 +29,7 @@ export default function DashboardScreen() {
   const currentRoute = getActiveRoute(pathname);
 
   const handleSidebarNavigate = (route: string) => {
-    const tabMap: Record<string, number> = {
-      '/(tabs)': 0,
-      '/(tabs)/session': 1,
-      '/(tabs)/timer': 2,
-      '/(tabs)/planning': 3,
-    };
-    const idx = tabMap[route];
-    if (idx !== undefined) {
-      switchTab(idx);
-    } else if (route === '/record') {
+    if (route === '/record') {
       router.push('/record' as never);
     }
   };

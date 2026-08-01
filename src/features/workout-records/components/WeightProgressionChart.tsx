@@ -3,39 +3,15 @@ import { Dimensions, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import { PersonalRecord } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
+import { ChartMode, formatDateShort, getDisplayValue, parseRecordDate } from '../utils/chartMath';
 
 interface WeightProgressionChartProps {
   records: PersonalRecord[];
-  mode?: 'weight' | '1rm';
+  mode?: ChartMode;
 }
 
 const CHART_HEIGHT = 170;
 const PADDING = { top: 24, right: 20, bottom: 36, left: 44 };
-
-function epley1RM(w: number, r: number) {
-  return w * (1 + r / 30);
-}
-
-function getDisplayValue(r: PersonalRecord, mode: 'weight' | '1rm') {
-  return mode === '1rm' ? epley1RM(r.weight, r.reps) : r.weight;
-}
-
-function parseRecordDate(r: PersonalRecord): Date {
-  if (r.timestamp) return new Date(r.timestamp);
-  const parts = r.date.split('/');
-  if (parts.length === 3) {
-    return new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
-  }
-  return new Date(r.date);
-}
-
-function formatDateShort(dateStr: string): string {
-  const parts = dateStr.split('/');
-  if (parts.length === 3) {
-    return `${parts[0]}/${parts[1]}`;
-  }
-  return dateStr;
-}
 
 export function WeightProgressionChart({ records, mode = 'weight' }: WeightProgressionChartProps) {
   const sorted = useMemo(() => {

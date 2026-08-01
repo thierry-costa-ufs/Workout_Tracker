@@ -13,7 +13,7 @@ import { WeightProgressionChart } from '../components/WeightProgressionChart';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import * as Haptics from 'expo-haptics';
+import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
 import { useMemo, useState } from 'react';
 import {
   Alert,
@@ -147,11 +147,11 @@ export default function RecordsScreen() {
 
   const adjustReps = (delta: number) => {
     if (delta === 0) return;
-    const current = parseFloat(reps.replace(',', '.')) || 0;
+    const current = parseInt(reps, 10) || 0;
     const next = current + delta;
-    if (next < 0) return;
-    setReps(String(Number(next.toFixed(2))));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (next < 1) return;
+    setReps(String(next));
+    hapticLight();
   };
 
   const handleSavePR = async () => {
@@ -168,6 +168,11 @@ export default function RecordsScreen() {
       return;
     }
 
+    if (!Number.isInteger(parsedReps) || parsedReps < 1) {
+      Alert.alert('Erro', 'Repetições devem ser um número inteiro positivo.');
+      return;
+    }
+
     const isImprovement = !!currentBestRecord && parsedWeight > currentBestRecord.weight;
     const improvementDelta = currentBestRecord ? parsedWeight - currentBestRecord.weight : 0;
 
@@ -179,7 +184,7 @@ export default function RecordsScreen() {
         parsedWeight,
         parsedReps,
       );
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      hapticNotify();
       setModalVisible(false);
       setSelectedExercise(null);
       setWeight('');
@@ -196,7 +201,7 @@ export default function RecordsScreen() {
   const handleDeletePR = (id: string) => {
     confirmDelete('Remover Recorde', 'Excluir permanentemente este PR?', async () => {
       await deletePR(id);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      hapticMedium();
     });
   };
 
@@ -273,7 +278,7 @@ export default function RecordsScreen() {
                       onPress={() => {
                         setActiveGroupKey(item.key);
                         setHistoryModalVisible(true);
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        hapticLight();
                       }}
                     >
                       <View style={styles.groupCardBodyRow}>
@@ -282,7 +287,7 @@ export default function RecordsScreen() {
                           <Text style={styles.prMeta}>
                             {item.muscleGroup.toUpperCase()} • {item.records.length}{' '}
                             {item.records.length === 1 ? 'REGISTRO' : 'REGISTROS'}
-                            {item.records.length > 400 && ' ⚠️'}
+                            {item.records.length >= 500 && ' ⚠️'}
                           </Text>
                         </View>
 

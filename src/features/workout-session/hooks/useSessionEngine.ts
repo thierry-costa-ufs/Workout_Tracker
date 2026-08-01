@@ -1,7 +1,7 @@
 import { PlannedExercise, WorkoutDayKey } from '@/types/workout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Haptics from 'expo-haptics';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { hapticLight, hapticMedium } from '@/core/utils/haptics';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseSessionEngineProps {
   exercises: PlannedExercise[];
@@ -28,13 +28,34 @@ function buildEmptyProgress(exercises: PlannedExercise[]): SessionProgress {
   return progress;
 }
 
+// ponytail: plan edited mid-day → carry over surviving sets, truncate/pad to new ex.sets
+function mergeProgress(prev: SessionProgress, exercises: PlannedExercise[]): SessionProgress {
+  const next: SessionProgress = {};
+  exercises.forEach((ex) => {
+    const old = prev[ex.id];
+    if (!old) {
+      next[ex.id] = Array(ex.sets).fill(false);
+      return;
+    }
+    const kept = old.slice(0, ex.sets);
+    while (kept.length < ex.sets) kept.push(false);
+    next[ex.id] = kept;
+  });
+  return next;
+}
+
 export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEngineProps) {
   const [progress, setProgress] = useState<SessionProgress>({});
   const [hydrated, setHydrated] = useState(false);
 
+  const planSig = exercises.map((e) => `${e.id}:${e.sets}`).join('|');
+  const planSigRef = useRef('');
+
   useEffect(() => {
-    setProgress(buildEmptyProgress(exercises));
-  }, [exercises]);
+    if (planSig === planSigRef.current) return;
+    planSigRef.current = planSig;
+    setProgress((prev) => mergeProgress(prev, exercises));
+  }, [planSig, exercises]);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +74,8 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
         };
 
         if (stored.progress && stored.dayKey === dayKey && stored.date === getToday()) {
-          setProgress(stored.progress);
+          // ponytail: merge so plan edits mid-day never leave missing exercise keys
+          setProgress(mergeProgress(stored.progress, exercises));
         }
       } catch {
         // ponytail: corrupt or missing progress = fresh session
@@ -65,6 +87,7 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId, dayKey]);
 
   useEffect(() => {
@@ -76,43 +99,44 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
   }, [progress, hydrated, templateId, dayKey]);
 
   const handleCheckNextSet = (exerciseId: string) => {
+    if (!hydrated) return;
+    const currentSets = progress[exerciseId];
+    const nextIndex = currentSets ? currentSets.indexOf(false) : -1;
+    if (nextIndex === -1) return;
+
+    hapticMedium();
     setProgress((prev) => {
-      const currentSets = prev[exerciseId];
-      if (!currentSets) return prev;
-
-      const nextIndex = currentSets.indexOf(false);
-      if (nextIndex === -1) return prev;
-
-      const updatedSets = [...currentSets];
-      updatedSets[nextIndex] = true;
-
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
+      const sets = prev[exerciseId];
+      const idx = sets ? sets.indexOf(false) : -1;
+      if (idx === -1) return prev;
+      const updatedSets = [...sets];
+      updatedSets[idx] = true;
       return { ...prev, [exerciseId]: updatedSets };
     });
   };
 
   const handleUndoLastSet = (exerciseId: string) => {
+    if (!hydrated) return;
+    const currentSets = progress[exerciseId];
+    const lastCompleted = currentSets ? currentSets.lastIndexOf(true) : -1;
+    if (lastCompleted === -1) return;
+
+    hapticLight();
     setProgress((prev) => {
-      const currentSets = prev[exerciseId];
-      if (!currentSets) return prev;
-
-      const lastCompleted = currentSets.lastIndexOf(true);
-      if (lastCompleted === -1) return prev;
-
-      const updatedSets = [...currentSets];
-      updatedSets[lastCompleted] = false;
-
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
+      const sets = prev[exerciseId];
+      const idx = sets ? sets.lastIndexOf(true) : -1;
+      if (idx === -1) return prev;
+      const updatedSets = [...sets];
+      updatedSets[idx] = false;
       return { ...prev, [exerciseId]: updatedSets };
     });
   };
 
   const resetProgress = useCallback(() => {
+    if (!hydrated) return;
     setProgress(buildEmptyProgress(exercises));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-  }, [exercises]);
+    hapticMedium();
+  }, [exercises, hydrated]);
 
   const stats = useMemo(() => {
     let totalSets = 0;

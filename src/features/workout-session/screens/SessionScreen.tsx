@@ -1,4 +1,4 @@
-import { useSessions, usePersonalRecords } from '@/context/WorkoutContext';
+import { useTemplates, usePersonalRecords } from '@/context/WorkoutContext';
 import { DAY_LABELS, getWorkoutDayKeyForToday } from '@/core/constants/days';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
@@ -12,7 +12,7 @@ import { sessionStyles as styles } from '../styles/sessionStyles';
 
 export default function SessionScreen() {
   const activeTemplate = useActiveTemplate();
-  const { isLoading } = useSessions();
+  const { isLoading } = useTemplates();
   const { personalRecords } = usePersonalRecords();
   const currentDayKey = getWorkoutDayKeyForToday();
 

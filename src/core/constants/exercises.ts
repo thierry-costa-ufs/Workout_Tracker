@@ -3,7 +3,7 @@ import { ExerciseData } from '@/types/workout';
 export type { MuscleGroup, ExerciseData } from '@/types/workout';
 
 export const EXERCISES_LIST: ExerciseData[] = [
-  // ─── PEITO ──────────────────────────────────────────────
+  // ─── PEITO ─────────────
   {
     id: 'p1',
     name: 'Supino Reto',
@@ -11,7 +11,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 4,
-    defaultReps: '8-10',
   },
   {
     id: 'p2',
@@ -20,7 +19,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 4,
-    defaultReps: '8-12',
   },
   {
     id: 'p3',
@@ -29,7 +27,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 3,
-    defaultReps: '12',
   },
   {
     id: 'p4',
@@ -38,7 +35,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 'p5',
@@ -47,7 +43,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 4,
-    defaultReps: '8-10',
   },
   {
     id: 'p6',
@@ -56,10 +51,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
 
-  // ─── COSTAS ─────────────────────────────────────────────
+  // ─── COSTAS ─────────────
   {
     id: 'c1',
     name: 'Puxada Aberta na Polia',
@@ -67,7 +61,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Polia',
     defaultSets: 4,
-    defaultReps: '10',
   },
   {
     id: 'c2',
@@ -76,7 +69,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Polia',
     defaultSets: 4,
-    defaultReps: '8-12',
   },
   {
     id: 'c3',
@@ -85,7 +77,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 4,
-    defaultReps: '8-10',
   },
   {
     id: 'c4',
@@ -94,7 +85,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 3,
-    defaultReps: '12',
   },
   {
     id: 'c5',
@@ -103,7 +93,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 'c6',
@@ -112,7 +101,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Polia',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'c7',
@@ -121,10 +109,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Peso Corporal',
     defaultSets: 3,
-    defaultReps: 'Falha',
   },
 
-  // ─── OMBROS ─────────────────────────────────────────────
+  // ─── OMBROS ─────────────
   {
     id: 'o1',
     name: 'Desenvolvimento',
@@ -132,7 +119,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 4,
-    defaultReps: '8-10',
   },
   {
     id: 'o2',
@@ -141,7 +127,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 4,
-    defaultReps: '12-15',
   },
   {
     id: 'o3',
@@ -150,7 +135,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '12',
   },
   {
     id: 'o4',
@@ -159,7 +143,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'o5',
@@ -168,7 +151,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '12-15',
   },
   {
     id: 'o6',
@@ -177,10 +159,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
 
-  // ─── BÍCEPS ─────────────────────────────────────────────
+  // ─── BÍCEPS ─────────────
   {
     id: 'b1',
     name: 'Rosca Direta',
@@ -188,7 +169,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Barra',
     defaultSets: 3,
-    defaultReps: '10',
   },
   {
     id: 'b2',
@@ -197,7 +177,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 'b3',
@@ -206,7 +185,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 'b4',
@@ -215,7 +193,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 'b5',
@@ -224,10 +201,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
 
-  // ─── TRÍCEPS ────────────────────────────────────────────
+  // ─── TRÍCEPS ─────────────
   {
     id: 't1',
     name: 'Tríceps Corda',
@@ -235,7 +211,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 4,
-    defaultReps: '12',
   },
   {
     id: 't2',
@@ -244,7 +219,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Barra',
     defaultSets: 3,
-    defaultReps: '10',
   },
   {
     id: 't3',
@@ -253,7 +227,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 't4',
@@ -262,7 +235,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 3,
-    defaultReps: '12',
   },
   {
     id: 't5',
@@ -271,10 +243,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Peso Corporal',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
 
-  // ─── QUADRÍCEPS ─────────────────────────────────────────
+  // ─── QUADRÍCEPS ─────────────
   {
     id: 'q1',
     name: 'Agachamento Livre',
@@ -282,16 +253,14 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 4,
-    defaultReps: '6-8',
   },
   {
     id: 'q2',
-    name: 'Leg Press 45°',
+    name: 'Leg Press 45Â°',
     muscleGroup: 'Quadríceps',
     mechanic: 'Composto',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'q3',
@@ -300,7 +269,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '12-15',
   },
   {
     id: 'q4',
@@ -309,7 +277,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'q5',
@@ -318,10 +285,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
 
-  // ─── POSTERIOR ──────────────────────────────────────────
+  // ─── POSTERIOR ─────────────
   {
     id: 'po1',
     name: 'Cadeira Flexora',
@@ -329,7 +295,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'po2',
@@ -338,16 +303,14 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 3,
-    defaultReps: '8-10',
   },
   {
     id: 'po3',
-    name: 'Cadeira Romană',
+    name: 'Cadeira RomanÄƒ',
     muscleGroup: 'Posterior',
     mechanic: 'Composto',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'po4',
@@ -356,7 +319,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 3,
-    defaultReps: '10-12',
   },
   {
     id: 'po5',
@@ -365,10 +327,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 4,
-    defaultReps: '6-8',
   },
 
-  // ─── PANTURRILHA ────────────────────────────────────────
+  // ─── PANTURRILHA ─────────────
   {
     id: 'pa1',
     name: 'Gêmeos em Pé',
@@ -376,7 +337,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '15',
   },
   {
     id: 'pa2',
@@ -385,7 +345,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '12-15',
   },
   {
     id: 'pa3',
@@ -394,10 +353,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Máquina',
     defaultSets: 4,
-    defaultReps: '15-20',
   },
 
-  // ─── ABDÔMEN ────────────────────────────────────────────
+  // ─── ABDÔMEN ─────────────
   {
     id: 'a1',
     name: 'Abdominal Supra',
@@ -405,7 +363,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Peso Corporal',
     defaultSets: 3,
-    defaultReps: 'Falha',
   },
   {
     id: 'a2',
@@ -414,7 +371,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Peso Corporal',
     defaultSets: 3,
-    defaultReps: '30-60s',
   },
   {
     id: 'a3',
@@ -423,7 +379,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Peso Corporal',
     defaultSets: 3,
-    defaultReps: '12-15',
   },
   {
     id: 'a4',
@@ -432,10 +387,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 3,
-    defaultReps: '12-15',
   },
 
-  // ─── ANTebraço ──────────────────────────────────────────
+  // ─── Antebraço ─────────────
   {
     id: 'an1',
     name: 'Rosca de Punho',
@@ -443,7 +397,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Barra',
     defaultSets: 3,
-    defaultReps: '12-15',
   },
   {
     id: 'an2',
@@ -452,7 +405,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '12-15',
   },
   {
     id: 'an3',
@@ -461,10 +413,9 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Halter',
     defaultSets: 3,
-    defaultReps: '30-40s',
   },
 
-  // ─── TRAPÉZIO ───────────────────────────────────────────
+  // ─── TRAPÉZIO ─────────────
   {
     id: 'tr1',
     name: 'Encolhimento com Halteres',
@@ -472,7 +423,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Halter',
     defaultSets: 4,
-    defaultReps: '12-15',
   },
   {
     id: 'tr2',
@@ -481,7 +431,6 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Barra',
     defaultSets: 4,
-    defaultReps: '10-12',
   },
   {
     id: 'tr3',
@@ -490,6 +439,5 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 3,
-    defaultReps: '12-15',
   },
 ];

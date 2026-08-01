@@ -3,27 +3,18 @@ import {
   MuscleGroup,
   PersonalRecord,
   WorkoutData,
-  WorkoutSession,
   WorkoutTemplate,
 } from '@/types/workout';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 import { createWorkoutStorage, WorkoutStorage } from '@/core/storage/workoutStorage';
-
-// ─── Sessions Context ───────────────────────────────────────────────
-interface SessionsContextType {
-  workouts: WorkoutSession[];
-  isLoading: boolean;
-  storeData: (value: WorkoutSession[]) => Promise<void>;
-  loadData: () => Promise<void>;
-}
-
-const SessionsContext = createContext<SessionsContextType | undefined>(undefined);
+import { capPersonalRecords, getBestPersonalRecord } from '@/core/utils/capPersonalRecords';
 
 // ─── Templates Context ──────────────────────────────────────────────
 interface TemplatesContextType {
   templates: WorkoutTemplate[];
   activeId: string | null;
+  isLoading: boolean;
   saveTemplate: (
     name: string,
     data: WorkoutData,
@@ -55,8 +46,8 @@ const PersonalRecordsContext = createContext<PersonalRecordsContextType | undefi
 // ─── Provider ───────────────────────────────────────────────────────
 const storage: WorkoutStorage = createWorkoutStorage();
 
+// ponytail: cap 500 records per exercise (~4.8MB total for 48 exercises)
 export function WorkoutProvider({ children }: { children: React.ReactNode }) {
-  const [workouts, setWorkouts] = useState<WorkoutSession[]>([]);
   const [templates, setTemplates] = useState<WorkoutTemplate[]>([]);
   const [personalRecords, setPersonalRecords] = useState<PersonalRecord[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -65,7 +56,6 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   const loadData = useCallback(async () => {
     try {
       const data = await storage.loadAll();
-      setWorkouts(data.workouts);
       setTemplates(data.templates);
       setActiveId(data.activeId);
       setPersonalRecords(data.personalRecords);
@@ -77,15 +67,6 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  const storeData = useCallback(async (value: WorkoutSession[]) => {
-    try {
-      await storage.saveWorkouts(value);
-      setWorkouts(value);
-    } catch {
-      Alert.alert('Erro', 'Não foi possível salvar as sessões.');
-    }
-  }, []);
 
   const saveTemplate = useCallback(
     async (name: string, data: WorkoutData, id?: string, blockStructure?: BlockStructure) => {
@@ -112,7 +93,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
         updatedTemplates = [...templates, newTemplate];
       }
 
-      const nextActiveId = activeId || targetId || null;
+      const nextActiveId = exists ? activeId || id || null : targetId || null;
 
       try {
         await Promise.all([
@@ -178,15 +159,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
       };
 
       // ponytail: cap 500 records per exercise (~4.8MB total for 48 exercises)
-      const exerciseRecords = personalRecords.filter((r) => r.exerciseId === exerciseId);
-      const otherRecords = personalRecords.filter((r) => r.exerciseId !== exerciseId);
-      const capped =
-        exerciseRecords.length >= 500
-          ? [...exerciseRecords, newRecord]
-              .sort((a, b) => a.timestamp.localeCompare(b.timestamp))
-              .slice(1)
-          : [newRecord, ...exerciseRecords];
-      const updated = [...otherRecords, ...capped];
+      const updated = capPersonalRecords(personalRecords, newRecord);
 
       try {
         await storage.savePersonalRecords(updated);
@@ -214,25 +187,21 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
 
   const getExercisePR = useCallback(
     (exerciseId: string) => {
-      return personalRecords.find((r) => r.exerciseId === exerciseId);
+      return getBestPersonalRecord(personalRecords.filter((r) => r.exerciseId === exerciseId));
     },
     [personalRecords],
-  );
-
-  const sessionsValue = useMemo(
-    () => ({ workouts, isLoading, storeData, loadData }),
-    [workouts, isLoading, storeData, loadData],
   );
 
   const templatesValue = useMemo(
     () => ({
       templates,
       activeId,
+      isLoading,
       saveTemplate,
       deleteTemplate,
       selectActiveTemplate,
     }),
-    [templates, activeId, saveTemplate, deleteTemplate, selectActiveTemplate],
+    [templates, activeId, isLoading, saveTemplate, deleteTemplate, selectActiveTemplate],
   );
 
   const prValue = useMemo(
@@ -246,23 +215,13 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <SessionsContext.Provider value={sessionsValue}>
-      <TemplatesContext.Provider value={templatesValue}>
-        <PersonalRecordsContext.Provider value={prValue}>
-          {children}
-        </PersonalRecordsContext.Provider>
-      </TemplatesContext.Provider>
-    </SessionsContext.Provider>
+    <TemplatesContext.Provider value={templatesValue}>
+      <PersonalRecordsContext.Provider value={prValue}>{children}</PersonalRecordsContext.Provider>
+    </TemplatesContext.Provider>
   );
 }
 
 // ─── Hooks ──────────────────────────────────────────────────────────
-export function useSessions() {
-  const ctx = useContext(SessionsContext);
-  if (!ctx) throw new Error('useSessions must be used within a WorkoutProvider');
-  return ctx;
-}
-
 export function useTemplates() {
   const ctx = useContext(TemplatesContext);
   if (!ctx) throw new Error('useTemplates must be used within a WorkoutProvider');

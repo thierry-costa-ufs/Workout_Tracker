@@ -8,14 +8,20 @@ interface Props {
 
 interface State {
   hasError: boolean;
+  retryKey: number;
 }
 
 export class ErrorBoundary extends React.Component<Props, State> {
-  state: State = { hasError: false };
+  state: State = { hasError: false, retryKey: 0 };
 
-  static getDerivedStateFromError(): State {
+  static getDerivedStateFromError(): Partial<State> {
     return { hasError: true };
   }
+
+  handleRetry = () => {
+    // key bump remounts children so state is rebuilt fresh, not the same crashed tree
+    this.setState((prev) => ({ hasError: false, retryKey: prev.retryKey + 1 }));
+  };
 
   render() {
     if (this.state.hasError) {
@@ -42,7 +48,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             O app encontrou um erro inesperado.
           </Text>
           <TouchableOpacity
-            onPress={() => this.setState({ hasError: false })}
+            onPress={this.handleRetry}
             style={{
               backgroundColor: appTheme.colors.textPrimary,
               paddingHorizontal: 24,
@@ -58,6 +64,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return <React.Fragment key={this.state.retryKey}>{this.props.children}</React.Fragment>;
   }
 }

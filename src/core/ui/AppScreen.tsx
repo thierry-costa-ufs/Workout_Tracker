@@ -2,6 +2,7 @@ import React from 'react';
 import { StatusBar, StyleSheet, View, ViewStyle } from 'react-native';
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context';
 import { appTheme } from '@/shared/constants/theme';
+import { tabContentBottomPadding } from '@/shared/constants/layout';
 
 interface AppScreenProps {
   children: React.ReactNode;
@@ -19,7 +20,7 @@ export function AppScreen({
   barStyle = 'light-content',
 }: AppScreenProps) {
   const insets = useSafeAreaInsets();
-  const bottomPadding = insets.bottom + 68;
+  const bottomPadding = insets.bottom + tabContentBottomPadding;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor }, style]} edges={edges}>

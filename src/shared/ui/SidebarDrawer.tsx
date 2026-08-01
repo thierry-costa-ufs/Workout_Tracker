@@ -19,13 +19,7 @@ interface SidebarItem {
   route: string;
 }
 
-const MENU_ITEMS: SidebarItem[] = [
-  { label: 'INÍCIO', icon: 'home', route: '/(tabs)' },
-  { label: 'SESSÃO', icon: 'zap', route: '/(tabs)/session' },
-  { label: 'PAUSA', icon: 'clock', route: '/(tabs)/timer' },
-  { label: 'PLANO', icon: 'file-text', route: '/(tabs)/planning' },
-  { label: 'RECORDES', icon: 'bar-chart-2', route: '/record' },
-];
+const MENU_ITEMS: SidebarItem[] = [{ label: 'RECORDES', icon: 'bar-chart-2', route: '/record' }];
 
 interface SidebarDrawerProps {
   visible: boolean;

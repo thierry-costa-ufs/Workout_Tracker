@@ -1,6 +1,6 @@
 import { appTheme } from '@/shared/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import { hapticLight } from '@/core/utils/haptics';
 import { useState } from 'react';
 import { Text, TouchableOpacity, View } from 'react-native';
 import { planningStyles } from '../styles/planningStyles';
@@ -47,7 +47,7 @@ export function PlanListItem({ item, isSelected, onSelect, onDelete }: PlanListI
           style={{ padding: 10 }}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            hapticLight();
             setIsConfirming(true);
           }}
         >

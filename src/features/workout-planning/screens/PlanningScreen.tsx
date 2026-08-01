@@ -6,11 +6,12 @@ import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { Overlay } from '@/shared/ui/Overlay';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
+import { hapticNotify } from '@/core/utils/haptics';
+import { useEffect, useState } from 'react';
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ExercisePickerModal } from '@/shared/ui/ExercisePickerModal';
 import { PlansModal } from '../components/PlansModal';
+import { PrBadge } from '@/shared/ui/PrBadge';
 import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
 import { buildBlockStructure, findDuplicateBlockSignatures } from '../utils/blockSerializer';
 import type { WorkoutBlock } from '../utils/blockSerializer';
@@ -53,33 +54,29 @@ export default function PlanningScreen() {
   const [dayBeingAssigned, setDayBeingAssigned] = useState<string | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
   const [renameValue, setRenameValue] = useState('');
+  const [isOrphanModalVisible, setIsOrphanModalVisible] = useState(false);
+  const [orphanCountdown, setOrphanCountdown] = useState(3);
 
-  const handleSavePlanning = async () => {
-    if (!planningName.trim()) {
-      Alert.alert('Erro', 'Dê um nome ao seu plano de treino.');
-      return;
-    }
+  const orphanBlocks = blocks.filter((b) => b.exercises.length > 0 && !daySplit[b.id]);
 
-    const doSave = async (bl: WorkoutBlock[], sp: Record<string, string | null>) => {
-      const workoutData = buildWorkoutDataFromBlocks(bl, sp);
-      await saveTemplate(
-        planningName,
-        workoutData,
-        activeId || undefined,
-        buildBlockStructure(bl, sp),
-      );
-      setIsSaveModalVisible(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    };
+  useEffect(() => {
+    if (!isOrphanModalVisible) return;
+    setOrphanCountdown(3);
+    const id = setInterval(() => {
+      setOrphanCountdown((c) => (c <= 1 ? 0 : c - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [isOrphanModalVisible]);
 
-    const duplicates = findDuplicateBlockSignatures(blocks);
+  const finalizeSave = async (bl: WorkoutBlock[], sp: Record<string, string | null>) => {
+    const duplicates = findDuplicateBlockSignatures(bl);
     if (duplicates.length > 0) {
       Alert.alert(
         'Blocos idênticos',
         'Existem blocos com os mesmos exercícios. Juntar em um só bloco?',
         [
           { text: 'Cancelar', style: 'cancel' },
-          { text: 'Manter separados', onPress: () => doSave(blocks, daySplit) },
+          { text: 'Manter separados', onPress: () => doSave(bl, sp) },
           {
             text: 'Juntar',
             onPress: () => {
@@ -91,8 +88,33 @@ export default function PlanningScreen() {
       );
       return;
     }
+    await doSave(bl, sp);
+  };
 
-    await doSave(blocks, daySplit);
+  const doSave = async (bl: WorkoutBlock[], sp: Record<string, string | null>) => {
+    const workoutData = buildWorkoutDataFromBlocks(bl, sp);
+    await saveTemplate(
+      planningName,
+      workoutData,
+      activeId || undefined,
+      buildBlockStructure(bl, sp),
+    );
+    setIsSaveModalVisible(false);
+    hapticNotify();
+  };
+
+  const handleSavePlanning = async () => {
+    if (!planningName.trim()) {
+      Alert.alert('Erro', 'Dê um nome ao seu plano de treino.');
+      return;
+    }
+
+    if (orphanBlocks.length > 0) {
+      setIsOrphanModalVisible(true);
+      return;
+    }
+
+    await finalizeSave(blocks, daySplit);
   };
 
   return (
@@ -232,12 +254,7 @@ export default function PlanningScreen() {
                         <View style={styles.prRow}>
                           <Text style={styles.cardMuscleGroupMainList}>{exercise.muscleGroup}</Text>
                           {mainListPR && (
-                            <View style={styles.mainListPrBadge}>
-                              <Ionicons name="trophy" size={9} color={appTheme.colors.accent} />
-                              <Text style={styles.mainListPrText}>
-                                {String(mainListPR.weight)} kg
-                              </Text>
-                            </View>
+                            <PrBadge weight={mainListPR.weight} reps={mainListPR.reps} />
                           )}
                         </View>
                       </View>
@@ -449,6 +466,52 @@ export default function PlanningScreen() {
           <Text style={styles.confirmSaveText}>ATIVAR AGORA</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsSaveModalVisible(false)}>
+          <Text style={styles.cancelText}>CANCELAR</Text>
+        </TouchableOpacity>
+      </Overlay>
+
+      {/* Modal de Blocos sem Dia Atribuído */}
+      <Overlay
+        visible={isOrphanModalVisible}
+        onClose={() => setIsOrphanModalVisible(false)}
+        animationType="fade"
+      >
+        <Text style={styles.modalTitle}>BLOCOS SEM DIA</Text>
+        <Text style={styles.orphanSubtitle}>
+          Estes blocos têm exercícios, mas nenhum dia da semana atribuído. Eles serão removidos do
+          plano. Mantê-los?
+        </Text>
+        {orphanBlocks.map((block) => (
+          <View key={block.id} style={styles.orphanBlockRow}>
+            <View style={[styles.assignOptionBadge, styles.blockAvatarActive]}>
+              <Text style={styles.blockAvatarTextActive}>{block.label.charAt(0)}</Text>
+            </View>
+            <Text style={styles.orphanBlockText}>
+              {`BLOCO ${block.label} · ${block.exercises.length} EX.`}
+            </Text>
+          </View>
+        ))}
+        <TouchableOpacity
+          style={[
+            styles.confirmSaveButton,
+            orphanCountdown > 0 && styles.confirmSaveButtonDisabled,
+          ]}
+          disabled={orphanCountdown > 0}
+          onPress={() => {
+            setIsOrphanModalVisible(false);
+            finalizeSave(blocks, daySplit);
+          }}
+        >
+          <Text style={styles.confirmSaveText}>
+            {orphanCountdown > 0 ? `MANTER (${orphanCountdown})` : 'MANTER E SALVAR'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => {
+            setIsOrphanModalVisible(false);
+            setIsSaveModalVisible(false);
+          }}
+        >
           <Text style={styles.cancelText}>CANCELAR</Text>
         </TouchableOpacity>
       </Overlay>

@@ -43,10 +43,11 @@ Files are re-staged after fixes. Any lint failure blocks the commit.
 
 ```bash
 npm run lint
-npx tsc --noEmit
+npm run typecheck
+npm test
 ```
 
-`tsconfig.json` extends `expo/tsconfig.base` with `strict: true` and `@/*` → `./src/*`. Note: `npx tsc --noEmit` currently reports a few pre-existing errors in unrelated files — do not treat the full pass as green; at minimum the files you touched must be clean.
+`tsconfig.json` extends `expo/tsconfig.base` with `strict: true` and `@/*` → `./src/*`. The full `tsc --noEmit` pass is green; keep it that way on every change. `npm test` runs Jest (preset `jest-expo`) over pure-logic units — add tests alongside new pure functions.
 
 ## Git workflow
 

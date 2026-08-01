@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import { hapticNotify } from '@/core/utils/haptics';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from '@/shared/ui/Overlay';
 import { appTheme } from '@/shared/constants/theme';
@@ -51,7 +51,7 @@ export function PlansModal({
               }}
               onDelete={async () => {
                 await onDeleteTemplate(item.id);
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                hapticNotify();
               }}
             />
           )}

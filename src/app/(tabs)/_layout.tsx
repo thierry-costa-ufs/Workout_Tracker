@@ -14,6 +14,12 @@ import {
 import { TabView, type SceneRendererProps } from 'react-native-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TabNavigationProvider, useSwitchTab } from '@/shared/context/TabNavigationContext';
+import {
+  TAB_BAR_BOTTOM_OFFSET,
+  TAB_BAR_HEIGHT,
+  TAB_BAR_SIDE_PADDING,
+  TAB_BAR_BORDER_RADIUS,
+} from '@/shared/constants/layout';
 import DashboardScreen from '@/features/workout-dashboard/screens/DashboardScreen';
 import SessionScreen from '@/features/workout-session/screens/SessionScreen';
 import TimerScreen from '@/features/workout-timer/screens/TimerScreen';
@@ -73,11 +79,10 @@ export default function TabsLayout() {
           lazy
           renderLazyPlaceholder={() => null}
           pagerStyle={styles.pagerBg}
-          sceneContainerStyle={styles.sceneBg}
           style={styles.pager}
         />
 
-        <View style={[styles.tabBar, { bottom: insets.bottom + 4 }]}>
+        <View style={[styles.tabBar, { bottom: insets.bottom + TAB_BAR_BOTTOM_OFFSET }]}>
           {TAB_ROUTES.map((route) => {
             const isActive = TAB_ROUTES[index]?.key === route.key;
             return (
@@ -152,15 +157,12 @@ const styles = StyleSheet.create({
   pagerBg: {
     backgroundColor: appTheme.colors.background,
   },
-  sceneBg: {
-    backgroundColor: appTheme.colors.background,
-  },
   tabBar: {
     position: 'absolute',
-    left: 16,
-    right: 16,
-    height: 64,
-    borderRadius: 24,
+    left: TAB_BAR_SIDE_PADDING,
+    right: TAB_BAR_SIDE_PADDING,
+    height: TAB_BAR_HEIGHT,
+    borderRadius: TAB_BAR_BORDER_RADIUS,
     backgroundColor: appTheme.colors.surfaceElevated,
     borderTopWidth: 1,
     borderWidth: 2,

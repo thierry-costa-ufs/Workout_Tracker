@@ -1,12 +1,13 @@
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { AppScreen } from '@/core/ui/AppScreen';
+import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { useEffect, useRef, useState } from 'react';
 import {
   AppState,
   Dimensions,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,7 +15,6 @@ import {
   Vibration,
   View,
 } from 'react-native';
-import { requestTimerPermission } from '../utils/notificationTimer';
 
 const { width } = Dimensions.get('window');
 
@@ -52,10 +52,13 @@ export default function TimerScreen() {
   const [activePreset, setActivePreset] = useState('feeder');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endTimeRef = useRef<number>(0);
+  const totalDurationRef = useRef(totalDuration);
 
-  useEffect(() => {
-    requestTimerPermission();
-  }, []);
+  const notifyFinish = () => {
+    hapticNotify();
+    if (Platform.OS === 'web') return;
+    Vibration.vibrate([0, 500, 200, 500]);
+  };
 
   const tick = useRef(() => {
     const remaining = Math.max(0, Math.ceil((endTimeRef.current - Date.now()) / 1000));
@@ -64,9 +67,9 @@ export default function TimerScreen() {
       clearInterval(intervalRef.current!);
       intervalRef.current = null;
       endTimeRef.current = 0;
+      setSecondsLeft(totalDurationRef.current);
       setIsActive(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Vibration.vibrate([0, 500, 200, 500]);
+      notifyFinish();
     }
   }).current;
 
@@ -98,32 +101,30 @@ export default function TimerScreen() {
   }, [isActive]);
 
   const toggleTimer = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setIsActive((prev) => {
-      if (prev) clearTimerNotification();
-      return !prev;
-    });
+    hapticMedium();
+    setIsActive((prev) => !prev);
   };
 
   const resetTimer = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    hapticLight();
     setIsActive(false);
     endTimeRef.current = 0;
-    clearTimerNotification();
-    setSecondsLeft(totalDuration);
+    setSecondsLeft(totalDurationRef.current);
   };
 
   const selectPreset = (id: string, duration: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    hapticMedium();
     setIsActive(false);
+    totalDurationRef.current = duration;
     setActivePreset(id);
     setTotalDuration(duration);
     setSecondsLeft(duration);
   };
 
   const adjustTime = (amount: number) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const newTime = Math.max(15, totalDuration + amount);
+    hapticLight();
+    const newTime = Math.max(15, totalDurationRef.current + amount);
+    totalDurationRef.current = newTime;
     setTotalDuration(newTime);
     setSecondsLeft(newTime);
     setIsActive(false);

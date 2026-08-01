@@ -24,7 +24,6 @@ export interface ExerciseData {
   mechanic: MechanicType;
   equipment: EquipmentType;
   defaultSets: number;
-  defaultReps: string;
 }
 
 export interface PlannedExercise {

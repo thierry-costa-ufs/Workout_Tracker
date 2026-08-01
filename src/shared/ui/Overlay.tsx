@@ -46,7 +46,7 @@ export function Overlay({
 
   useEffect(() => {
     if (!isRendered.current) {
-      translateY.value = windowHeight;
+      translateY.setValue(windowHeight);
     }
   }, [windowHeight, translateY]);
 
