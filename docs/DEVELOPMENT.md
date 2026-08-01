@@ -51,5 +51,11 @@ npx tsc --noEmit
 ## Git workflow
 
 - Branch: feature branches off `main`, e.g. `feat/<topic>` or `refactor/<topic>`
-- Commits: Conventional Commits, subject ≤ 50 chars (`feat:`, `fix:`, `refactor:`, `chore:`)
+- Commits: Conventional Commits, subject ≤ 50 chars. Body only when "why" isn't obvious.
+  - `feat:` new feature
+  - `fix:` bug fix
+  - `refactor:` code restructure, no behavior change
+  - `style:` formatting, no logic change
+  - `chore:` tooling, config, dependencies
+  - `docs:` documentation
 - Push and open a PR when a feature is complete
