@@ -2,14 +2,22 @@
 
 ## Prerequisites
 
-- Node.js (npm)
+- Node.js **22 (LTS)** — pin via `.nvmrc` (`nvm use`)
+- npm
 - Expo Go on device, or an Android/iOS emulator
+- Releases: EAS CLI (`npm i -g eas-cli`) + `eas login`
 
 ## Setup
 
 ```bash
 npm install
 npx expo start
+```
+
+Local tooling: `opencode.json` and `AGENTS.md` are gitignored by design — recreate `opencode.json` on a fresh clone:
+
+```json
+{ "$schema": "https://opencode.ai/config.json", "instructions": [".opencode/personal/WORKFLOW.md"] }
 ```
 
 Clear Metro cache if bundles look stale:
@@ -29,6 +37,9 @@ npx expo start -c
 | `npm run lint`         | `expo lint` (ESLint flat config) |
 | `npm run format`       | `prettier --write .`             |
 | `npm run format:check` | Prettier check only              |
+| `npm run typecheck`    | `tsc --noEmit`                   |
+| `npm test`             | Jest (preset `jest-expo`)        |
+| `npx expo-doctor`      | Dependency/config sanity check   |
 
 ## Pre-commit pipeline
 
