@@ -45,7 +45,10 @@ Tab order and switching are driven by `TabNavigationContext` (`src/shared/contex
 
 `WorkoutContext.tsx` exports three sibling contexts: **sessions**, **templates**, and **personal records**. It hydrates from AsyncStorage on mount (`isLoading` flag) and persists on write.
 
-- Persistence layer: `src/core/storage/workoutStorage.ts` (wraps AsyncStorage, keyed per domain)
+- Persistence layer: `src/core/storage/workoutStorage.ts` — the single sanctioned AsyncStorage seam. All reads/writes flow through it; hooks and components never touch AsyncStorage directly.
+- Versioned keys `@gym_app:v<N>:*` (bumped via `STORAGE_VERSION`). Legacy unversioned keys migrate once on first load via `migrateStorage()` (memoized, idempotent).
+- Writes are atomic: shadow key (`@gym_app:bak:v<N>:*`) written first as last-known-good, then canonical. A per-key serialized queue guarantees concurrent saves land in order (last write wins, no stale-overwrite).
+- Reads use a throwing JSON parser: empty ≠ corrupt. Corrupt canonical falls back to shadow and self-heals by rewriting canonical. Corrupt with no shadow returns `[]`.
 - Per-day workout template data: `BlockStructure`, serialized via `src/features/workout-planning/utils/blockSerializer.ts`
 - Session progress is persisted independently by `useSessionEngine` under keys like `@gym_app:session_progress:<templateId>`
 
