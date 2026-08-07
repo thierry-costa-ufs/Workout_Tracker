@@ -1,14 +1,16 @@
 import { appTheme } from '@/shared/constants/theme';
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native';
 
+const lifted: ViewStyle = {
+  shadowColor: '#000000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.45,
+  shadowRadius: 8,
+  elevation: 6,
+};
+
 export const planningStyles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: appTheme.colors.background } satisfies ViewStyle,
-  activePlanBadge: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 11,
-    fontWeight: '600',
-    marginTop: 2,
-  } satisfies TextStyle,
   headerActions: { flexDirection: 'row', gap: 6 } satisfies ViewStyle,
   presetButton: {
     flexDirection: 'row',
@@ -30,25 +32,70 @@ export const planningStyles = StyleSheet.create({
     paddingTop: 4,
   } satisfies ViewStyle,
 
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 18,
-    marginBottom: 10,
+  // Hero summary
+  heroCard: {
+    backgroundColor: appTheme.colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: appTheme.colors.borderStrong,
+    padding: appTheme.spacing.lg,
+    marginTop: 16,
   } satisfies ViewStyle,
-  splitTitle: {
+  heroTag: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    marginBottom: 8,
+  } satisfies TextStyle,
+  heroCardTitle: {
+    color: appTheme.colors.textPrimary,
+    fontSize: 20,
+    fontWeight: '900',
+    letterSpacing: -0.5,
+    marginBottom: 8,
+  } satisfies TextStyle,
+  heroCardSubtitle: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 12,
+    lineHeight: 18,
+    marginBottom: 14,
+  } satisfies TextStyle,
+  heroMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  } satisfies ViewStyle,
+  heroMeta: {
+    color: appTheme.colors.textMuted,
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 1,
+  } satisfies TextStyle,
+  heroMetaDot: {
+    color: appTheme.colors.borderLight,
+    fontSize: 9,
+  } satisfies TextStyle,
+
+  // Section headers
+  sectionHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 22,
+    marginBottom: 12,
+  } satisfies ViewStyle,
+  sectionTitleText: {
     color: appTheme.colors.textSecondary,
     fontSize: 11,
     fontWeight: '800',
     letterSpacing: 1,
+    marginRight: 10,
   } satisfies TextStyle,
-  splitSummary: {
-    color: appTheme.colors.textPrimary,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  } satisfies TextStyle,
+  sectionDivider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: appTheme.colors.border,
+  } satisfies ViewStyle,
 
   // Blocks
   blockRow: { gap: 8, paddingRight: 8 } satisfies ViewStyle,
@@ -63,6 +110,7 @@ export const planningStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
     minWidth: 128,
+    ...lifted,
   } satisfies ViewStyle,
   blockChipActive: { borderColor: appTheme.colors.textPrimary } satisfies ViewStyle,
   blockAvatar: {
@@ -79,12 +127,17 @@ export const planningStyles = StyleSheet.create({
     backgroundColor: appTheme.colors.surfaceElevated,
     borderColor: appTheme.colors.textPrimary,
   } satisfies ViewStyle,
+  blockAvatarSelected: {
+    backgroundColor: appTheme.colors.textPrimary,
+    borderColor: appTheme.colors.textPrimary,
+  } satisfies ViewStyle,
   blockAvatarText: {
     color: appTheme.colors.textTertiary,
     fontSize: 13,
     fontWeight: '900',
   } satisfies TextStyle,
   blockAvatarTextActive: { color: appTheme.colors.textPrimary } satisfies TextStyle,
+  blockAvatarTextSelected: { color: appTheme.colors.textInverse } satisfies TextStyle,
   blockChipLabel: {
     color: appTheme.colors.textTertiary,
     fontSize: 12,
@@ -142,6 +195,24 @@ export const planningStyles = StyleSheet.create({
   } satisfies TextStyle,
 
   workoutList: { width: '100%' } satisfies ViewStyle,
+  groupHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  } satisfies ViewStyle,
+  groupHeaderLabel: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+  } satisfies TextStyle,
+  groupHeaderDivider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: appTheme.colors.border,
+  } satisfies ViewStyle,
   exerciseCard: {
     backgroundColor: appTheme.colors.surfaceElevated,
     borderRadius: 12,
@@ -152,6 +223,7 @@ export const planningStyles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
+    ...lifted,
   } satisfies ViewStyle,
   cardInfo: { flex: 1, justifyContent: 'center' } satisfies ViewStyle,
   cardExerciseName: {
@@ -159,13 +231,6 @@ export const planningStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 3,
-  } satisfies TextStyle,
-  cardMuscleGroupMainList: {
-    color: appTheme.colors.textSecondary,
-    fontSize: 10,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
   } satisfies TextStyle,
   deleteCardButton: { paddingLeft: 14, justifyContent: 'center' } satisfies ViewStyle,
   stepperContainer: {
@@ -235,11 +300,30 @@ export const planningStyles = StyleSheet.create({
     backgroundColor: appTheme.colors.borderStrong,
     marginTop: 24,
   } satisfies ViewStyle,
+  splitSectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 10,
+  } satisfies ViewStyle,
+  splitTitle: {
+    color: appTheme.colors.textSecondary,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  } satisfies TextStyle,
+  splitSummary: {
+    color: appTheme.colors.textPrimary,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+    flexShrink: 1,
+  } satisfies TextStyle,
   dayGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    marginTop: 14,
+    marginTop: 6,
   } satisfies ViewStyle,
   daySplitChip: {
     alignItems: 'center',
@@ -251,6 +335,7 @@ export const planningStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: appTheme.colors.borderStrong,
     minWidth: 46,
+    ...lifted,
   } satisfies ViewStyle,
   daySplitLabel: {
     color: appTheme.colors.textSecondary,
@@ -284,8 +369,11 @@ export const planningStyles = StyleSheet.create({
     backgroundColor: appTheme.colors.textPrimary,
     height: 54,
     borderRadius: 12,
-    justifyContent: 'center',
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    ...lifted,
   } satisfies ViewStyle,
   saveMainButtonText: {
     color: appTheme.colors.textInverse,

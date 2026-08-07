@@ -32,6 +32,7 @@ export function SearchBar({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         autoCorrect={false}
+        autoCapitalize="none"
       />
       {value.length > 0 && (
         <TouchableOpacity onPress={() => onChange('')}>

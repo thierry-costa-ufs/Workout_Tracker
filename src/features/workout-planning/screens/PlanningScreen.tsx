@@ -5,17 +5,18 @@ import { AppScreen } from '@/core/ui/AppScreen';
 import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { Overlay } from '@/shared/ui/Overlay';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { hapticNotify } from '@/core/utils/haptics';
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Keyboard, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { ExercisePickerModal } from '@/shared/ui/ExercisePickerModal';
 import { PlansModal } from '../components/PlansModal';
 import { PrBadge } from '@/shared/ui/PrBadge';
 import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
 import { buildBlockStructure, findDuplicateBlockSignatures } from '../utils/blockSerializer';
 import type { WorkoutBlock } from '../utils/blockSerializer';
+import type { PlannedExercise } from '@/types/workout';
 import { planningStyles as styles } from '../styles/planningStyles';
 
 export default function PlanningScreen() {
@@ -57,8 +58,27 @@ export default function PlanningScreen() {
   const [renameValue, setRenameValue] = useState('');
   const [isOrphanModalVisible, setIsOrphanModalVisible] = useState(false);
   const [orphanCountdown, setOrphanCountdown] = useState(3);
+  const [isSplitExpanded, setIsSplitExpanded] = useState(true);
 
-  const orphanBlocks = blocks.filter((b) => b.exercises.length > 0 && !daySplit[b.id]);
+  const orphanBlocks = blocks.filter(
+    (b) => b.exercises.length > 0 && !Object.values(daySplit).includes(b.id),
+  );
+
+  const totalExercises = blocks.reduce((sum, b) => sum + b.exercises.length, 0);
+
+  const groupedExercises = Array.from(
+    selectedBlock?.exercises
+      .reduce<Map<string, { exercise: PlannedExercise; index: number }[]>>(
+        (map, exercise, index) => {
+          const list = map.get(exercise.muscleGroup);
+          if (list) list.push({ exercise, index });
+          else map.set(exercise.muscleGroup, [{ exercise, index }]);
+          return map;
+        },
+        new Map(),
+      )
+      .entries() ?? [],
+  );
 
   useEffect(() => {
     if (!isOrphanModalVisible) return;
@@ -111,6 +131,7 @@ export default function PlanningScreen() {
     }
 
     if (orphanBlocks.length > 0) {
+      Keyboard.dismiss();
       setIsOrphanModalVisible(true);
       return;
     }
@@ -125,23 +146,11 @@ export default function PlanningScreen() {
           <Text style={sharedScreenStyles.pageTitle} numberOfLines={1}>
             ROTINA
           </Text>
-          {currentActivePlan ? (
-            <Text style={sharedScreenStyles.pageSubtitle} numberOfLines={1}>
-              PLANO ATUAL: {currentActivePlan.name}
-            </Text>
-          ) : (
-            <Text
-              style={[styles.activePlanBadge, { color: appTheme.colors.textPrimary }]}
-              numberOfLines={1}
-            >
-              Novo Planejamento Ativo
-            </Text>
-          )}
         </View>
 
         <View style={styles.headerActions}>
           <TouchableOpacity style={styles.presetButton} onPress={handleNewPlan}>
-            <Ionicons name="refresh-outline" size={14} color={appTheme.colors.white} />
+            <Feather name="refresh-cw" size={14} color={appTheme.colors.white} />
             <Text style={styles.presetButtonText}>Limpar</Text>
           </TouchableOpacity>
 
@@ -149,16 +158,37 @@ export default function PlanningScreen() {
             style={styles.presetButton}
             onPress={() => setIsPlansModalVisible(true)}
           >
-            <Ionicons name="folder-open-outline" size={14} color={appTheme.colors.white} />
+            <Feather name="folder" size={14} color={appTheme.colors.white} />
             <Text style={styles.presetButtonText}>Planos</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.contentBody} showsVerticalScrollIndicator={false}>
-        {/* Blocks row */}
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.splitTitle}>BLOCOS DE TREINO</Text>
+        {/* Hero summary */}
+        <View style={styles.heroCard}>
+          <Text style={styles.heroTag}>
+            {currentActivePlan ? 'PLANO ATUAL' : 'NOVO PLANEJAMENTO'}
+          </Text>
+          <Text style={styles.heroCardTitle}>
+            {currentActivePlan ? currentActivePlan.name.toUpperCase() : 'FAÇA SUA ROTINA'}
+          </Text>
+          <Text style={styles.heroCardSubtitle}>
+            {currentActivePlan
+              ? 'Sua divisão ativa. Toque em um bloco para revisar o volume e os exercícios.'
+              : 'Crie blocos, adicione exercícios e atribua os dias da semana para montar sua divisão de treino.'}
+          </Text>
+          <View style={styles.heroMetaRow}>
+            <Text style={styles.heroMeta}>{trainingDaysCount}/7 DIAS PREENCHIDOS</Text>
+            <Text style={styles.heroMetaDot}>·</Text>
+            <Text style={styles.heroMeta}>{totalExercises} EXERCÍCIOS</Text>
+          </View>
+        </View>
+
+        {/* Blocks section */}
+        <View style={styles.sectionHeaderContainer}>
+          <Text style={styles.sectionTitleText}>BLOCOS DE TREINO</Text>
+          <View style={styles.sectionDivider} />
         </View>
 
         <View>
@@ -175,9 +205,9 @@ export default function PlanningScreen() {
                   style={[styles.blockChip, isSelected && styles.blockChipActive]}
                   onPress={() => setSelectedBlockId(block.id)}
                 >
-                  <View style={[styles.blockAvatar, isSelected && styles.blockAvatarActive]}>
+                  <View style={[styles.blockAvatar, isSelected && styles.blockAvatarSelected]}>
                     <Text
-                      style={[styles.blockAvatarText, isSelected && styles.blockAvatarTextActive]}
+                      style={[styles.blockAvatarText, isSelected && styles.blockAvatarTextSelected]}
                     >
                       {block.label.charAt(0)}
                     </Text>
@@ -196,7 +226,7 @@ export default function PlanningScreen() {
             })}
 
             <TouchableOpacity style={styles.addBlockChip} onPress={handleAddBlock}>
-              <Ionicons name="add" size={20} color={appTheme.colors.white} />
+              <Feather name="plus" size={20} color={appTheme.colors.white} />
             </TouchableOpacity>
           </ScrollView>
           <LinearGradient
@@ -226,85 +256,92 @@ export default function PlanningScreen() {
                   setIsRenameModalVisible(true);
                 }}
               >
-                <Ionicons name="pencil-outline" size={16} color={appTheme.colors.textTertiary} />
+                <Feather name="edit-2" size={15} color={appTheme.colors.textTertiary} />
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={styles.iconGhostButton}
                 onPress={() => confirmDeleteBlock(selectedBlock.id)}
               >
-                <Ionicons name="trash-outline" size={16} color={appTheme.colors.textPrimary} />
+                <Feather name="trash-2" size={15} color={appTheme.colors.textPrimary} />
               </TouchableOpacity>
             </View>
 
             <View style={styles.workoutList}>
               {selectedBlock.exercises.length === 0 ? (
                 <View style={styles.emptyState}>
-                  <Ionicons name="flash-off-outline" size={32} color={appTheme.colors.gray} />
+                  <Feather name="zap-off" size={32} color={appTheme.colors.gray} />
                   <Text style={styles.emptyStateText}>
-                    Bloco vazio. Adicione exercícios abaixo.
+                    Este bloco está vazio. Adicione exercícios para montar seu treino.
                   </Text>
                 </View>
               ) : (
-                selectedBlock.exercises.map((exercise, index) => {
-                  const mainListPR = getExercisePR(exercise.id);
-                  return (
-                    <View key={`${exercise.id}-${index}`} style={styles.exerciseCard}>
-                      <View style={styles.cardInfo}>
-                        <Text style={styles.cardExerciseName}>{exercise.name}</Text>
-                        <View style={styles.prRow}>
-                          <Text style={styles.cardMuscleGroupMainList}>{exercise.muscleGroup}</Text>
-                          {mainListPR && (
-                            <PrBadge weight={mainListPR.weight} reps={mainListPR.reps} />
-                          )}
-                        </View>
-                      </View>
-
-                      <View style={styles.stepperContainer}>
-                        <TouchableOpacity
-                          style={styles.stepperButton}
-                          onPress={() =>
-                            handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets - 1)
-                          }
-                        >
-                          <Ionicons name="remove" size={14} color={appTheme.colors.textTertiary} />
-                        </TouchableOpacity>
-
-                        <View style={styles.stepperValueContainer}>
-                          <Text style={styles.stepperValue}>{exercise.sets}</Text>
-                          <Text style={styles.stepperLabel}>Séries</Text>
-                        </View>
-
-                        <TouchableOpacity
-                          style={styles.stepperButton}
-                          onPress={() =>
-                            handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets + 1)
-                          }
-                        >
-                          <Ionicons name="add" size={14} color={appTheme.colors.white} />
-                        </TouchableOpacity>
-                      </View>
-
-                      <TouchableOpacity
-                        style={styles.deleteCardButton}
-                        onPress={() => handleRemoveExerciseFromBlock(selectedBlock.id, index)}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={18}
-                          color={appTheme.colors.textPrimary}
-                        />
-                      </TouchableOpacity>
+                groupedExercises.map(([muscleGroup, items]) => (
+                  <View key={muscleGroup}>
+                    <View style={styles.groupHeader}>
+                      <Text style={styles.groupHeaderLabel}>{muscleGroup}</Text>
+                      <View style={styles.groupHeaderDivider} />
                     </View>
-                  );
-                })
+                    {items.map(({ exercise, index }) => {
+                      const mainListPR = getExercisePR(exercise.id);
+                      return (
+                        <View key={`${exercise.id}-${index}`} style={styles.exerciseCard}>
+                          <View style={styles.cardInfo}>
+                            <Text style={styles.cardExerciseName}>{exercise.name}</Text>
+                            {mainListPR && (
+                              <View style={styles.prRow}>
+                                <PrBadge weight={mainListPR.weight} reps={mainListPR.reps} />
+                              </View>
+                            )}
+                          </View>
+
+                          <View style={styles.stepperContainer}>
+                            <TouchableOpacity
+                              style={styles.stepperButton}
+                              onPress={() =>
+                                handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets - 1)
+                              }
+                            >
+                              <Feather
+                                name="minus"
+                                size={14}
+                                color={appTheme.colors.textTertiary}
+                              />
+                            </TouchableOpacity>
+
+                            <View style={styles.stepperValueContainer}>
+                              <Text style={styles.stepperValue}>{exercise.sets}</Text>
+                              <Text style={styles.stepperLabel}>Séries</Text>
+                            </View>
+
+                            <TouchableOpacity
+                              style={styles.stepperButton}
+                              onPress={() =>
+                                handleUpdateSetsInBlock(selectedBlock.id, index, exercise.sets + 1)
+                              }
+                            >
+                              <Feather name="plus" size={14} color={appTheme.colors.white} />
+                            </TouchableOpacity>
+                          </View>
+
+                          <TouchableOpacity
+                            style={styles.deleteCardButton}
+                            onPress={() => handleRemoveExerciseFromBlock(selectedBlock.id, index)}
+                          >
+                            <Feather name="trash-2" size={17} color={appTheme.colors.textPrimary} />
+                          </TouchableOpacity>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ))
               )}
 
               <TouchableOpacity
                 style={styles.addExerciseInlineButton}
                 onPress={() => setIsExerciseModalVisible(true)}
               >
-                <Ionicons name="add-circle-outline" size={16} color={appTheme.colors.white} />
+                <Feather name="plus-circle" size={16} color={appTheme.colors.white} />
                 <Text style={styles.addExerciseInlineText}>ADICIONAR EXERCÍCIO</Text>
               </TouchableOpacity>
             </View>
@@ -314,45 +351,58 @@ export default function PlanningScreen() {
         {/* Weekly split */}
         <View style={styles.splitDivider} />
 
-        <View style={styles.sectionHeaderRow}>
+        <TouchableOpacity
+          style={styles.splitSectionHeader}
+          onPress={() => setIsSplitExpanded((v) => !v)}
+        >
           <Text style={styles.splitTitle}>DIVISÃO SEMANAL</Text>
           <Text style={styles.splitSummary}>
-            {trainingDaysCount} DIAS DE TREINO ·{restDaysCount} DIAS DE DESCANSO
+            {trainingDaysCount} DIAS DE TREINO · {restDaysCount} DE DESCANSO
           </Text>
-        </View>
+          <Feather
+            name={isSplitExpanded ? 'chevron-up' : 'chevron-down'}
+            size={16}
+            color={appTheme.colors.textSecondary}
+          />
+        </TouchableOpacity>
 
-        <View style={styles.dayGrid}>
-          {DAYS_OF_WEEK.map((day: { id: string; label: string }) => {
-            const assignedBlockId = daySplit[day.id];
-            const assignedBlock = blocks.find((b) => b.id === assignedBlockId);
-            return (
-              <TouchableOpacity
-                key={day.id}
-                style={styles.daySplitChip}
-                onPress={() => {
-                  setDayBeingAssigned(day.id);
-                  setIsDayAssignModalVisible(true);
-                }}
-              >
-                <Text style={styles.daySplitLabel}>{day.label.substring(0, 3).toUpperCase()}</Text>
-                <View style={[styles.daySplitBadge, assignedBlock && styles.daySplitBadgeActive]}>
-                  <Text
-                    style={[
-                      styles.daySplitBadgeText,
-                      assignedBlock && styles.daySplitBadgeTextActive,
-                    ]}
-                  >
-                    {assignedBlock ? assignedBlock.label.charAt(0) : '—'}
+        {isSplitExpanded && (
+          <View style={styles.dayGrid}>
+            {DAYS_OF_WEEK.map((day: { id: string; label: string }) => {
+              const assignedBlockId = daySplit[day.id];
+              const assignedBlock = blocks.find((b) => b.id === assignedBlockId);
+              return (
+                <TouchableOpacity
+                  key={day.id}
+                  style={styles.daySplitChip}
+                  onPress={() => {
+                    setDayBeingAssigned(day.id);
+                    setIsDayAssignModalVisible(true);
+                  }}
+                >
+                  <Text style={styles.daySplitLabel}>
+                    {day.label.substring(0, 3).toUpperCase()}
                   </Text>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+                  <View style={[styles.daySplitBadge, assignedBlock && styles.daySplitBadgeActive]}>
+                    <Text
+                      style={[
+                        styles.daySplitBadgeText,
+                        assignedBlock && styles.daySplitBadgeTextActive,
+                      ]}
+                    >
+                      {assignedBlock ? assignedBlock.label.charAt(0) : '—'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.footerActions}>
         <TouchableOpacity style={styles.saveMainButton} onPress={() => setIsSaveModalVisible(true)}>
+          <Feather name="check" size={16} color={appTheme.colors.textInverse} />
           <Text style={styles.saveMainButtonText}>CONCLUIR PLANEJAMENTO</Text>
         </TouchableOpacity>
       </View>
@@ -460,6 +510,7 @@ export default function PlanningScreen() {
           placeholderTextColor={appTheme.colors.muted}
           value={planningName}
           onChangeText={setPlanningName}
+          autoCapitalize="none"
           maxLength={40}
           blurOnSubmit
         />

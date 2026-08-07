@@ -52,6 +52,22 @@ export const EXERCISES_LIST: ExerciseData[] = [
     equipment: 'Halter',
     defaultSets: 4,
   },
+  {
+    id: 'p7',
+    name: 'Supino Reto na Máquina',
+    muscleGroup: 'Peito',
+    mechanic: 'Composto',
+    equipment: 'Máquina',
+    defaultSets: 3,
+  },
+  {
+    id: 'p8',
+    name: 'Supino Inclinado na Máquina',
+    muscleGroup: 'Peito',
+    mechanic: 'Composto',
+    equipment: 'Máquina',
+    defaultSets: 3,
+  },
 
   // ─── COSTAS ─────────────
   {
@@ -110,6 +126,22 @@ export const EXERCISES_LIST: ExerciseData[] = [
     equipment: 'Peso Corporal',
     defaultSets: 3,
   },
+  {
+    id: 'c8',
+    name: 'Remada na Máquina Apoiada no Peito',
+    muscleGroup: 'Costas',
+    mechanic: 'Composto',
+    equipment: 'Máquina',
+    defaultSets: 2,
+  },
+  {
+    id: 'c9',
+    name: 'Puxada com Pegada Neutra',
+    muscleGroup: 'Costas',
+    mechanic: 'Composto',
+    equipment: 'Polia',
+    defaultSets: 3,
+  },
 
   // ─── OMBROS ─────────────
   {
@@ -160,6 +192,14 @@ export const EXERCISES_LIST: ExerciseData[] = [
     equipment: 'Máquina',
     defaultSets: 4,
   },
+  {
+    id: 'o7',
+    name: 'Elevação Lateral no Cabo',
+    muscleGroup: 'Ombro',
+    mechanic: 'Isolado',
+    equipment: 'Polia',
+    defaultSets: 3,
+  },
 
   // ─── BÍCEPS ─────────────
   {
@@ -202,6 +242,14 @@ export const EXERCISES_LIST: ExerciseData[] = [
     equipment: 'Halter',
     defaultSets: 3,
   },
+  {
+    id: 'b6',
+    name: 'Rosca Martelo no Cabo',
+    muscleGroup: 'Bíceps',
+    mechanic: 'Isolado',
+    equipment: 'Polia',
+    defaultSets: 2,
+  },
 
   // ─── TRÍCEPS ─────────────
   {
@@ -242,6 +290,14 @@ export const EXERCISES_LIST: ExerciseData[] = [
     muscleGroup: 'Tríceps',
     mechanic: 'Composto',
     equipment: 'Peso Corporal',
+    defaultSets: 3,
+  },
+  {
+    id: 't6',
+    name: 'Tríceps Francês na Polia',
+    muscleGroup: 'Tríceps',
+    mechanic: 'Isolado',
+    equipment: 'Polia',
     defaultSets: 3,
   },
 
@@ -286,6 +342,22 @@ export const EXERCISES_LIST: ExerciseData[] = [
     equipment: 'Halter',
     defaultSets: 3,
   },
+  {
+    id: 'q6',
+    name: 'Afundo no Hack Pendulum',
+    muscleGroup: 'Quadríceps',
+    mechanic: 'Composto',
+    equipment: 'Máquina',
+    defaultSets: 3,
+  },
+  {
+    id: 'q7',
+    name: 'Cadeira Adutora',
+    muscleGroup: 'Quadríceps',
+    mechanic: 'Isolado',
+    equipment: 'Máquina',
+    defaultSets: 3,
+  },
 
   // ─── POSTERIOR ─────────────
   {
@@ -327,6 +399,22 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Composto',
     equipment: 'Barra',
     defaultSets: 4,
+  },
+  {
+    id: 'po6',
+    name: 'Mesa Flexora',
+    muscleGroup: 'Posterior',
+    mechanic: 'Isolado',
+    equipment: 'Máquina',
+    defaultSets: 3,
+  },
+  {
+    id: 'po7',
+    name: 'Hiperextensão a 45°',
+    muscleGroup: 'Posterior',
+    mechanic: 'Composto',
+    equipment: 'Máquina',
+    defaultSets: 3,
   },
 
   // ─── PANTURRILHA ─────────────
@@ -414,6 +502,14 @@ export const EXERCISES_LIST: ExerciseData[] = [
     equipment: 'Halter',
     defaultSets: 3,
   },
+  {
+    id: 'an4',
+    name: 'Extensão de Punho',
+    muscleGroup: 'Antebraço',
+    mechanic: 'Isolado',
+    equipment: 'Barra',
+    defaultSets: 2,
+  },
 
   // ─── TRAPÉZIO ─────────────
   {
@@ -439,5 +535,13 @@ export const EXERCISES_LIST: ExerciseData[] = [
     mechanic: 'Isolado',
     equipment: 'Polia',
     defaultSets: 3,
+  },
+  {
+    id: 'tr4',
+    name: 'Encolhimento Kelso',
+    muscleGroup: 'Trapézio',
+    mechanic: 'Isolado',
+    equipment: 'Máquina',
+    defaultSets: 2,
   },
 ];
