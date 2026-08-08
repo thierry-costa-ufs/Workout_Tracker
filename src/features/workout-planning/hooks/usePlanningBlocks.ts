@@ -181,7 +181,7 @@ export function usePlanningBlocks() {
     const groups = findDuplicateBlockSignatures(blocks);
     const dropToKeep = new Map<string, string>();
     groups.forEach((group) => {
-      const survivorId = group[0].id;
+      const survivorId = group[0]!.id;
       group.slice(1).forEach((block) => dropToKeep.set(block.id, survivorId));
     });
 

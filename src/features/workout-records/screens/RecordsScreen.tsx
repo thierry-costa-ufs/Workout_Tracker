@@ -125,7 +125,7 @@ export default function RecordsScreen() {
 
   const historyEvolution = useMemo(() => {
     if (sortedHistory.length < 2) return 0;
-    return sortedHistory[sortedHistory.length - 1].weight - sortedHistory[0].weight;
+    return sortedHistory[sortedHistory.length - 1]!.weight - sortedHistory[0]!.weight;
   }, [sortedHistory]);
 
   const historyAnalytics = useMemo(() => {
@@ -265,7 +265,7 @@ export default function RecordsScreen() {
               contentContainerStyle={styles.listContent}
               showsVerticalScrollIndicator={false}
               renderItem={({ item }) => {
-                const best = getBestPersonalRecord(item.records) ?? item.records[0];
+                const best = getBestPersonalRecord(item.records) ?? item.records[0]!;
                 const secondBest = getSecondBestRecord(item);
                 const delta = secondBest ? best.weight - secondBest.weight : 0;
 
@@ -559,7 +559,7 @@ export default function RecordsScreen() {
             <View style={styles.historyCardList}>
               {[...sortedHistory].reverse().map((item, idx, rev) => {
                 const isBest = item.id === historyBest?.id;
-                const delta = idx < rev.length - 1 ? item.weight - rev[idx + 1].weight : null;
+                const delta = idx < rev.length - 1 ? item.weight - rev[idx + 1]!.weight : null;
 
                 return (
                   <View

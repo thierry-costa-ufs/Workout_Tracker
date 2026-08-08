@@ -18,7 +18,7 @@ describe('capPersonalRecords', () => {
   it('prepends new record (newest-first)', () => {
     const existing = [rec('a', 'e1', 80, '2025-01-01T10:00:00Z')];
     const updated = capPersonalRecords(existing, rec('b', 'e1', 90, '2025-01-02T10:00:00Z'));
-    expect(updated[0].id).toBe('b');
+    expect(updated[0]!.id).toBe('b');
     expect(updated).toHaveLength(2);
   });
 
@@ -35,7 +35,7 @@ describe('capPersonalRecords', () => {
     const fresh = rec('new', 'e1', 100, '2025-06-01T10:00:00Z');
     const updated = capPersonalRecords(existing, fresh);
     expect(updated).toHaveLength(500);
-    expect(updated[0].id).toBe('new');
+    expect(updated[0]!.id).toBe('new');
     expect(updated.some((r) => r.id === 'old-499')).toBe(false);
   });
 });
@@ -47,8 +47,8 @@ describe('getBestPersonalRecord', () => {
       rec('b', 'e1', 120, '2025-01-03T10:00:00Z'),
       rec('c', 'e1', 120, '2025-01-04T10:00:00Z'),
     ];
-    records[1].reps = 5;
-    records[2].reps = 8;
+    records[1]!.reps = 5;
+    records[2]!.reps = 8;
     expect(getBestPersonalRecord(records)?.id).toBe('c');
   });
 

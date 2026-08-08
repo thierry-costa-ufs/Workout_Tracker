@@ -97,7 +97,7 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
     setProgress((prev) => {
       const sets = prev[exerciseId];
       const idx = sets ? sets.indexOf(false) : -1;
-      if (idx === -1) return prev;
+      if (!sets || idx === -1) return prev;
       const updatedSets = [...sets];
       updatedSets[idx] = true;
       return { ...prev, [exerciseId]: updatedSets };
@@ -114,7 +114,7 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
     setProgress((prev) => {
       const sets = prev[exerciseId];
       const idx = sets ? sets.lastIndexOf(true) : -1;
-      if (idx === -1) return prev;
+      if (!sets || idx === -1) return prev;
       const updatedSets = [...sets];
       updatedSets[idx] = false;
       return { ...prev, [exerciseId]: updatedSets };

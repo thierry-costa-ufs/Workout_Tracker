@@ -45,8 +45,8 @@ describe('blockSerializer', () => {
       data,
     );
     expect(rebuilt).toHaveLength(1);
-    expect(rebuilt[0].id).toBe('1');
-    expect(rebuilt[0].exercises).toEqual([ex('e1', 3)]);
+    expect(rebuilt[0]!.id).toBe('1');
+    expect(rebuilt[0]!.exercises).toEqual([ex('e1', 3)]);
     expect(rebuiltSplit.seg).toBe('1');
     expect(rebuiltSplit.dom).toBeNull();
   });
@@ -86,6 +86,6 @@ describe('blockSerializer', () => {
     ];
     const dupes = findDuplicateBlockSignatures(blocks);
     expect(dupes).toHaveLength(1);
-    expect(dupes[0].map((b) => b.id)).toEqual(['1', '2']);
+    expect(dupes[0]!.map((b) => b.id)).toEqual(['1', '2']);
   });
 });

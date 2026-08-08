@@ -74,19 +74,19 @@ describe('isWorkoutTemplate', () => {
 
   it('rejects exercise with sets < 1', () => {
     const t = validTemplate();
-    t.data.sab[0].sets = 0;
+    t.data.sab[0]!.sets = 0;
     expect(isWorkoutTemplate(t)).toBe(false);
   });
 
   it('rejects exercise with fractional sets', () => {
     const t = validTemplate();
-    t.data.sab[0].sets = 2.5;
+    t.data.sab[0]!.sets = 2.5;
     expect(isWorkoutTemplate(t)).toBe(false);
   });
 
   it('rejects exercise with sets above max', () => {
     const t = validTemplate();
-    t.data.sab[0].sets = 1000000;
+    t.data.sab[0]!.sets = 1000000;
     expect(isWorkoutTemplate(t)).toBe(false);
   });
 
@@ -110,7 +110,7 @@ describe('isWorkoutTemplate', () => {
 
   it('rejects exercise with name longer than 80', () => {
     const t = validTemplate();
-    t.data.sab[0].name = 'a'.repeat(81);
+    t.data.sab[0]!.name = 'a'.repeat(81);
     expect(isWorkoutTemplate(t)).toBe(false);
   });
 

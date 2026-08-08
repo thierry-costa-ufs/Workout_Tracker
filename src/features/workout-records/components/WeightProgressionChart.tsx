@@ -34,7 +34,7 @@ export function WeightProgressionChart({ records, mode = 'weight' }: WeightProgr
 
     let bestIdx = 0;
     sorted.forEach((r, i) => {
-      if (getDisplayValue(r, mode) > getDisplayValue(sorted[bestIdx], mode)) bestIdx = i;
+      if (getDisplayValue(r, mode) > getDisplayValue(sorted[bestIdx]!, mode)) bestIdx = i;
     });
 
     const mapped = sorted.map((r, i) => {
@@ -52,8 +52,8 @@ export function WeightProgressionChart({ records, mode = 'weight' }: WeightProgr
   const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
 
   const floorY = PADDING.top + chartAreaHeight;
-  const firstX = points[0].x;
-  const lastX = points[points.length - 1].x;
+  const firstX = points[0]!.x;
+  const lastX = points[points.length - 1]!.x;
   const areaPath = `${linePath} L${lastX},${floorY} L${firstX},${floorY} Z`;
 
   const gridLines = 4;
@@ -159,8 +159,8 @@ export function WeightProgressionChart({ records, mode = 'weight' }: WeightProgr
 
         {points.length > 1 &&
           (() => {
-            const last = points[points.length - 1];
-            const prev = points[points.length - 2];
+            const last = points[points.length - 1]!;
+            const prev = points[points.length - 2]!;
             const diff = getDisplayValue(last.record, mode) - getDisplayValue(prev.record, mode);
             const isUp = diff >= 0;
             const label = `${isUp ? '+' : ''}${diff.toFixed(1)}`;

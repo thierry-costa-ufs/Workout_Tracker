@@ -52,5 +52,5 @@ export function createEmptyWorkoutData(): WorkoutData {
 export function getWorkoutDayKeyForToday(): WorkoutDayKey {
   const order: WorkoutDayKey[] = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 
-  return order[new Date().getDay()];
+  return order[new Date().getDay()]!;
 }
