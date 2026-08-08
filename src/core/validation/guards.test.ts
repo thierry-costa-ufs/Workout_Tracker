@@ -78,6 +78,42 @@ describe('isWorkoutTemplate', () => {
     expect(isWorkoutTemplate(t)).toBe(false);
   });
 
+  it('rejects exercise with fractional sets', () => {
+    const t = validTemplate();
+    t.data.sab[0].sets = 2.5;
+    expect(isWorkoutTemplate(t)).toBe(false);
+  });
+
+  it('rejects exercise with sets above max', () => {
+    const t = validTemplate();
+    t.data.sab[0].sets = 1000000;
+    expect(isWorkoutTemplate(t)).toBe(false);
+  });
+
+  it('rejects exercise with muscleGroup outside enum', () => {
+    const t = validTemplate();
+    (t.data.sab[0] as unknown as { muscleGroup: string }).muscleGroup = 'Perna';
+    expect(isWorkoutTemplate(t)).toBe(false);
+  });
+
+  it('rejects exercise with equipment outside enum', () => {
+    const t = validTemplate();
+    (t.data.sab[0] as unknown as { equipment: string }).equipment = 'Corda';
+    expect(isWorkoutTemplate(t)).toBe(false);
+  });
+
+  it('rejects exercise with mechanic outside enum', () => {
+    const t = validTemplate();
+    (t.data.sab[0] as unknown as { mechanic: string }).mechanic = 'Misto';
+    expect(isWorkoutTemplate(t)).toBe(false);
+  });
+
+  it('rejects exercise with name longer than 80', () => {
+    const t = validTemplate();
+    t.data.sab[0].name = 'a'.repeat(81);
+    expect(isWorkoutTemplate(t)).toBe(false);
+  });
+
   it('rejects malformed blockStructure', () => {
     const t = validTemplate();
     t.blockStructure = { blocks: 'nope', dayIds: {} } as unknown as BlockStructure;
@@ -105,6 +141,48 @@ describe('isPersonalRecord', () => {
   it('rejects record with NaN weight', () => {
     const r = validRecord();
     (r as unknown as { weight: unknown }).weight = NaN;
+    expect(isPersonalRecord(r)).toBe(false);
+  });
+
+  it('rejects record with weight above max', () => {
+    const r = validRecord();
+    (r as unknown as { weight: unknown }).weight = 2500;
+    expect(isPersonalRecord(r)).toBe(false);
+  });
+
+  it('rejects record with 1e308 weight', () => {
+    const r = validRecord();
+    (r as unknown as { weight: unknown }).weight = 1e308;
+    expect(isPersonalRecord(r)).toBe(false);
+  });
+
+  it('accepts record with zero weight', () => {
+    const r = validRecord();
+    r.weight = 0;
+    expect(isPersonalRecord(r)).toBe(true);
+  });
+
+  it('accepts record with fractional weight', () => {
+    const r = validRecord();
+    r.weight = 82.5;
+    expect(isPersonalRecord(r)).toBe(true);
+  });
+
+  it('rejects record with zero reps', () => {
+    const r = validRecord();
+    r.reps = 0;
+    expect(isPersonalRecord(r)).toBe(false);
+  });
+
+  it('rejects record with fractional reps', () => {
+    const r = validRecord();
+    (r as unknown as { reps: unknown }).reps = 8.5;
+    expect(isPersonalRecord(r)).toBe(false);
+  });
+
+  it('rejects record with muscleGroup outside enum', () => {
+    const r = validRecord();
+    (r as unknown as { muscleGroup: string }).muscleGroup = 'Perna';
     expect(isPersonalRecord(r)).toBe(false);
   });
 
