@@ -51,6 +51,15 @@
         "projectId": "25e72824-8d64-45be-bd48-abb278859782"
       }
     },
-    "owner": "nathan-expo"
+    "owner": "nathan-expo",
+    "updates": {
+      "url": "https://u.expo.dev/25e72824-8d64-45be-bd48-abb278859782",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
