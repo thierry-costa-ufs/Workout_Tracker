@@ -1,5 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { migrateStorage, workoutStorage } from '@/core/storage/workoutStorage';
+import {
+  getToday,
+  migrateStorage,
+  pruneSessionKeys,
+  workoutStorage,
+} from '@/core/storage/workoutStorage';
 import { PersonalRecord, WorkoutTemplate } from '@/types/workout';
 
 // ponytail: temp mock — B4 moves this to jest.setup.js
@@ -116,5 +121,70 @@ describe('serialized writes', () => {
       .filter(([key]) => key === V.prs)
       .map(([, value]) => value);
     expect(canonicalWrites).toEqual([JSON.stringify([first]), JSON.stringify([second])]);
+  });
+});
+
+describe('session progress', () => {
+  const today = getToday();
+  const sessionKey = (templateId: string) => `@gym_app:v1:session:${templateId}:${today}`;
+  const legacyKey = (templateId: string) => `@gym_app:session_progress:${templateId}`;
+
+  it('saves and loads session progress under date-keyed key', async () => {
+    const payload = { dayKey: 'seg', date: today, progress: { e1: [true, false] } };
+    await workoutStorage.saveSessionProgress('t1', payload);
+
+    expect(await AsyncStorage.getItem(sessionKey('t1'))).toBe(JSON.stringify(payload));
+    expect(await workoutStorage.loadSessionProgress('t1')).toEqual(payload);
+  });
+
+  it('isolates sessions by templateId and date', async () => {
+    await workoutStorage.saveSessionProgress('t1', {
+      dayKey: 'seg',
+      date: today,
+      progress: { e1: [true] },
+    });
+    await workoutStorage.saveSessionProgress('t2', {
+      dayKey: 'seg',
+      date: today,
+      progress: { e2: [false] },
+    });
+
+    expect((await workoutStorage.loadSessionProgress('t1'))?.progress).toEqual({ e1: [true] });
+    expect((await workoutStorage.loadSessionProgress('t2'))?.progress).toEqual({ e2: [false] });
+  });
+
+  it('migrates legacy unversioned key once when date matches', async () => {
+    const legacy = { dayKey: 'seg', date: today, progress: { e1: [true, true] } };
+    await AsyncStorage.setItem(legacyKey('t1'), JSON.stringify(legacy));
+
+    const loaded = await workoutStorage.loadSessionProgress('t1');
+
+    expect(loaded).toEqual(legacy);
+    expect(await AsyncStorage.getItem(legacyKey('t1'))).toBeNull();
+    expect(await AsyncStorage.getItem(sessionKey('t1'))).toBe(JSON.stringify(legacy));
+  });
+
+  it('ignores legacy key when date does not match today', async () => {
+    const stale = { dayKey: 'seg', date: '2000-01-01', progress: { e1: [true] } };
+    await AsyncStorage.setItem(legacyKey('t1'), JSON.stringify(stale));
+
+    expect(await workoutStorage.loadSessionProgress('t1')).toBeNull();
+  });
+
+  it('returns null when no session stored', async () => {
+    expect(await workoutStorage.loadSessionProgress('t1')).toBeNull();
+  });
+});
+
+describe('pruneSessionKeys', () => {
+  it('removes session keys older than retainDays', async () => {
+    const oldDate = '2000-01-01';
+    await AsyncStorage.setItem(`@gym_app:v1:session:t1:${oldDate}`, JSON.stringify({}));
+    await AsyncStorage.setItem(`@gym_app:v1:session:t2:${getToday()}`, JSON.stringify({}));
+
+    await pruneSessionKeys(7);
+
+    expect(await AsyncStorage.getItem(`@gym_app:v1:session:t1:${oldDate}`)).toBeNull();
+    expect(await AsyncStorage.getItem(`@gym_app:v1:session:t2:${getToday()}`)).not.toBeNull();
   });
 });

@@ -1,15 +1,31 @@
 import { PersonalRecord, WorkoutTemplate } from '@/types/workout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { filterValid, isPersonalRecord, isWorkoutTemplate } from '@/core/validation/guards';
+import {
+  filterValid,
+  isPersonalRecord,
+  isSessionProgress,
+  isWorkoutTemplate,
+} from '@/core/validation/guards';
 
 export const STORAGE_VERSION = 1;
 const key = (name: string) => `@gym_app:v${STORAGE_VERSION}:${name}`;
 const shadowKey = (name: string) => `@gym_app:bak:v${STORAGE_VERSION}:${name}`;
+const SESSION_PREFIX = key('session:');
 const LEGACY_KEYS = {
   templates: '@gym_app:workout_templates',
   active: '@gym_app:active_template_id',
   prs: '@gym_app:personal_records',
 };
+
+function getTodayFromDate(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
+    d.getDate(),
+  ).padStart(2, '0')}`;
+}
+
+export function getToday(): string {
+  return getTodayFromDate(new Date());
+}
 
 let migrationPromise: Promise<void> | null = null;
 function ensureMigrated(): Promise<void> {
@@ -34,14 +50,22 @@ export async function migrateStorage(): Promise<void> {
   ]);
 }
 
+export interface SessionProgressPayload {
+  dayKey: string | null;
+  date: string;
+  progress: Record<string, boolean[]>;
+}
+
 export interface WorkoutStorage {
   loadTemplates(): Promise<WorkoutTemplate[]>;
   loadActiveId(): Promise<string | null>;
   loadPersonalRecords(): Promise<PersonalRecord[]>;
+  loadSessionProgress(templateId: string): Promise<SessionProgressPayload | null>;
 
   saveTemplates(templates: WorkoutTemplate[]): Promise<void>;
   saveActiveId(id: string | null): Promise<void>;
   savePersonalRecords(records: PersonalRecord[]): Promise<void>;
+  saveSessionProgress(templateId: string, payload: SessionProgressPayload): Promise<void>;
 }
 
 function parseJsonArray<T>(raw: string | null): T[] {
@@ -100,6 +124,35 @@ async function atomicWrite(name: string, value: string): Promise<void> {
   await AsyncStorage.setItem(key(name), value);
 }
 
+const sessionKey = (templateId: string, date: string) => `session:${templateId}:${date}`;
+const legacySessionKey = (templateId: string) => `@gym_app:session_progress:${templateId}`;
+
+function parseSessionPayload(raw: string): SessionProgressPayload | null {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    return null;
+  }
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return null;
+  const p = parsed as Record<string, unknown>;
+  if (p.dayKey !== null && typeof p.dayKey !== 'string') return null;
+  if (typeof p.date !== 'string') return null;
+  if (!isSessionProgress(p.progress)) return null;
+  return { dayKey: p.dayKey, date: p.date, progress: p.progress };
+}
+
+// ponytail: ISO dates sort lexicographically, so age is a string compare
+export async function pruneSessionKeys(retainDays: number): Promise<void> {
+  const cutoff = new Date(Date.now() - retainDays * 86_400_000);
+  const cutoffStr = getTodayFromDate(cutoff);
+  const keys = await AsyncStorage.getAllKeys();
+  const stale = keys.filter(
+    (k) => k.startsWith(SESSION_PREFIX) && k.slice(k.lastIndexOf(':') + 1) < cutoffStr,
+  );
+  if (stale.length > 0) await AsyncStorage.multiRemove(stale);
+}
+
 export const workoutStorage: WorkoutStorage = {
   async loadTemplates() {
     return loadArray('workout_templates', isWorkoutTemplate);
@@ -111,6 +164,30 @@ export const workoutStorage: WorkoutStorage = {
 
   async loadPersonalRecords() {
     return loadArray('personal_records', isPersonalRecord);
+  },
+
+  async loadSessionProgress(templateId) {
+    await ensureMigrated();
+    await pruneSessionKeys(7);
+    const today = getToday();
+
+    const current = await AsyncStorage.getItem(key(sessionKey(templateId, today)));
+    if (current !== null) {
+      const parsed = parseSessionPayload(current);
+      if (parsed) return parsed;
+    }
+
+    // legacy unversioned key: migrate once when it holds today's session
+    const legacy = await AsyncStorage.getItem(legacySessionKey(templateId));
+    if (legacy !== null) {
+      const parsed = parseSessionPayload(legacy);
+      if (parsed && parsed.date === today) {
+        await atomicWrite(sessionKey(templateId, today), JSON.stringify(parsed));
+        await AsyncStorage.removeItem(legacySessionKey(templateId));
+        return parsed;
+      }
+    }
+    return null;
   },
 
   async saveTemplates(templates) {
@@ -132,6 +209,12 @@ export const workoutStorage: WorkoutStorage = {
   async savePersonalRecords(records) {
     await serialized('personal_records', () =>
       atomicWrite('personal_records', JSON.stringify(records)),
+    );
+  },
+
+  async saveSessionProgress(templateId, payload) {
+    await serialized(`session:${templateId}:${payload.date}`, () =>
+      atomicWrite(sessionKey(templateId, payload.date), JSON.stringify(payload)),
     );
   },
 };

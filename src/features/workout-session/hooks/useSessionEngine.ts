@@ -1,7 +1,7 @@
 import { PlannedExercise, WorkoutDayKey } from '@/types/workout';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { hapticLight, hapticMedium } from '@/core/utils/haptics';
 import { isSessionProgress } from '@/core/validation/guards';
+import { getToday, workoutStorage } from '@/core/storage/workoutStorage';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface UseSessionEngineProps {
@@ -11,15 +11,6 @@ interface UseSessionEngineProps {
 }
 
 export type SessionProgress = Record<string, boolean[]>;
-
-const progressKey = (templateId: string) => `@gym_app:session_progress:${templateId}`;
-
-function getToday(): string {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(
-    d.getDate(),
-  ).padStart(2, '0')}`;
-}
 
 function buildEmptyProgress(exercises: PlannedExercise[]): SessionProgress {
   const progress: SessionProgress = {};
@@ -65,23 +56,16 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
       try {
         if (!templateId) return;
 
-        const raw = await AsyncStorage.getItem(progressKey(templateId));
-        if (cancelled || !raw) return;
-
-        const stored = JSON.parse(raw) as {
-          dayKey?: string | null;
-          date?: string | null;
-          progress?: SessionProgress | null;
-        };
+        const payload = await workoutStorage.loadSessionProgress(templateId);
+        if (cancelled || !payload) return;
 
         if (
-          stored.progress &&
-          isSessionProgress(stored.progress) &&
-          stored.dayKey === dayKey &&
-          stored.date === getToday()
+          payload.dayKey === dayKey &&
+          payload.date === getToday() &&
+          isSessionProgress(payload.progress)
         ) {
           // ponytail: merge so plan edits mid-day never leave missing exercise keys
-          setProgress(mergeProgress(stored.progress, exercises));
+          setProgress(mergeProgress(payload.progress, exercises));
         }
       } catch {
         // ponytail: corrupt or missing progress = fresh session
@@ -98,10 +82,9 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
 
   useEffect(() => {
     if (!hydrated || !templateId) return;
-    AsyncStorage.setItem(
-      progressKey(templateId),
-      JSON.stringify({ dayKey, date: getToday(), progress }),
-    ).catch((error) => console.warn('Failed to persist session progress', error));
+    workoutStorage
+      .saveSessionProgress(templateId, { dayKey, date: getToday(), progress })
+      .catch(() => {}); // D-1.2a: session ticks are ephemeral
   }, [progress, hydrated, templateId, dayKey]);
 
   const handleCheckNextSet = (exerciseId: string) => {
