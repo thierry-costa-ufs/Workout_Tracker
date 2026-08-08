@@ -8,5 +8,15 @@ module.exports = defineConfig([
   {
     ignores: ['dist/*', 'web-build/*', 'android/*', 'ios/*'],
   },
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+    },
+  },
+  {
+    files: ['jest.setup.js'],
+    languageOptions: { globals: { jest: 'readonly' } },
+  },
   prettierConfig,
 ]);

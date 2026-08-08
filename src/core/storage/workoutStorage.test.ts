@@ -7,12 +7,6 @@ import {
 } from '@/core/storage/workoutStorage';
 import { PersonalRecord, WorkoutTemplate } from '@/types/workout';
 
-// ponytail: temp mock — B4 moves this to jest.setup.js
-jest.mock('@react-native-async-storage/async-storage', () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports -- canonical RN mock pattern
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
-);
-
 function validTemplate(): WorkoutTemplate {
   return {
     id: 't1',

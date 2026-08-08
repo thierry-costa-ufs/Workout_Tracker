@@ -4,12 +4,6 @@ import { useSessionEngine } from '@/features/workout-session/hooks/useSessionEng
 import { getToday, workoutStorage } from '@/core/storage/workoutStorage';
 import { PlannedExercise } from '@/types/workout';
 
-// ponytail: temp mock — B4 moves this to jest.setup.js (same pattern as workoutStorage.test.ts)
-jest.mock('@react-native-async-storage/async-storage', () =>
-  // eslint-disable-next-line @typescript-eslint/no-require-imports -- canonical RN mock pattern
-  require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
-);
-
 jest.mock('@/core/storage/workoutStorage', () => {
   const actual = jest.requireActual('@/core/storage/workoutStorage');
   return {

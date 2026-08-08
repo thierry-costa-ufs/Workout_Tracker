@@ -84,6 +84,7 @@ export function TemplatesProvider({ children }: { children: React.ReactNode }) {
       // ponytail: optimistic ref so a rapid double-save can't clobber; a failed write reverts to the pre-save snapshot
       templatesRef.current = updatedTemplates;
       setTemplates(updatedTemplates);
+      setActiveId(nextActiveId);
 
       try {
         await Promise.all([
@@ -93,6 +94,7 @@ export function TemplatesProvider({ children }: { children: React.ReactNode }) {
       } catch {
         templatesRef.current = current;
         setTemplates(current);
+        setActiveId(activeId);
         Alert.alert('Erro', 'Não foi possível salvar o template.');
       }
     },

@@ -58,7 +58,7 @@ npm run typecheck
 npm test
 ```
 
-`tsconfig.json` extends `expo/tsconfig.base` with `strict: true` and `@/*` → `./src/*`. The full `tsc --noEmit` pass is green; keep it that way on every change. `npm test` runs Jest (preset `jest-expo`) over pure-logic units — add tests alongside new pure functions.
+`tsconfig.json` extends `expo/tsconfig.base` with `strict: true` and `@/*` → `./src/*`. The full `tsc --noEmit` pass is green; keep it that way on every change. Jest config lives in `jest.config.js` (preset `jest-expo`, async-storage mock in `jest.setup.js`) with a coverage threshold of 30/25/25/30 (statements/branches/functions/lines) — run `npm test -- --coverage`.
 
 ## Git workflow
 
