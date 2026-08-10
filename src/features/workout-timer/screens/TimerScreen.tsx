@@ -2,6 +2,13 @@ import { appTheme } from '@/shared/constants/theme';
 import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { AppScreen } from '@/core/ui/AppScreen';
 import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
+import {
+  cancelTimerNotifications,
+  configureNotificationHandler,
+  ensurePermissions,
+  ensureRestTimerChannel,
+  scheduleCompletion,
+} from '@/features/workout-timer/notifications';
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -19,6 +26,8 @@ import {
 const { width } = Dimensions.get('window');
 
 const MIN_TIMER_SECONDS = 15;
+
+configureNotificationHandler();
 
 type IconName = keyof typeof Ionicons.glyphMap;
 
@@ -54,6 +63,17 @@ export default function TimerScreen() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const endTimeRef = useRef<number>(0);
   const totalDurationRef = useRef(90);
+  const permissionRef = useRef(false);
+
+  const scheduleCompletionNotification = async (remaining: number) => {
+    if (!permissionRef.current) {
+      const granted = await ensurePermissions();
+      if (!granted) return;
+      permissionRef.current = true;
+      await ensureRestTimerChannel();
+    }
+    await scheduleCompletion(remaining);
+  };
 
   const notifyFinish = () => {
     hapticNotify();
@@ -70,6 +90,7 @@ export default function TimerScreen() {
       endTimeRef.current = 0;
       setSecondsLeft(totalDurationRef.current);
       setIsActive(false);
+      void cancelTimerNotifications();
       notifyFinish();
     }
   }).current;
@@ -103,7 +124,13 @@ export default function TimerScreen() {
 
   const toggleTimer = () => {
     hapticMedium();
-    setIsActive((prev) => !prev);
+    if (isActive) {
+      void cancelTimerNotifications();
+      setIsActive(false);
+    } else {
+      void scheduleCompletionNotification(secondsLeft);
+      setIsActive(true);
+    }
   };
 
   const resetTimer = () => {
@@ -111,6 +138,7 @@ export default function TimerScreen() {
     setIsActive(false);
     endTimeRef.current = 0;
     setSecondsLeft(totalDurationRef.current);
+    void cancelTimerNotifications();
   };
 
   const selectPreset = (id: string, duration: number) => {
@@ -119,6 +147,7 @@ export default function TimerScreen() {
     totalDurationRef.current = duration;
     setActivePreset(id);
     setSecondsLeft(duration);
+    void cancelTimerNotifications();
   };
 
   const adjustTime = (amount: number) => {
@@ -128,6 +157,7 @@ export default function TimerScreen() {
     setSecondsLeft(newTime);
     setIsActive(false);
     setActivePreset('');
+    void cancelTimerNotifications();
   };
 
   const formatTime = (seconds: number) => {
