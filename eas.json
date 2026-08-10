@@ -3,15 +3,12 @@
     "version": ">= 18.13.0",
     "appVersionSource": "remote"
   },
-  "update": {
-    "production": { "channel": "production" },
-    "preview": { "channel": "preview" }
-  },
   "build": {
     "preview": {
       "android": {
         "buildType": "apk"
-      }
+      },
+      "channel": "preview"
     },
     "preview2": {
       "android": {
@@ -25,6 +22,8 @@
       "distribution": "internal",
       "channel": "preview"
     },
-    "production": {}
+    "production": {
+      "channel": "production"
+    }
   }
 }
