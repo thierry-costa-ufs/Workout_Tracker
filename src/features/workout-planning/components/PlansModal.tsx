@@ -41,6 +41,8 @@ export function PlansModal({
           extraData={[templates, activeId]}
           keyExtractor={(item) => item.id}
           style={styles.fullWidthMaxHeight}
+          initialNumToRender={10}
+          windowSize={7}
           renderItem={({ item }) => (
             <PlanListItem
               item={item}

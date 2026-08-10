@@ -16,11 +16,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { hapticLight, hapticMedium, hapticNotify } from '@/core/utils/haptics';
 import { MAX_PER_EXERCISE, getBestPersonalRecord } from '@/core/utils/capPersonalRecords';
-import { useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
-  ScrollView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -63,6 +63,79 @@ function getSecondBestRecord(group: RecordGroup) {
   if (!best) return null;
   return getBestPersonalRecord(group.records.filter((r) => r.weight < best.weight)) ?? null;
 }
+
+type HistoryRowData = PersonalRecord & { isBest: boolean; delta: number | null };
+
+const HistoryRow = memo(function HistoryRow({
+  item,
+  onDelete,
+}: {
+  item: HistoryRowData;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <View style={[styles.historyCard, item.isBest && styles.historyCardBest]}>
+      {item.isBest && <View style={styles.historyCardAccent} />}
+      <View style={styles.flex1}>
+        <Text style={styles.historyCardDate}>{item.date}</Text>
+        {item.timestamp && (
+          <Text style={styles.historyCardDate}>
+            {new Date(item.timestamp).toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </Text>
+        )}
+        <View style={styles.historyCardWeightRow}>
+          <Text style={styles.historyCardWeight}>{item.weight}</Text>
+          <Text style={styles.historyCardUnit}>KG</Text>
+          <Text style={styles.historyCardReps}>
+            × {item.reps} {item.reps === 1 ? 'rep' : 'reps'}
+          </Text>
+          {item.isBest && (
+            <Ionicons
+              name="trophy"
+              size={11}
+              color={appTheme.colors.accent}
+              style={styles.trophyMargin}
+            />
+          )}
+        </View>
+      </View>
+      {item.delta !== null && item.delta !== 0 && (
+        <View
+          style={[
+            styles.historyDeltaBadge,
+            {
+              backgroundColor:
+                item.delta > 0 ? appTheme.colors.successSoft : appTheme.colors.dangerSoft,
+            },
+          ]}
+        >
+          <Ionicons
+            name={item.delta > 0 ? 'arrow-up' : 'arrow-down'}
+            size={9}
+            color={item.delta > 0 ? appTheme.colors.success : appTheme.colors.danger}
+          />
+          <Text
+            style={[
+              styles.historyDeltaText,
+              {
+                color: item.delta > 0 ? appTheme.colors.success : appTheme.colors.danger,
+              },
+            ]}
+          >
+            {item.delta > 0 ? '+' : ''}
+            {item.delta.toFixed(1)}
+          </Text>
+        </View>
+      )}
+      <TouchableOpacity style={styles.historyDeleteBtn} onPress={() => onDelete(item.id)}>
+        <Ionicons name="trash-outline" size={13} color={appTheme.colors.danger} />
+      </TouchableOpacity>
+    </View>
+  );
+});
 
 export default function RecordsScreen() {
   const router = useRouter();
@@ -135,6 +208,15 @@ export default function RecordsScreen() {
     return { avgWeight, avgReps };
   }, [sortedHistory]);
 
+  const historyRows = useMemo(() => {
+    const reversed = [...sortedHistory].reverse();
+    return reversed.map((item, idx) => ({
+      ...item,
+      isBest: item.id === historyBest?.id,
+      delta: idx < reversed.length - 1 ? item.weight - (reversed[idx + 1]?.weight ?? 0) : null,
+    }));
+  }, [sortedHistory, historyBest]);
+
   const currentBestGroup = selectedExercise
     ? groups.find(
         (g) => g.exerciseName.trim().toLowerCase() === selectedExercise.name.trim().toLowerCase(),
@@ -197,12 +279,15 @@ export default function RecordsScreen() {
     }
   };
 
-  const handleDeletePR = (id: string) => {
-    confirmDelete('Remover Recorde', 'Excluir permanentemente este PR?', async () => {
-      await deletePR(id);
-      hapticMedium();
-    });
-  };
+  const handleDeletePR = useCallback(
+    (id: string) => {
+      confirmDelete('Remover Recorde', 'Excluir permanentemente este PR?', async () => {
+        await deletePR(id);
+        hapticMedium();
+      });
+    },
+    [deletePR],
+  );
 
   return (
     <AppScreen style={styles.container} backgroundColor={appTheme.colors.background}>
@@ -465,173 +550,124 @@ export default function RecordsScreen() {
         {!activeGroup || activeGroup.records.length === 0 ? (
           <Text style={styles.emptyPlansText}>Nenhum registro restante para este exercício.</Text>
         ) : (
-          <ScrollView
+          <FlatList
+            data={historyRows}
+            keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.historyContent}
-          >
-            <View style={styles.historyStatsRow}>
-              <View style={styles.historyStatBadge}>
-                <Ionicons name="trophy" size={13} color={appTheme.colors.accent} />
-                <Text style={styles.historyStatValue}>
-                  {historyBest ? `${historyBest.weight}` : '—'}
-                </Text>
-                <Text style={styles.historyStatLabel}>RECORDE</Text>
-              </View>
-              <View style={styles.historyStatBadge}>
-                <Ionicons name="layers-outline" size={13} color={appTheme.colors.textSecondary} />
-                <Text style={styles.historyStatValue}>{activeGroup.records.length}</Text>
-                <Text style={styles.historyStatLabel}>REGISTROS</Text>
-              </View>
-              <View style={styles.historyStatBadge}>
-                <Ionicons
-                  name="trending-up"
-                  size={13}
-                  color={
-                    historyEvolution > 0
-                      ? appTheme.colors.success
-                      : historyEvolution < 0
-                        ? appTheme.colors.danger
-                        : appTheme.colors.textSecondary
-                  }
-                />
-                <Text
-                  style={[
-                    styles.historyStatValue,
-                    {
-                      color:
+            initialNumToRender={20}
+            windowSize={7}
+            removeClippedSubviews={Platform.OS === 'android'}
+            ItemSeparatorComponent={() => <View style={{ height: 6 }} />}
+            ListHeaderComponent={
+              <>
+                <View style={styles.historyStatsRow}>
+                  <View style={styles.historyStatBadge}>
+                    <Ionicons name="trophy" size={13} color={appTheme.colors.accent} />
+                    <Text style={styles.historyStatValue}>
+                      {historyBest ? `${historyBest.weight}` : '—'}
+                    </Text>
+                    <Text style={styles.historyStatLabel}>RECORDE</Text>
+                  </View>
+                  <View style={styles.historyStatBadge}>
+                    <Ionicons
+                      name="layers-outline"
+                      size={13}
+                      color={appTheme.colors.textSecondary}
+                    />
+                    <Text style={styles.historyStatValue}>{activeGroup.records.length}</Text>
+                    <Text style={styles.historyStatLabel}>REGISTROS</Text>
+                  </View>
+                  <View style={styles.historyStatBadge}>
+                    <Ionicons
+                      name="trending-up"
+                      size={13}
+                      color={
                         historyEvolution > 0
                           ? appTheme.colors.success
                           : historyEvolution < 0
                             ? appTheme.colors.danger
-                            : appTheme.colors.white,
-                    },
-                  ]}
-                >
-                  {historyEvolution > 0 ? '+' : ''}
-                  {historyEvolution.toFixed(1)}
-                </Text>
-                <Text style={styles.historyStatLabel}>EVOLUÇÃO</Text>
-              </View>
-            </View>
-
-            {sortedHistory.length > 1 && (
-              <View style={styles.chartToggleRow}>
-                {(['weight', '1rm'] as const).map((m) => (
-                  <TouchableOpacity
-                    key={m}
-                    style={[styles.chartToggleBtn, chartMode === m && styles.chartToggleBtnActive]}
-                    onPress={() => setChartMode(m)}
-                  >
+                            : appTheme.colors.textSecondary
+                      }
+                    />
                     <Text
                       style={[
-                        styles.chartToggleText,
-                        chartMode === m && styles.chartToggleTextActive,
+                        styles.historyStatValue,
+                        {
+                          color:
+                            historyEvolution > 0
+                              ? appTheme.colors.success
+                              : historyEvolution < 0
+                                ? appTheme.colors.danger
+                                : appTheme.colors.white,
+                        },
                       ]}
                     >
-                      {m === 'weight' ? 'PESO' : '1RM'}
+                      {historyEvolution > 0 ? '+' : ''}
+                      {historyEvolution.toFixed(1)}
                     </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-
-            {sortedHistory.length > 1 && (
-              <WeightProgressionChart records={sortedHistory} mode={chartMode} />
-            )}
-
-            {historyAnalytics && (
-              <View style={styles.historyStatsRow}>
-                <View style={styles.historyStatBadge}>
-                  <Ionicons name="scale-outline" size={13} color={appTheme.colors.textSecondary} />
-                  <Text style={styles.historyStatValue}>
-                    {historyAnalytics.avgWeight.toFixed(1)}
-                  </Text>
-                  <Text style={styles.historyStatLabel}>MÉDIA KG</Text>
+                    <Text style={styles.historyStatLabel}>EVOLUÇÃO</Text>
+                  </View>
                 </View>
-                <View style={styles.historyStatBadge}>
-                  <Ionicons name="repeat-outline" size={13} color={appTheme.colors.textSecondary} />
-                  <Text style={styles.historyStatValue}>{historyAnalytics.avgReps.toFixed(1)}</Text>
-                  <Text style={styles.historyStatLabel}>MÉDIA REPS</Text>
-                </View>
-              </View>
-            )}
 
-            <View style={styles.historyCardList}>
-              {[...sortedHistory].reverse().map((item, idx, rev) => {
-                const isBest = item.id === historyBest?.id;
-                const delta = idx < rev.length - 1 ? item.weight - rev[idx + 1]!.weight : null;
-
-                return (
-                  <View
-                    key={item.id}
-                    style={[styles.historyCard, isBest && styles.historyCardBest]}
-                  >
-                    {isBest && <View style={styles.historyCardAccent} />}
-                    <View style={styles.flex1}>
-                      <Text style={styles.historyCardDate}>{item.date}</Text>
-                      {item.timestamp && (
-                        <Text style={styles.historyCardDate}>
-                          {new Date(item.timestamp).toLocaleTimeString('pt-BR', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </Text>
-                      )}
-                      <View style={styles.historyCardWeightRow}>
-                        <Text style={styles.historyCardWeight}>{item.weight}</Text>
-                        <Text style={styles.historyCardUnit}>KG</Text>
-                        <Text style={styles.historyCardReps}>
-                          × {item.reps} {item.reps === 1 ? 'rep' : 'reps'}
-                        </Text>
-                        {isBest && (
-                          <Ionicons
-                            name="trophy"
-                            size={11}
-                            color={appTheme.colors.accent}
-                            style={styles.trophyMargin}
-                          />
-                        )}
-                      </View>
-                    </View>
-                    {delta !== null && delta !== 0 && (
-                      <View
+                {sortedHistory.length > 1 && (
+                  <View style={styles.chartToggleRow}>
+                    {(['weight', '1rm'] as const).map((m) => (
+                      <TouchableOpacity
+                        key={m}
                         style={[
-                          styles.historyDeltaBadge,
-                          {
-                            backgroundColor:
-                              delta > 0 ? appTheme.colors.successSoft : appTheme.colors.dangerSoft,
-                          },
+                          styles.chartToggleBtn,
+                          chartMode === m && styles.chartToggleBtnActive,
                         ]}
+                        onPress={() => setChartMode(m)}
                       >
-                        <Ionicons
-                          name={delta > 0 ? 'arrow-up' : 'arrow-down'}
-                          size={9}
-                          color={delta > 0 ? appTheme.colors.success : appTheme.colors.danger}
-                        />
                         <Text
                           style={[
-                            styles.historyDeltaText,
-                            {
-                              color: delta > 0 ? appTheme.colors.success : appTheme.colors.danger,
-                            },
+                            styles.chartToggleText,
+                            chartMode === m && styles.chartToggleTextActive,
                           ]}
                         >
-                          {delta > 0 ? '+' : ''}
-                          {delta.toFixed(1)}
+                          {m === 'weight' ? 'PESO' : '1RM'}
                         </Text>
-                      </View>
-                    )}
-                    <TouchableOpacity
-                      style={styles.historyDeleteBtn}
-                      onPress={() => handleDeletePR(item.id)}
-                    >
-                      <Ionicons name="trash-outline" size={13} color={appTheme.colors.danger} />
-                    </TouchableOpacity>
+                      </TouchableOpacity>
+                    ))}
                   </View>
-                );
-              })}
-            </View>
-          </ScrollView>
+                )}
+
+                {sortedHistory.length > 1 && (
+                  <WeightProgressionChart records={sortedHistory} mode={chartMode} />
+                )}
+
+                {historyAnalytics && (
+                  <View style={styles.historyStatsRow}>
+                    <View style={styles.historyStatBadge}>
+                      <Ionicons
+                        name="scale-outline"
+                        size={13}
+                        color={appTheme.colors.textSecondary}
+                      />
+                      <Text style={styles.historyStatValue}>
+                        {historyAnalytics.avgWeight.toFixed(1)}
+                      </Text>
+                      <Text style={styles.historyStatLabel}>MÉDIA KG</Text>
+                    </View>
+                    <View style={styles.historyStatBadge}>
+                      <Ionicons
+                        name="repeat-outline"
+                        size={13}
+                        color={appTheme.colors.textSecondary}
+                      />
+                      <Text style={styles.historyStatValue}>
+                        {historyAnalytics.avgReps.toFixed(1)}
+                      </Text>
+                      <Text style={styles.historyStatLabel}>MÉDIA REPS</Text>
+                    </View>
+                  </View>
+                )}
+              </>
+            }
+            renderItem={({ item }) => <HistoryRow item={item} onDelete={handleDeletePR} />}
+          />
         )}
       </Overlay>
       <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>

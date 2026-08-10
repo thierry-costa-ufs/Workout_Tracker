@@ -9,7 +9,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 interface ExercisePickerCardProps {
   item: ExerciseData;
   pr: PersonalRecord | undefined;
-  onAdd: () => void;
+  onAdd: (exercise: ExerciseData) => void;
 }
 
 export const ExercisePickerCard = React.memo(function ExercisePickerCard({
@@ -21,7 +21,7 @@ export const ExercisePickerCard = React.memo(function ExercisePickerCard({
 
   const handlePress = () => {
     hapticNotify();
-    onAdd();
+    onAdd(item);
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 600);
   };

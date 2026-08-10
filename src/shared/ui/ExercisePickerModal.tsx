@@ -4,7 +4,7 @@ import { sharedScreenStyles } from '@/shared/styles/screenStyles';
 import { MuscleFilterChips } from '@/shared/ui/MuscleFilterChips';
 import { SearchBar } from '@/shared/ui/SearchBar';
 import { Ionicons } from '@expo/vector-icons';
-import { useMemo, useState } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import { FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { Overlay } from '@/shared/ui/Overlay';
 import { ExercisePickerCard } from '@/features/workout-planning/components/ExercisePickerCard';
@@ -34,6 +34,13 @@ export function ExercisePickerModal({
     setExerciseSearch('');
     onClose();
   };
+
+  const handleAdd = useCallback(
+    (exercise: ExerciseData) => {
+      onAddExercise(exercise);
+    },
+    [onAddExercise],
+  );
 
   const filteredExercises = useMemo(() => {
     return EXERCISES_LIST.filter(
@@ -76,11 +83,7 @@ export function ExercisePickerModal({
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => (
-          <ExercisePickerCard
-            item={item}
-            pr={getExercisePR(item.id)}
-            onAdd={() => onAddExercise(item)}
-          />
+          <ExercisePickerCard item={item} pr={getExercisePR(item.id)} onAdd={handleAdd} />
         )}
       />
     </Overlay>

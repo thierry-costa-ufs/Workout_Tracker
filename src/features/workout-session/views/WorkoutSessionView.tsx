@@ -2,9 +2,33 @@ import { ExerciseCard } from '../components/ExerciseCard';
 import { TelemetryDisplay } from '../components/TelemetryDisplay';
 import { PlannedExercise, PersonalRecord, WorkoutDayKey } from '@/types/workout';
 import { appTheme } from '@/shared/constants/theme';
-import { useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSessionEngine } from '../hooks/useSessionEngine';
+
+const ExerciseRow = memo(function ExerciseRow({
+  exercise,
+  progressSets,
+  personalRecord,
+  onCheck,
+  onUndo,
+}: {
+  exercise: PlannedExercise;
+  progressSets: boolean[];
+  personalRecord?: PersonalRecord;
+  onCheck: (id: string) => void;
+  onUndo: (id: string) => void;
+}) {
+  return (
+    <ExerciseCard
+      exercise={exercise}
+      progressSets={progressSets}
+      onPress={() => onCheck(exercise.id)}
+      onUndo={() => onUndo(exercise.id)}
+      personalRecord={personalRecord}
+    />
+  );
+});
 
 interface WorkoutSessionViewProps {
   exercises: PlannedExercise[];
@@ -65,13 +89,13 @@ export function WorkoutSessionView({
         contentContainerStyle={{ paddingBottom: 40 }}
       >
         {exercises.map((exercise) => (
-          <ExerciseCard
+          <ExerciseRow
             key={exercise.id}
             exercise={exercise}
             progressSets={progress[exercise.id] || []}
-            onPress={() => handleCheckNextSet(exercise.id)}
-            onUndo={() => handleUndoLastSet(exercise.id)}
             personalRecord={findPR(exercise.id)}
+            onCheck={handleCheckNextSet}
+            onUndo={handleUndoLastSet}
           />
         ))}
       </ScrollView>

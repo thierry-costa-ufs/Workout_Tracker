@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { usePathname } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   BackHandler,
   Platform,
@@ -59,14 +59,14 @@ export default function TabsLayout() {
   const pathname = usePathname();
   const [index, setIndex] = useState(() => getIndexFromPathname(pathname));
 
-  const handleIndexChange = (newIndex: number) => {
+  const handleIndexChange = useCallback((newIndex: number) => {
     setIndex(newIndex);
-  };
+  }, []);
 
-  const renderScene = ({ route }: SceneRendererProps & { route: { key: string } }) => {
+  const renderScene = useCallback(({ route }: SceneRendererProps & { route: { key: string } }) => {
     const Screen = SCENES[route.key];
     return Screen ? <Screen /> : null;
-  };
+  }, []);
 
   return (
     <TabNavigationProvider value={handleIndexChange}>

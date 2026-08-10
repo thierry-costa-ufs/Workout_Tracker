@@ -87,9 +87,18 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
       .catch(() => {}); // D-1.2a: session ticks are ephemeral
   }, [progress, hydrated, templateId, dayKey]);
 
-  const handleCheckNextSet = (exerciseId: string) => {
-    if (!hydrated) return;
-    const currentSets = progress[exerciseId];
+  const progressRef = useRef(progress);
+  useEffect(() => {
+    progressRef.current = progress;
+  });
+  const hydratedRef = useRef(hydrated);
+  useEffect(() => {
+    hydratedRef.current = hydrated;
+  });
+
+  const handleCheckNextSet = useCallback((exerciseId: string) => {
+    if (!hydratedRef.current) return;
+    const currentSets = progressRef.current[exerciseId];
     const nextIndex = currentSets ? currentSets.indexOf(false) : -1;
     if (nextIndex === -1) return;
 
@@ -102,11 +111,11 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
       updatedSets[idx] = true;
       return { ...prev, [exerciseId]: updatedSets };
     });
-  };
+  }, []);
 
-  const handleUndoLastSet = (exerciseId: string) => {
-    if (!hydrated) return;
-    const currentSets = progress[exerciseId];
+  const handleUndoLastSet = useCallback((exerciseId: string) => {
+    if (!hydratedRef.current) return;
+    const currentSets = progressRef.current[exerciseId];
     const lastCompleted = currentSets ? currentSets.lastIndexOf(true) : -1;
     if (lastCompleted === -1) return;
 
@@ -119,7 +128,7 @@ export function useSessionEngine({ exercises, templateId, dayKey }: UseSessionEn
       updatedSets[idx] = false;
       return { ...prev, [exerciseId]: updatedSets };
     });
-  };
+  }, []);
 
   const resetProgress = useCallback(() => {
     if (!hydrated) return;
