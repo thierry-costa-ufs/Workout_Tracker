@@ -2,7 +2,7 @@
 name: 'New Feature'
 about: Describe a new functionality that will be implemented on the project.
 title: 'feat: '
-labels: 'feat'
+labels: 'type: feat'
 assignees: ''
 ---
 
