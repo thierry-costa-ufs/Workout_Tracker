@@ -1,3 +1,4 @@
 #!/usr/bin/env sh
-npx tsc --noEmit
+
+./node_modules/.bin/tsc --noEmit
 npm test -- --ci
