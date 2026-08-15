@@ -1,4 +1,4 @@
 #!/usr/bin/env sh
 
 ./node_modules/.bin/tsc --noEmit
-npm test -- --ci
+./node_modules/.bin/jest --ci
