@@ -17,6 +17,7 @@ interface ExercisePickerModalProps {
   selectedBlock: { id: string; label: string } | null;
   getExercisePR: (id: string) => PersonalRecord | undefined;
   onAddExercise: (exercise: ExerciseData) => void;
+  onCreateCustom?: () => void;
 }
 
 export function ExercisePickerModal({
@@ -25,6 +26,7 @@ export function ExercisePickerModal({
   selectedBlock,
   getExercisePR,
   onAddExercise,
+  onCreateCustom,
 }: ExercisePickerModalProps) {
   const [selectedMuscleFilter, setSelectedMuscleFilter] = useState<MuscleFilterType>('Todos');
   const [exerciseSearch, setExerciseSearch] = useState('');
@@ -82,8 +84,25 @@ export function ExercisePickerModal({
         data={filteredExercises}
         keyExtractor={(item) => item.id}
         showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          onCreateCustom ? (
+            <ExercisePickerCard
+              item={{} as ExerciseData}
+              pr={undefined}
+              onAdd={() => {}}
+              isCreateAction={true}
+              onCreateCustom={onCreateCustom}
+            />
+          ) : null
+        }
         renderItem={({ item }) => (
-          <ExercisePickerCard item={item} pr={getExercisePR(item.id)} onAdd={handleAdd} />
+          <ExercisePickerCard
+            item={item}
+            pr={getExercisePR(item.id)}
+            onAdd={handleAdd}
+            isCreateAction={false}
+            onCreateCustom={() => {}}
+          />
         )}
       />
     </Overlay>

@@ -10,14 +10,35 @@ interface ExercisePickerCardProps {
   item: ExerciseData;
   pr: PersonalRecord | undefined;
   onAdd: (exercise: ExerciseData) => void;
+  isCreateAction: boolean;
+  onCreateCustom: () => void;
 }
 
 export const ExercisePickerCard = React.memo(function ExercisePickerCard({
   item,
   pr,
   onAdd,
+  isCreateAction = false,
+  onCreateCustom,
 }: ExercisePickerCardProps) {
   const [isAdded, setIsAdded] = useState(false);
+
+  if (isCreateAction) {
+    return (
+      <TouchableOpacity
+        style={[styles.card, { borderStyle: 'dashed', borderColor: appTheme.colors.border }]}
+        activeOpacity={0.7}
+        onPress={onCreateCustom}
+      >
+        <View style={{ flex: 1, marginRight: 10 }}>
+          <Text style={styles.title}>Criar exercício personalizado</Text>
+          <Text style={styles.subtleTargetText}>ADICIONAR NOVO</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  }
+
+  if (!item) return null;
 
   const handlePress = () => {
     hapticNotify();

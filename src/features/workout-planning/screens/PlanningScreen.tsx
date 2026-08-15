@@ -16,8 +16,9 @@ import { PrBadge } from '@/shared/ui/PrBadge';
 import { usePlanningBlocks } from '../hooks/usePlanningBlocks';
 import { buildBlockStructure, findDuplicateBlockSignatures } from '../utils/blockSerializer';
 import type { WorkoutBlock } from '../utils/blockSerializer';
-import type { PlannedExercise } from '@/types/workout';
+import type { EquipmentType, ExerciseData, MuscleGroup, PlannedExercise } from '@/types/workout';
 import { planningStyles as styles } from '../styles/planningStyles';
+import { CustomExerciseData, CreateExerciseModal } from '../components/CreateExerciseModal';
 
 export default function PlanningScreen() {
   const {
@@ -52,6 +53,7 @@ export default function PlanningScreen() {
   const [isSaveModalVisible, setIsSaveModalVisible] = useState(false);
   const [isPlansModalVisible, setIsPlansModalVisible] = useState(false);
   const [isExerciseModalVisible, setIsExerciseModalVisible] = useState(false);
+  const [isCreateCustomModalVisible, setIsCreateCustomModalVisible] = useState(false);
   const [isDayAssignModalVisible, setIsDayAssignModalVisible] = useState(false);
   const [dayBeingAssigned, setDayBeingAssigned] = useState<string | null>(null);
   const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
@@ -88,6 +90,23 @@ export default function PlanningScreen() {
     }, 1000);
     return () => clearInterval(id);
   }, [isOrphanModalVisible]);
+
+  const handleCreateCustomExercise = (data: CustomExerciseData) => {
+    if (!selectedBlock) return;
+
+    const customExercise: ExerciseData = {
+      id: `custom-${Date.now()}`,
+      name: data.name,
+      muscleGroup: (data.muscleGroup || 'Geral') as MuscleGroup,
+      equipment: (data.equipment || 'Livre') as EquipmentType,
+      mechanic: 'Isolado',
+      defaultSets: 3,
+    };
+
+    handleAddExerciseToBlock(customExercise);
+    setIsCreateCustomModalVisible(false);
+    setIsExerciseModalVisible(false);
+  };
 
   const finalizeSave = async (bl: WorkoutBlock[], sp: Record<string, string | null>) => {
     const duplicates = findDuplicateBlockSignatures(bl);
@@ -424,6 +443,19 @@ export default function PlanningScreen() {
         selectedBlock={selectedBlock}
         getExercisePR={getExercisePR}
         onAddExercise={handleAddExerciseToBlock}
+        onCreateCustom={() => {
+          setIsExerciseModalVisible(false);
+          setTimeout(() => {
+            setIsCreateCustomModalVisible(true);
+          }, 150);
+        }}
+      />
+
+      {/* Modal de Criação de Exercício Personalizado*/}
+      <CreateExerciseModal
+        visible={isCreateCustomModalVisible}
+        onClose={() => setIsCreateCustomModalVisible(false)}
+        onSubmit={handleCreateCustomExercise}
       />
 
       {/* Modal de Atribuição de Dia */}
